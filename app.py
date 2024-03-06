@@ -2,7 +2,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-import os, io
 from werkzeug.utils import secure_filename
 import csv
 from sqlalchemy import desc, asc
@@ -23,9 +22,23 @@ login_manager.login_view = 'login' #specify the login route
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 db = SQLAlchemy(app)
 
+class User(db.Model, UserMixin):
+   id = db.Column(db.Integer, primary_key=True)
+   name = db.Column(db.String(255))
+   last_name = db.Column(db.String(255))
+   email = db.Column(db.String(255), unique=True, nullable=False)
+   password_hash = db.Column(db.String(255), nullable=False)
+   image_data = (db.Column(db.LargeBinary))
+   email_verification_token = db.Column(db.String(255))
+   is_verified = db.Column(db.Boolean, default=False)
+
 @app.route("/")
 def index():
-    return "<p>Hello, World!</p>"
+    return render_template('index.html')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 if __name__ == '__main__':
     app.run(port = '127.0.0.1',debug=True)
