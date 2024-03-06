@@ -34,11 +34,12 @@ class User(db.Model, UserMixin):
 
 @app.route("/")
 def index():
-    return render_template('index.html')
-
+    return "<p>Hello, World!</p>"
 @app.route('/login')
 def login():
     return render_template('login.html')
 
-if __name__ == '__main__':
-    app.run(port = '127.0.0.1',debug=True)
+
+if __name__ == "__main__":
+    app.secret_key = "super_secret_key"  # Change this to a random, secure key
+    app.run(debug=True)
