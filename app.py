@@ -25,7 +25,8 @@ db = SQLAlchemy(app)
 
 @app.route("/")
 def index():
-    return "<p>Hello, World!</p>"
+    return render_template('index.html')
 
-if __name__ == '__main__':
-    app.run(port = '127.0.0.1',debug=True)
+if __name__ == "__main__":
+    app.secret_key = "super_secret_key"  # Change this to a random, secure key
+    app.run(debug=True)
