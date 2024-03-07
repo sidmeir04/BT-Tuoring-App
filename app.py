@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
@@ -13,6 +12,12 @@ from flask_login import LoginManager, UserMixin
 from flask_login import login_user, current_user, logout_user, login_required
 
 
+import functions
+
+user_type_key = {0:'student',
+                 1:'teacher',
+                 2:'administrator',
+                 3:'developer'}
 
 app = Flask(__name__)
 login_manager = LoginManager(app)
@@ -32,14 +37,36 @@ class User(db.Model, UserMixin):
    image_data = (db.Column(db.LargeBinary))
    email_verification_token = db.Column(db.String(255))
    is_verified = db.Column(db.Boolean, default=False)
+   user_type = db.Column(db.Integer,default=0)
 
 @app.route("/")
 def index():
-    return "<p>Hello, World!</p>"
+    return render_template('index.html')
+
+
 @app.route('/login')
 def login():
     return render_template('login.html')
 
+@app.route('/register')
+def login():
+    return render_template('register.html')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.errorhandler(404)
+def not_found():
+    return render_template('404.html')
 
 if __name__ == "__main__":
     app.secret_key = "super_secret_key"  # Change this to a random, secure key
