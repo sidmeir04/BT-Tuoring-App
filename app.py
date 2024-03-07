@@ -41,6 +41,8 @@ class User(db.Model, UserMixin):
 
 @app.route("/")
 def index():
+    #if logged in, go to dashboard
+    #else go to login
     return render_template('index.html')
 
 
@@ -52,9 +54,9 @@ def login():
 def login():
     return render_template('register.html')
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
+@app.route('/dashboard')
+def login():pass
+    # return render_template('dashboard.html')
 
 @app.route('/login')
 def login():
@@ -65,8 +67,8 @@ def login():
     return render_template('login.html')
 
 @app.errorhandler(404)
-def not_found():
-    return render_template('404.html')
+def not_found(e):
+    return render_template('404.html'), 404
 
 if __name__ == "__main__":
     app.secret_key = "super_secret_key"  # Change this to a random, secure key
