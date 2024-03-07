@@ -22,6 +22,9 @@ login_manager.login_view = 'login' #specify the login route
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 db = SQLAlchemy(app)
 
+@login_manager.user_loader
+def load_user(user):
+    return User.get(user)
 
 class User(db.Model, UserMixin):
    id = db.Column(db.Integer, primary_key=True)
@@ -32,10 +35,13 @@ class User(db.Model, UserMixin):
    image_data = (db.Column(db.LargeBinary))
    email_verification_token = db.Column(db.String(255))
    is_verified = db.Column(db.Boolean, default=False)
+   def __repr__(self):
+        return self.username
 
 @app.route("/")
 def index():
-    return "<p>Hello, World!</p>"
+    return render_template('index.html')
+
 @app.route('/login')
 def login():
     return render_template('login.html')
