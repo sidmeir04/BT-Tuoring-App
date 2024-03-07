@@ -23,6 +23,7 @@ login_manager.login_view = 'login' #specify the login route
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 db = SQLAlchemy(app)
 
+
 @app.route("/")
 def index():
     return render_template('index.html')
