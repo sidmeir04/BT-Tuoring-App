@@ -48,8 +48,8 @@ with app.app_context():
     db.create_all()
 
 @login_manager.user_loader
-def load_user(user):
-    return User.get(user)
+def load_user(user):return
+    # return User.get(user)
 
 @app.route("/")
 def index():
@@ -129,6 +129,14 @@ def register():
         return redirect(url_for('login'))
     return render_template("register.html")
 
+
+@app.route('/charts')
+def charts():
+    return render_template('charts.html')
+
+@app.route('/forgot')
+def forgot():
+    return render_template('forgot-password.html') 
 
 # @app.route('/login')
 # def login():
