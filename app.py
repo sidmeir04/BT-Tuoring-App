@@ -29,16 +29,21 @@ db = SQLAlchemy(app)
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255),unique=True)
     name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
-    user_name = db.Column(db.String(255), unique = True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     image_data = (db.Column(db.LargeBinary))
     email_verification_token = db.Column(db.String(255))
     is_verified = db.Column(db.Boolean, default=False)
+
     def __repr__(self):
         return self.username
+
+@login_manager.user_loader
+def load_user(user):
+    return User.get(user)
 
 @app.route("/")
 def index():
@@ -51,17 +56,17 @@ def load_user(user_id):
     return 1
     # return User.query.get(int(user_id))
 
-@app.route('/login')
+@app.route('/login',methods=['GET'])
 def login():
     return render_template('login.html')
 
 @app.route('/register')
 def register():
-    return render_template('register.html')
+    return render_template('register.html') 
 
-@app.route('/base')
-def base():
-    return render_template('blank.html')
+# @app.route('/login')
+# def login():
+#     return render_template('login.html')
 
 # @app.route('/login')
 # def login():
