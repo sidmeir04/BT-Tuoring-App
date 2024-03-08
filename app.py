@@ -27,14 +27,11 @@ login_manager.login_view = 'login' #specify the login route
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 db = SQLAlchemy(app)
 
-@login_manager.user_loader
-def load_user(user):
-    return User.get(user)
-
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
+    user_name = db.Column(db.String(255), unique = True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     image_data = (db.Column(db.LargeBinary))
@@ -49,26 +46,30 @@ def index():
     #else go to login
     return render_template('index.html')
 
+@login_manager.user_loader
+def load_user(user_id):
+    return 1
+    # return User.query.get(int(user_id))
 
 @app.route('/login')
 def login():
     return render_template('login.html')
 
 @app.route('/register')
-def login():
+def register():
     return render_template('register.html')
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
+@app.route('/base')
+def base():
+    return render_template('blank.html')
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
+# @app.route('/login')
+# def login():
+#     return render_template('login.html')
 
-@app.route('/login')
-def login():
-    return render_template('login.html')
+# @app.route('/login')
+# def login():
+#     return render_template('login.html')
 
 @app.errorhandler(404)
 def not_found(e):
