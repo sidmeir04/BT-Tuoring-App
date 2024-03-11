@@ -34,6 +34,8 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.Integer,nullable=False)
+    sessions = db.relationship('Session', backref='user', lazy = True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -44,18 +46,32 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return self.username
 
+class Session(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
+    subject = db.Column(db.String(255))
+    tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # User's ID number
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    completed = db.Column(db.Boolean, default = False)
+
+    def __repr__(self):
+        return f'{self.start_time} - {self.end_time}'
+
 with app.app_context():
     db.create_all()
 
 @login_manager.user_loader
-def load_user(user):return
-    # return User.get(user)
+def load_user(user):
+    return User.get(user)
 
 @app.route("/")
 def index():
     #if logged in, go to dashboard
     #else go to login
-    return render_template('index.html')
+    if current_user.is_authenticated:
+        return render_template('index.html',username=current_user.username)
+    return redirect(url_for('register'))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -86,7 +102,7 @@ def register():
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
         username = request.form.get("username")
-        print(name, last_name, email, password, confirm_password, username)
+        role = request.form.get('role')
         # Validate form data (add your own validation logic)
         if not (
             name
@@ -95,8 +111,8 @@ def register():
             and password
             and confirm_password
             and username
+            and role
         ):
-            print('test')
         # Handle invalid input
             flash("Please fill in all fields.", "danger")
             return render_template("register.html")
@@ -117,6 +133,7 @@ def register():
             last_name=last_name,
             email=email,
             username=username,
+            role=int(role)
         )
         new_user.set_password(password)
 
@@ -130,21 +147,52 @@ def register():
     return render_template("register.html")
 
 
+@app.route('/session_manager', methods = ['POST','GET'])
+def session_manager():
+    if request.method == 'POST':
+        # create a new session
+        pass
+    return render_template('session_manager.html')
+
 @app.route('/charts')
 def charts():
     return render_template('charts.html')
 
 @app.route('/forgot')
 def forgot():
+    return render_template('forgot-password.html')
+
+@app.route('/buttons')
+def buttons():
+    return render_template('buttons.html') 
+
+@app.route('/cards')
+def cards():
+    return render_template('cards.html') 
+
+@app.route('/forgot-password')
+def forgot_password():
     return render_template('forgot-password.html') 
 
-# @app.route('/login')
-# def login():
-#     return render_template('login.html')
+@app.route('/tables')
+def tables():
+    return render_template('tables.html') 
 
-# @app.route('/login')
-# def login():
-#     return render_template('login.html')
+@app.route('/utilities-animation')
+def utilities_animation():
+    return render_template('utilities-animation.html') 
+
+@app.route('/utilities-border')
+def utilities_border():
+    return render_template('utilities-border.html') 
+
+@app.route('/utilities-color')
+def utilities_color():
+    return render_template('utilities-color.html') 
+
+@app.route('/utilities-other')
+def utilities_other():
+    return render_template('utilities-other.html') 
 
 # @app.route('/login')
 # def login():
@@ -155,5 +203,5 @@ def not_found(e):
     return render_template('404.html'), 404
 
 if __name__ == "__main__":
-    app.secret_key = "super_secret_key"  # Change this to a random, secure key
+    app.secret_key = "ben_sucks"  # Change this to a random, secure key
     app.run(debug=True)
