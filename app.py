@@ -149,6 +149,7 @@ def register():
 
 @app.route('/session_manager', methods = ['POST','GET'])
 def session_manager():
+    #use a 2d list that maps from a dictionary for each day and period, and then access
     if request.method == 'POST':
         # create a new session
         pass
