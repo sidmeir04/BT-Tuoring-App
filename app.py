@@ -58,6 +58,14 @@ class Session(db.Model):
     def __repr__(self):
         return f'{self.start_time} - {self.end_time}'
 
+class StupidIdea(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    monday = db.Column(db.String(256))
+    tuesday = db.Column(db.String(256))
+    wednesday = db.Column(db.String(256))
+    thursdat = db.Column(db.String(256))
+    monday = db.Column(db.String(256))
+
 with app.app_context():
     db.create_all()
 
@@ -69,9 +77,13 @@ def load_user(user):
 def index():
     #if logged in, go to dashboard
     #else go to login
-    if current_user.is_authenticated:
-        return render_template('index.html',username=current_user.username)
-    return redirect(url_for('register'))
+    if not current_user.is_authenticated:return redirect(url_for('login'))
+
+    if current_user.role == 0:
+        return render_template('index0.html',usernmae=current_user.username)
+    elif current_user.role == 1:
+        return render_template('index1.html',username=current_user.username)
+    return redirect(url_for('login'))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -91,6 +103,12 @@ def login():
         else:
             flash("Invalid credentials!","danger")
     return render_template("login.html")
+
+@app.route('/logout',methods=['POST'])
+def logout():
+    logout_user()
+    flash('Logged out!','success')
+    return redirect(url_for('login'))
 
 @app.route('/register', methods = ['POST','GET'])
 def register():
