@@ -80,7 +80,7 @@ def index():
     if not current_user.is_authenticated:return redirect(url_for('login'))
 
     if current_user.role == 0:
-        return render_template('index0.html',usernmae=current_user.username)
+        return render_template('index0.html',username=current_user.username)
     elif current_user.role == 1:
         return render_template('index1.html',username=current_user.username)
     return redirect(url_for('login'))
