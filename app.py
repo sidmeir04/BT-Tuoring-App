@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import JSON
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 import csv
@@ -11,6 +12,7 @@ from flask_mail import Message
 from flask_login import LoginManager, UserMixin
 from flask_login import login_user, current_user, logout_user, login_required
 from calendar import weekday
+import json
 
 import functions
 
@@ -27,6 +29,11 @@ login_manager.login_view = 'login' #specify the login route
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 db = SQLAlchemy(app)
 
+def load_default_schedule():
+    with open('static/assets/default_schedule.json', 'r') as file:
+        default_schedule = json.load(file)
+    return default_schedule
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255),unique=True)
@@ -35,6 +42,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Integer,nullable=False)
+    schedule_data = db.Column(JSON, default=load_default_schedule)
     sessions = db.relationship('Session', backref='user', lazy = True)
 
     def set_password(self, password):
@@ -65,6 +73,11 @@ class StupidIdea(db.Model):
 
 with app.app_context():
     db.create_all()
+
+# to prevent needing to change all the html file templates
+@app.route('/index.html')
+def reroute_user():
+    return redirect(url_for('index'))
 
 @login_manager.user_loader
 def load_user(user):
