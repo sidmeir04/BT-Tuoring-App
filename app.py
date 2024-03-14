@@ -10,7 +10,7 @@ import secrets
 from flask_mail import Message
 from flask_login import LoginManager, UserMixin
 from flask_login import login_user, current_user, logout_user, login_required
-
+from calendar import weekday
 
 import functions
 
@@ -60,11 +60,11 @@ class Session(db.Model):
 
 class StupidIdea(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    monday = db.Column(db.String(256))
-    tuesday = db.Column(db.String(256))
-    wednesday = db.Column(db.String(256))
-    thursdat = db.Column(db.String(256))
-    monday = db.Column(db.String(256))
+    monday = db.Column(db.String(256), default = '')
+    tuesday = db.Column(db.String(256), default = '')
+    wednesday = db.Column(db.String(256), default = '')
+    thursday = db.Column(db.String(256), default = '')
+    friday = db.Column(db.String(256), default = '')
 
 with app.app_context():
     db.create_all()
@@ -72,6 +72,14 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user):
     return User.get(user)
+
+@app.route('/createDB')
+def createDB():
+    for _ in range(1,10):
+        newThing = StupidIdea()
+        db.session.add(newThing)
+        db.session.commit()
+    return redirect(url_for('index'))
 
 @app.route("/")
 def index():
@@ -169,8 +177,17 @@ def register():
 def session_manager():
     #use a 2d list that maps from a dictionary for each day and period, and then access
     if request.method == 'POST':
-        # create a new session
-        pass
+        period = request.form.get('period')
+        date = request.form.get('date')
+        days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        month, day, year = (int(i) for i in date.split('/'))
+        dayNumber = weekday(year, month, day)
+        day = days[dayNumber]
+        period_data = StupidIdea.query.get(period)
+        user = current_user
+        data = getattr(period_data, day, None)
+        setattr(period_data, day, data + ' ' + str(user.id))
+        db.session.commit()
     return render_template('session_manager.html')
 
 @app.route('/charts')
