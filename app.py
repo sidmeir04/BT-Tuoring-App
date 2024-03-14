@@ -43,9 +43,6 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def __repr__(self):
-        return self.username
-
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.DateTime)
@@ -176,19 +173,30 @@ def register():
 @app.route('/session_manager', methods = ['POST','GET'])
 def session_manager():
     #use a 2d list that maps from a dictionary for each day and period, and then access
+    users = []
     if request.method == 'POST':
+        type = request.form.get('type')
         period = request.form.get('period')
         date = request.form.get('date')
-        days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-        month, day, year = (int(i) for i in date.split('/'))
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        year, month, day = (int(i) for i in date.split('-'))
         dayNumber = weekday(year, month, day)
-        day = days[dayNumber]
+        day = days[dayNumber].lower()
         period_data = StupidIdea.query.get(period)
-        user = current_user
-        data = getattr(period_data, day, None)
-        setattr(period_data, day, data + ' ' + str(user.id))
-        db.session.commit()
-    return render_template('session_manager.html')
+        if type == '0':
+            user = current_user
+            data = getattr(period_data, day, 'default   ')
+            setattr(period_data, day, data + ' ' + str(user.id))
+            db.session.commit()
+        elif type == '1':
+            data = getattr(period_data, day, '')
+            user_ids = data.split(' ')
+            for id in user_ids:
+                user = User.query.get(id)
+                users.append(user)
+    print(users)
+        
+    return render_template('session_manager.html', users = users[1:])
 
 @app.route('/charts')
 def charts():
