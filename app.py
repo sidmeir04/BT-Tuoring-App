@@ -85,7 +85,15 @@ def index():
     if not current_user.is_authenticated:return redirect(url_for('login'))
 
     if current_user.role == 0:
-        return render_template('index0.html',username=current_user.username)
+        number = .6
+        if number > .75:
+            color = 'success'
+        elif number > .25:
+            color = 'warning'
+        else:
+            color = 'danger'
+        print(color)
+        return render_template('index0.html',username=current_user.username,number=number,color=color)
     elif current_user.role == 1:
         return render_template('index1.html',username=current_user.username)
     return redirect(url_for('login'))
