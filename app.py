@@ -174,7 +174,6 @@ def register():
         new_user.set_password(password)
 
         # Save the new user to the database
-        print('adding user to database')
         db.session.add(new_user)
         db.session.commit()
         
@@ -206,8 +205,7 @@ def session_manager():
             user_ids = data.split(' ')
             for id in user_ids:
                 user = User.query.get(id)
-                users.append(user)
-    print(users)
+                users.append(user)  
         
     return render_template('session_manager.html', users = users[1:])
 
