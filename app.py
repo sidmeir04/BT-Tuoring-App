@@ -13,7 +13,7 @@ from flask_login import LoginManager, UserMixin
 from flask_login import login_user, current_user, logout_user, login_required
 from calendar import weekday
 import json
-
+from sqlalchemy.orm.attributes import flag_modified
 
 from flask import request, Flask
 from flask_socketio import emit
@@ -107,8 +107,6 @@ class Session(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     completed = db.Column(db.Boolean, default = False)
 
-    def __repr__(self):
-        return f'{self.start_time} - {self.end_time}'
 
 class Periods(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -136,6 +134,18 @@ def createDB():
         newThing = Periods()
         db.session.add(newThing)
         db.session.commit()
+    new_user = User(
+        name='name',
+        last_name='last_name',
+        email='oscjep25@bergen.org',
+        username='username',
+        role=int(1)
+    )
+    new_user.set_password('pass')
+
+    # Save the new user to the database
+    db.session.add(new_user)
+    db.session.commit()
     return redirect(url_for('index'))
 
 @app.route("/")
@@ -236,6 +246,11 @@ def register():
         return redirect(url_for('login'))
     return render_template("register.html")
 
+def time_to_min(time):
+    factors = (60, 1, 1/60)
+
+    return sum(i*j for i, j in zip(map(int, time.split(':')), factors))
+
 
 @app.route('/session_manager', methods = ['POST','GET'])
 def session_manager():
@@ -255,16 +270,24 @@ def session_manager():
         if type == '1':
             user = current_user
             data = getattr(period_data, day, 'default   ')
+            #Check that the times are correct
+            period_start = 450 + int(period)*45
+            period_end = period_start + 41
+            if period_start < time_to_min(start_time) < period_end or period_start < time_to_min(end_time) < period_end:
+                flash('invalid times', 'warning')
+                return redirect(url_for('session_manager'))
+
             setattr(period_data, day, data + ' ' + str(user.id))
-            user.schedule_data[day]['start_time'] = start_time
-            user.schedule_data[day]['end_time'] = end_time
+            user.schedule_data[day]['start_time'] = str(start_time)
+            user.schedule_data[day]['end_time'] = str(end_time)
+            flag_modified(user, 'schedule_data')
             db.session.commit()
         elif type == '0':
             data = getattr(period_data, day, '')
             user_ids = data.split(' ')
             for id in user_ids:
                 user = User.query.get(id)
-                users.append(user)  
+                users.append(user)
         
     return render_template('session_manager.html', users = users[1:])
 
