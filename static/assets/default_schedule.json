@@ -1,7 +1,7 @@
 {
-    "Monday": {"start_time": "00:00", "end_time": "00:00"},
-    "Tuesday": {"start_time": "00:00", "end_time": "00:00"},
-    "Wednesday": {"start_time": "00:00", "end_time": "00:00"},
-    "Thursday": {"start_time": "00:00", "end_time": "00:00"},
-    "Friday": {"start_time": "00:00", "end_time": "00:00"}
+    "monday": {"start_time": "00:00", "end_time": "00:00", "times":""},
+    "tuesday": {"start_time": "00:00", "end_time": "00:00", "times":""},
+    "wednesday": {"start_time": "00:00", "end_time": "00:00", "times":""},
+    "thursday": {"start_time": "00:00", "end_time": "00:00", "times":""},
+    "friday": {"start_time": "00:00", "end_time": "00:00", "times":""}
 }

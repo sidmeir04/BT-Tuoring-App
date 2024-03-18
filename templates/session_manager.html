@@ -2,52 +2,69 @@
 {% block content %}
 <div class="container-fluid">
     <div class="row">
-        <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+        <div class="col-4">
             <form action = '/session_manager' method = 'POST'>
-                <div class="form-floating row">
-                    <div class="col-sm-12 mb-3 mb-sm-0">
-                        <label for="exampleDropdown">Select sesssion subject:</label>
-                        <select class="form-control" id="exampleDropdown" name = "type" required onchange="showDiv('showme', this)">
-                            <option value="">Select Type</option>
-                            <option value="0">Find Session</option>
-                            <option value="1">Add Session</option>
-                        </select>
-                    </div>
+                <div class="form-group mb-2 mx-0 px-0">
+                    <label for="exampleDropdown">Select sesssion subject:</label>
+                    <select class="form-control" id="exampleDropdown" name = "type" required onchange="showDiv('showme', this)">
+                        <option value="">Select Type</option>
+                        <option value="0">Find Session</option>
+                        <option value="1">Add Session</option>
+                    </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-2 mx-0 px-0">
                     <label for="">Select session subject:</label>
                     <input type="text" class="form-control form-control-user" name="subject" placeholder="Enter session subject">
                 </div>
-                <div class="form-group row">
+                <div class="form-group mx-0 px-0 mb-2">
                     <label for="">Select session date:</label>
                     <input type="date" class="form-control form-control-user" name="date">
 
                 </div>
-                <div class="form-group row">
+                <div class="form-group mx-0 px-0 mb-2">
                     <label for="">Select session period:</label>
                     <input type="number" class="form-control form-control-user" name="period">
 
                 </div>
                 <div id="showme" style="display: none">
-                    <div class="form-group row">
+                    <div class="form-group">
                         <label for="">Start Time</label>
                         <input type="time" class="form-control form-control-user" name="start_time">
                     </div>
-                    <div class="form-group row">
+                    <div class="form-group">
                         <label for="">End Time</label>
                         <input type="time" class="form-control form-control-user" name="end_time">
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group mt-4">
                     <button type="submit" class="btn btn-primary btn-lg">Find Available Tutors</button>
                 </div>
             </form>
         </div>
-        <div class="d-flex justify-content-center">
-            {% if True %}
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+        <div class="col-1"></div>
+        <div class="col-6">
+            <table class="table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Tutor Name</th>
+                        <th>Subject</th>
+                    </tr>
+                </thead>
+                {% for user in users %}
+                <tbody>
+                    <tr>
+                        <td>{{user.id}}</td>
+                        <td>{{user.username}}</td>
+                        <td>Edinburgh</td>
+                        <td>MATH</td>
+                    </tr>
+                </tbody>
+                {% endfor %}
+            </table>
+            <!-- {% if users  %} -->
+                    <table class="table" id="dataTable">
                         <thead>
                             <tr>
                                 <th>Start Time</th>
@@ -56,7 +73,6 @@
                                 <th>Subject</th>
                             </tr>
                         </thead>
-                        <!-- {% if users != [] %} -->
                         {% for user in users %}
                         <tbody>
                             <tr>
@@ -67,11 +83,9 @@
                             </tr>
                         </tbody>
                         {% endfor %}
-                        <!-- {% endif %} -->
                     </table>
-                </div>
-            </div>
-            {% endif %}
+            hello
+            <!-- {% endif %} -->
         </div>
     </div>
 </div>

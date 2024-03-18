@@ -14,6 +14,53 @@ from flask_login import login_user, current_user, logout_user, login_required
 from calendar import weekday
 import json
 
+
+from flask import request, Flask
+from flask_socketio import emit
+from flask import Blueprint, render_template
+from flask_socketio import SocketIO 
+
+socketio = SocketIO()
+
+main = Blueprint("main", __name__)
+
+def create_app():
+    app = Flask(__name__)
+    app.config["DEBUG"] = True
+
+    app.register_blueprint(main)
+
+    socketio.init_app(app)
+
+    return app
+
+app = create_app()
+
+users = {}
+
+#the "connect" here is a keyword, when the server first starts it will say connected
+@socketio.on("connect")
+def handle_connect():
+    print("Client connected!")
+
+@socketio.on("user_join")
+def handle_user_join(username):
+    print(f"User {username} joined!")
+    users[username] = request.sid
+
+@socketio.on("new_message")
+def handle_new_message(message):
+    print(f"New message: {message}")
+    username = None 
+    for user in users:
+        if users[user] == request.sid:
+            username = user
+    emit("chat", {"message": message, "username": username}, broadcast=True)
+
+@app.route('/testing')
+def testing_socketio():
+    return render_template("index_temp.html")
+
 import functions
 
 user_type_key = {0:'student',
@@ -21,7 +68,7 @@ user_type_key = {0:'student',
                  2:'administrator',
                  3:'developer'}
 
-app = Flask(__name__)
+# app = Flask(__name__)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login' #specify the login route
 
@@ -63,7 +110,7 @@ class Session(db.Model):
     def __repr__(self):
         return f'{self.start_time} - {self.end_time}'
 
-class StupidIdea(db.Model):
+class Periods(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     monday = db.Column(db.String(256), default = '')
     tuesday = db.Column(db.String(256), default = '')
@@ -86,7 +133,7 @@ def load_user(user):
 @app.route('/createDB')
 def createDB():
     for _ in range(1,10):
-        newThing = StupidIdea()
+        newThing = Periods()
         db.session.add(newThing)
         db.session.commit()
     return redirect(url_for('index'))
@@ -98,7 +145,7 @@ def index():
     if not current_user.is_authenticated:return redirect(url_for('login'))
 
     if current_user.role == 0:
-        number = .9
+        number = .23
         if number > .75:
             color = 'success'
         elif number > .25:
@@ -198,17 +245,21 @@ def session_manager():
         type = request.form.get('type')
         period = request.form.get('period')
         date = request.form.get('date')
+        start_time = request.form.get('start_time')
+        end_time = request.form.get('end_time')
         days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
         year, month, day = (int(i) for i in date.split('-'))
         dayNumber = weekday(year, month, day)
         day = days[dayNumber].lower()
-        period_data = StupidIdea.query.get(period)
-        if type == '0':
+        period_data = Periods.query.get(period)
+        if type == '1':
             user = current_user
             data = getattr(period_data, day, 'default   ')
             setattr(period_data, day, data + ' ' + str(user.id))
+            user.schedule_data[day]['start_time'] = start_time
+            user.schedule_data[day]['end_time'] = end_time
             db.session.commit()
-        elif type == '1':
+        elif type == '0':
             data = getattr(period_data, day, '')
             user_ids = data.split(' ')
             for id in user_ids:
@@ -257,6 +308,10 @@ def utilities_color():
 def utilities_other():
     return render_template('utilities-other.html') 
 
+@app.route('/appointment_details')
+def details():
+    return render_template('appointment_details.html')
+
 # @app.route('/login')
 # def login():
 #     return render_template('login.html')
@@ -267,4 +322,4 @@ def not_found(e):
 
 if __name__ == "__main__":
     app.secret_key = "ben_sucks"  # Change this to a random, secure key
-    app.run(debug=True)
+    socketio.run(app)
