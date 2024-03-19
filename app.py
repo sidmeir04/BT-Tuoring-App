@@ -55,6 +55,7 @@ def handle_new_message(message):
     for user in users:
         if users[user] == request.sid:
             username = user
+    print(message,username)
     emit("chat", {"message": message, "username": username}, broadcast=True)
 
 @app.route('/testing')
