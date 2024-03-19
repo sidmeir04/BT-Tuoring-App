@@ -262,6 +262,8 @@ def date_to_day(date):
 def session_manager():
     #use a 2d list that maps from a dictionary for each day and period, and then access
     users = []
+    day = None
+    date = None
     if request.method == 'POST':
         type = request.form.get('type')
         period = request.form.get('period')
