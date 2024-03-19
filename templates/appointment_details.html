@@ -1,5 +1,6 @@
 {%extends "blank.html"%}
 {%block content%}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <div id="wrapper">
     <!-- Begin Page Content -->
@@ -141,21 +142,19 @@
                         </div>
                     </div>
                     <!-- Card Body -->
-                    <div class="card-body">
-                        Dropdown menus can be placed in the card header in order to extend the functionality
-                        of a basic card. In this dropdown card example, the Font Awesome vertical ellipsis
-                        icon in the card header can be clicked on in order to toggle a dropdown menu.
+                    <div class="card-body overflow-auto">
+                        <ul id="chat-messages">
+                        </ul>
                     </div>
-                    <div class="card-footer">
-                        <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-0 my-2 my-md-0 mw-100 navbar-search">
-                            <div class="input-group">
-                                <input type="text" class="d-flex align-self-start form-control bg-light border-0 small" placeholder="Message"
-                                    aria-label="Search" aria-describedby="basic-addon2">
-                                <button class="btn btn-primary" type="button">
-                                    &#xf1d9
+                    <div class="card-footer px-0">
+                        <div class="col-12 w-auto mx-0">
+                            <div class="d-flex justify-content-center mx-0">
+                                <input type="text" class="form-control ml-0 mr-2" placeholder="Example input" aria-label="Example input" aria-describedby="button-addon1" id="message"/>
+                                <button class="btn btn-primary pb-0" type="button" id="button-addon1" data-mdb-ripple-color="dark">
+                                    <i class="material-icons mb-0">&#xe163;</i>
                                 </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,6 +165,8 @@
     <!-- /.container-fluid -->
 
 </div>
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+
 <script>
     const socket = io({autoConnect: true});
 
@@ -187,7 +188,9 @@
         let li = document.createElement("li");
         li.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
         ul.appendChild(li);
+        console.log(ul.scrollHeight)
         ul.scrolltop = ul.scrollHeight;
+        console.log(ul.scrolltop)
     })
 </script>
 <!-- End of Main Content -->

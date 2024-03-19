@@ -83,7 +83,10 @@
             let li = document.createElement("li");
             li.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
             ul.appendChild(li);
-            ul.scrolltop = ul.scrollHeight;
+            ul.scrollTop = ul.scrollHeight - ul.clientHeight;
+            // ul.scrolltop = ul.scrollHeight;
+            // console.log(ul.scrolltop)
+            // console.log(ul.scrollHeight)
         })
     </script>
 </body>
