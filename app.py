@@ -103,7 +103,7 @@ class Session(db.Model):
     start_time = db.Column(db.DateTime)
     end_time = db.Column(db.DateTime)
     subject = db.Column(db.String(255))
-    tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # User's ID number
+    tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     email = db.Column(db.String(255), unique=True, nullable=False)
     completed = db.Column(db.Boolean, default = False)
 
@@ -251,6 +251,12 @@ def time_to_min(time):
 
     return sum(i*j for i, j in zip(map(int, time.split(':')), factors))
 
+days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+def date_to_day(date):
+    year, month, day = (int(i) for i in date.split('-'))
+    dayNumber = weekday(year, month, day)
+    day = days[dayNumber].lower()
+    return day
 
 @app.route('/session_manager', methods = ['POST','GET'])
 def session_manager():
@@ -262,10 +268,7 @@ def session_manager():
         date = request.form.get('date')
         start_time = request.form.get('start_time')
         end_time = request.form.get('end_time')
-        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-        year, month, day = (int(i) for i in date.split('-'))
-        dayNumber = weekday(year, month, day)
-        day = days[dayNumber].lower()
+        day = date_to_day(date)
         period_data = Periods.query.get(period)
         if type == '1':
             user = current_user
@@ -273,7 +276,7 @@ def session_manager():
             #Check that the times are correct
             period_start = 450 + int(period)*45
             period_end = period_start + 41
-            if period_start < time_to_min(start_time) < period_end or period_start < time_to_min(end_time) < period_end:
+            if period_start < time_to_min(start_time) < period_end or period_start < time_to_min(end_time) < period_end or time_to_min(end_time) > time_to_min(start_time):
                 flash('invalid times', 'warning')
                 return redirect(url_for('session_manager'))
 
@@ -289,7 +292,24 @@ def session_manager():
                 user = User.query.get(id)
                 users.append(user)
         
-    return render_template('session_manager.html', users = users[1:])
+    return render_template('session_manager.html', users = users[1:], day = day, date = date)
+
+@app.route('/book_session/<id>/<date>')
+def book_session(id, date):
+    user = User.query.get(id)
+    day = date_to_day(date)
+    data = user.schedule_data[day]
+    new_session = Session(
+        tutor = id,
+        start_time = data['start_time'],
+        end_time = data['end_time'],
+        # subject = data['subject'],
+        email = user.email,
+    )
+    db.session.add(new_session)
+    db.session.commit()
+    flash('Book Session', 'success')
+    return redirect(url_for('session_manager'))
 
 @app.route('/charts')
 def charts():

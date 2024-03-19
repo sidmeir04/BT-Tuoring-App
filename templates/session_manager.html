@@ -65,10 +65,10 @@
                 {% for user in users %}
                 <tbody>
                     <tr>
-                        <td>{{user.id}}</td>
+                        <td>{{user.schedule_data[day]['start_time']}}</td>
+                        <td>{{user.schedule_data[day]['end_time']}}</td>
                         <td>{{user.username}}</td>
-                        <td>Edinburgh</td>
-                        <td>MATH</td>
+                        <td><a href="/book_session/{{user.id}}/{{date}}"></a></td>
                     </tr>
                 </tbody>
                 {% endfor %}
