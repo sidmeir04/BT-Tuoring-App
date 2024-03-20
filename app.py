@@ -14,7 +14,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from calendar import weekday
 import json
 from sqlalchemy.orm.attributes import flag_modified
-
+from datetime import time
 from flask import request, Flask
 from flask_socketio import emit
 from flask import Blueprint, render_template
@@ -101,8 +101,8 @@ class User(db.Model, UserMixin):
 
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    start_time = db.Column(db.DateTime)
-    end_time = db.Column(db.DateTime)
+    start_time = db.Column(db.Time)
+    end_time = db.Column(db.Time)
     subject = db.Column(db.String(255))
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     email = db.Column(db.String(255), unique=True, nullable=False)
@@ -135,16 +135,11 @@ def createDB():
         newThing = Periods()
         db.session.add(newThing)
         db.session.commit()
-    new_user = User(
-        name='name',
-        last_name='last_name',
-        email='oscjep25@bergen.org',
-        username='username',
-        role=int(1)
-    )
+    new_user = User(name='name', last_name='last_name', email='oscjep25@bergen.org', username='username', role=int(1))
     new_user.set_password('pass')
-
-    # Save the new user to the database
+    db.session.add(new_user)
+    new_user = User(name='Student', last_name='Student2', email='student@gmail.com', username='Student', role=int(1))
+    new_user.set_password('pass')
     db.session.add(new_user)
     db.session.commit()
     return redirect(url_for('index'))
@@ -275,13 +270,13 @@ def session_manager():
         period_data = Periods.query.get(period)
         if type == '1':
             user = current_user
-            data = getattr(period_data, day, 'default   ')
+            data = getattr(period_data, day, 'default')
             #Check that the times are correct
-            period_start = 450 + int(period)*45
-            period_end = period_start + 41
-            if period_start < time_to_min(start_time) < period_end or period_start < time_to_min(end_time) < period_end or time_to_min(end_time) > time_to_min(start_time):
-                flash('invalid times', 'warning')
-                return redirect(url_for('session_manager'))
+            # period_start = 450 + int(period)*45
+            # period_end = period_start + 41
+            # if period_start < time_to_min(start_time) < period_end or period_start < time_to_min(end_time) < period_end or time_to_min(end_time) > time_to_min(start_time):
+            #     flash('invalid times', 'warning')
+            #     return redirect(url_for('session_manager'))
 
             setattr(period_data, day, data + ' ' + str(user.id))
             user.schedule_data[day]['start_time'] = str(start_time)
@@ -297,6 +292,12 @@ def session_manager():
         
     return render_template('session_manager.html', users = users[1:], day = day, date = date)
 
+def string_to_time(time_str):
+    hour, minute = map(int, time_str.split(':'))
+    # Create a time object with the provided hour and minute
+    result_time = time(hour=hour, minute=minute)
+    return result_time
+    
 @app.route('/book_session/<id>/<date>')
 def book_session(id, date):
     user = User.query.get(id)
@@ -304,8 +305,8 @@ def book_session(id, date):
     data = user.schedule_data[day]
     new_session = Session(
         tutor = id,
-        start_time = data['start_time'],
-        end_time = data['end_time'],
+        start_time = string_to_time(data['start_time']),
+        end_time = string_to_time(data['end_time']),
         # subject = data['subject'],
         email = user.email,
     )
@@ -318,9 +319,9 @@ def book_session(id, date):
 def charts():
     return render_template('charts.html')
 
-@app.route('/forgot')
-def forgot():
-    return render_template('forgot-password.html')
+@app.route('/forgot_password')
+def forgot_password():
+    return render_template('forgot_password.html')
 
 @app.route('/buttons')
 def buttons():
@@ -328,11 +329,7 @@ def buttons():
 
 @app.route('/cards')
 def cards():
-    return render_template('cards.html') 
-
-@app.route('/forgot-password')
-def forgot_password():
-    return render_template('forgot-password.html') 
+    return render_template('cards.html')
 
 @app.route('/tables')
 def tables():

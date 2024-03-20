@@ -68,34 +68,11 @@
                         <td>{{user.schedule_data[day]['start_time']}}</td>
                         <td>{{user.schedule_data[day]['end_time']}}</td>
                         <td>{{user.username}}</td>
-                        <td><a href="/book_session/{{user.id}}/{{date}}"></a></td>
+                        <td><a href="/book_session/{{user.id}}/{{date}}">Book Session</a></td>
                     </tr>
                 </tbody>
                 {% endfor %}
             </table>
-            <!-- {% if users  %} -->
-                    <table class="table" id="dataTable">
-                        <thead>
-                            <tr>
-                                <th>Start Time</th>
-                                <th>End Time</th>
-                                <th>Tutor Name</th>
-                                <th>Subject</th>
-                            </tr>
-                        </thead>
-                        {% for user in users %}
-                        <tbody>
-                            <tr>
-                                <td>{{user.id}}</td>
-                                <td>{{user.username}}</td>
-                                <td>Edinburgh</td>
-                                <td>MATH</td>
-                            </tr>
-                        </tbody>
-                        {% endfor %}
-                    </table>
-            hello
-            <!-- {% endif %} -->
         </div>
     </div>
 </div>
