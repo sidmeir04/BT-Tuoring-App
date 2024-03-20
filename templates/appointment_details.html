@@ -143,14 +143,14 @@
                     </div>
                     <!-- Card Body -->
                     <div class="card-body overflow-auto">
-                        <ul id="chat-messages">
+                        <ul id="chat-messages" class="list-group list-group-flush">
                         </ul>
                     </div>
                     <div class="card-footer px-0">
                         <div class="col-12 w-auto mx-0">
                             <div class="d-flex justify-content-center mx-0">
-                                <input type="text" class="form-control ml-0 mr-2" placeholder="Example input" aria-label="Example input" aria-describedby="button-addon1" id="message"/>
-                                <button class="btn btn-primary pb-0" type="button" id="button-addon1" data-mdb-ripple-color="dark">
+                                <textarea style="resize:none;" type="text" class="form-control ml-0 mr-2" placeholder="Example input" aria-label="Example input" aria-describedby="send-button" id="message" rows="1"></textarea>
+                                <button class="btn btn-primary pb-0" type="button" id="send-button" data-mdb-ripple-color="dark">
                                     <i class="material-icons mb-0">&#xe163;</i>
                                 </button>
                             </div>
@@ -175,22 +175,31 @@
         socket.emit("user_join", username);
     })
 
-    document.getElementById("message").addEventListener("keyup", function (event) {
-        if (event.key == "Enter") {
-            let message = document.getElementById("message").value;
+    document.getElementById("send-button").addEventListener("click", function () {
+        let message = document.getElementById("message").value;
+        if (message != 0){
             socket.emit("new_message", message);
             document.getElementById("message").value = "";
         }
     })
 
+    //new function idea:
+    //create a div, and create a flex row for each image
+    //if sent by the user logged into this account, make it blue, and align to the right
+    //else make it gray and align to the right
     socket.on("chat", function(data) {
+        var codeBlock = '<div class="content">' +
+                    '<h1>This is a heading</h1>' +
+                    '<p>This is a paragraph of text.</p>' +
+                    '<p><strong>Note:</strong> If you don\'t escape "quotes" properly, it will not work.</p>' +
+                '</div>';
         let ul = document.getElementById("chat-messages");
         let li = document.createElement("li");
+        ul.scrollTop = ul.scrollHeight;
         li.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
+        li.classList = ['list-group-item']
         ul.appendChild(li);
-        console.log(ul.scrollHeight)
-        ul.scrolltop = ul.scrollHeight;
-        console.log(ul.scrolltop)
+        ul.scrollTop = ul.scrollHeight;
     })
 </script>
 <!-- End of Main Content -->
