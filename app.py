@@ -353,6 +353,7 @@ def utilities_other():
 
 @app.route('/appointment_details')
 def details():
+    id = request.args.get()
     return render_template('appointment_details.html')
 
 # @app.route('/login')
