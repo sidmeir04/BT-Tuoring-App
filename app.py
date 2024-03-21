@@ -150,19 +150,19 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
 
-    if current_user.role == 0:
-        number = .23
-        if number > .75:
-            color = 'success'
-        elif number > .25:
-            color = 'warning'
-        else:
-            color = 'danger'
-        print(color)
-        return render_template('index0.html',username=current_user.username,number=number,color=color)
-    elif current_user.role == 1:
-        return render_template('index1.html',username=current_user.username)
-    return redirect(url_for('login'))
+    # if current_user.role == 0:
+    number = .23
+    if number > .75:
+        color = 'success'
+    elif number > .25:
+        color = 'warning'
+    else:
+        color = 'danger'
+    print(color)
+    return render_template('index0.html',username=current_user.username,number=number,color=color)
+    # elif current_user.role == 1:
+    #     return render_template('index1.html',username=current_user.username)
+    # return redirect(url_for('login'))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -353,7 +353,7 @@ def utilities_other():
 
 @app.route('/appointment_details')
 def details():
-    id = request.args.get()
+    ID = request.args.get('identification')
     return render_template('appointment_details.html')
 
 # @app.route('/login')

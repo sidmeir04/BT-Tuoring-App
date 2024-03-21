@@ -8,7 +8,7 @@
 
         <!-- Page Heading -->
         <div class="d-flex">
-            <i class="fa fa-arrow-left"></i>
+            <a href="/"><i class="fa fa-arrow-left"></i></a>    
         </div>
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
             <h1 class="h3 mb-0 text-gray-800">Ticket Number {12192}</h1>
@@ -143,8 +143,9 @@
                     </div>
                     <!-- Card Body -->
                     <div class="card-body overflow-auto">
-                        <ul id="chat-messages" class="list-group list-group-flush">
-                        </ul>
+                        <div id="chat-messages" class="container-fluid">
+
+                        </div>
                     </div>
                     <div class="card-footer px-0">
                         <div class="col-12 w-auto mx-0">
@@ -176,12 +177,22 @@
     })
 
     document.getElementById("send-button").addEventListener("click", function () {
+        send_message()
+    })
+
+    document.getElementById("message").addEventListener("keyup", function (event) {
+        if (event.key == 'Enter'){
+            send_message()
+        }
+    })
+
+    function send_message(){
         let message = document.getElementById("message").value;
         if (message != 0){
             socket.emit("new_message", message);
             document.getElementById("message").value = "";
         }
-    })
+    }
 
     //new function idea:
     //create a div, and create a flex row for each image
@@ -193,13 +204,14 @@
                     '<p>This is a paragraph of text.</p>' +
                     '<p><strong>Note:</strong> If you don\'t escape "quotes" properly, it will not work.</p>' +
                 '</div>';
-        let ul = document.getElementById("chat-messages");
-        let li = document.createElement("li");
-        ul.scrollTop = ul.scrollHeight;
-        li.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
-        li.classList = ['list-group-item']
-        ul.appendChild(li);
-        ul.scrollTop = ul.scrollHeight;
+        let container = document.getElementById("chat-messages");
+        let row = document.createElement("div");
+        row.classList=['row align-items-center']
+        let box = document.createElement("div")
+        box.classList=['h5 bg-primary text-white p-2']
+        box.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
+        row.appendChild(box)
+        container.appendChild(row);
     })
 </script>
 <!-- End of Main Content -->
