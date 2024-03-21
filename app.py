@@ -105,7 +105,7 @@ class Session(db.Model):
     end_time = db.Column(db.Time)
     subject = db.Column(db.String(255))
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
-    email = db.Column(db.String(255), unique=True, nullable=False)
+    student = db.Column(db.Integer, nullable = False)
     completed = db.Column(db.Boolean, default = False)
 
 
@@ -159,7 +159,7 @@ def index():
         else:
             color = 'danger'
         print(color)
-        return render_template('index0.html',username=current_user.username,number=number,color=color)
+        return render_template('index0.html',user=current_user,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, completed = False).all())
     elif current_user.role == 1:
         return render_template('index1.html',username=current_user.username)
     return redirect(url_for('login'))
@@ -272,12 +272,13 @@ def session_manager():
             user = current_user
             data = getattr(period_data, day, 'default')
             #Check that the times are correct
-            # period_start = 450 + int(period)*45
-            # period_end = period_start + 41
-            # if period_start < time_to_min(start_time) < period_end or period_start < time_to_min(end_time) < period_end or time_to_min(end_time) > time_to_min(start_time):
-            #     flash('invalid times', 'warning')
-            #     return redirect(url_for('session_manager'))
-
+            period_start = 450 + int(period)*45
+            period_end = period_start + 41
+            # time_to_min(end_time) > time_to_min(start_time)
+            print(start_time, end_time)
+            if not (period_start <= time_to_min(start_time) or time_to_min(start_time) <= period_end or period_start <= time_to_min(end_time) or time_to_min(end_time) <= period_end):
+                flash('invalid times', 'warning')
+                return redirect(url_for('session_manager'))
             setattr(period_data, day, data + ' ' + str(user.id))
             user.schedule_data[day]['start_time'] = str(start_time)
             user.schedule_data[day]['end_time'] = str(end_time)
@@ -303,12 +304,13 @@ def book_session(id, date):
     user = User.query.get(id)
     day = date_to_day(date)
     data = user.schedule_data[day]
+    current_user_id = current_user.get_id()
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
         end_time = string_to_time(data['end_time']),
+        student = current_user_id,
         # subject = data['subject'],
-        email = user.email,
     )
     db.session.add(new_session)
     db.session.commit()
