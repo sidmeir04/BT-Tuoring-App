@@ -147,6 +147,11 @@
                                         <td>{{session.start_time}}</td>
                                         <td>{{session.end_time}}</td>
                                         <!-- <td>{{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
+                                        <td>
+                                            <a href="{{url_for('details',identification=active_page)}}" class="btn btn-primary btn-circle">
+                                                <i class="fa fa-ellipsis-v"></i>
+                                            </a>
+                                        </td>
                                     </tr>
                                 </tbody>
                                 {% endfor %}

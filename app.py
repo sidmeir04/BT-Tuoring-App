@@ -159,10 +159,10 @@ def index():
         else:
             color = 'danger'
         print(color)
-        return render_template('index0.html',user=current_user,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, completed = False).all())
-    elif current_user.role == 1:
-        return render_template('index1.html',username=current_user.username)
-    return redirect(url_for('login'))
+        return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, completed = False).all())
+    # elif current_user.role == 1:
+    #     return render_template('index1.html',username=current_user.username)
+    # return redirect(url_for('login'))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -355,6 +355,7 @@ def utilities_other():
 
 @app.route('/appointment_details')
 def details():
+    ID = request.args.get('identification')
     return render_template('appointment_details.html')
 
 # @app.route('/login')
