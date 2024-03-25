@@ -41,6 +41,7 @@ users = {}
 #the "connect" here is a keyword, when the server first starts it will say connected
 @socketio.on("connect")
 def handle_connect():
+    print(current_user)
     print("Client connected!")
 
 @socketio.on("user_join")
@@ -77,6 +78,11 @@ login_manager.login_view = 'login' #specify the login route
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 db = SQLAlchemy(app)
 
+def load_basic_json_file():
+    with open('static/assets/basic_json_file', 'r') as file:
+        basic = json.load(file)
+    return basic
+
 def load_default_schedule():
     with open('static/assets/default_schedule.json', 'r') as file:
         default_schedule = json.load(file)
@@ -103,6 +109,7 @@ class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
+    date = db.Column(db.DateTime)
     subject = db.Column(db.String(255))
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
@@ -116,6 +123,12 @@ class Periods(db.Model):
     wednesday = db.Column(db.String(256), default = '')
     thursday = db.Column(db.String(256), default = '')
     friday = db.Column(db.String(256), default = '')
+
+class MessageHistory(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    people = db.Column(JSON, default=load_basic_json_file)
+    messages = db.Column(JSON, default=load_basic_json_file)
+
 
 with app.app_context():
     db.create_all()
@@ -149,7 +162,6 @@ def index():
     #if logged in, go to dashboard
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
-
     # if current_user.role == 0:
     number = .23
     if number > .75:
@@ -160,7 +172,7 @@ def index():
         color = 'danger'
     print(color)
     print(current_user.id)
-    return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=1, completed = False).all())
+    return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, completed = False).all())
     # elif current_user.role == 1:
     #     return render_template('index1.html',username=current_user.username)
     # return redirect(url_for('login'))
@@ -265,6 +277,7 @@ def session_manager():
         type = request.form.get('type')
         period = request.form.get('period')
         date = request.form.get('date')
+        subject = request.form.get('subject')
         start_time = request.form.get('start_time')
         end_time = request.form.get('end_time')
         day = date_to_day(date)
@@ -283,6 +296,7 @@ def session_manager():
             setattr(period_data, day, data + ' ' + str(user.id))
             user.schedule_data[day]['start_time'] = str(start_time)
             user.schedule_data[day]['end_time'] = str(end_time)
+            user.schedule_data[day]['subject'] = str(subject)
             flag_modified(user, 'schedule_data')
             db.session.commit()
         elif type == '0':

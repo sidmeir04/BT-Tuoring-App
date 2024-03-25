@@ -52,7 +52,7 @@
             </form>
         </div>
         <div class="col-1"></div>
-        <div class="col-6">
+        <div class="col-7">
             <table class="table" id="dataTable">
                 <thead>
                     <tr>
@@ -60,6 +60,7 @@
                         <th>End Time</th>
                         <th>Tutor Name</th>
                         <th>Subject</th>
+                        <th>Schedule Session</th>
                     </tr>
                 </thead>
                 {% for user in users %}
@@ -68,6 +69,7 @@
                         <td>{{user.schedule_data[day]['start_time']}}</td>
                         <td>{{user.schedule_data[day]['end_time']}}</td>
                         <td>{{user.username}}</td>
+                        <td>{{user.schedule_data[day]['subject']}}</td>
                         <td><a href="/book_session/{{user.id}}/{{date}}">Book Session</a></td>
                     </tr>
                 </tbody>
