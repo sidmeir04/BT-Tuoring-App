@@ -199,11 +199,6 @@
     //if sent by the user logged into this account, make it blue, and align to the right
     //else make it gray and align to the right
     socket.on("chat", function(data) {
-        var codeBlock = '<div class="content">' +
-                    '<h1>This is a heading</h1>' +
-                    '<p>This is a paragraph of text.</p>' +
-                    '<p><strong>Note:</strong> If you don\'t escape "quotes" properly, it will not work.</p>' +
-                '</div>';
         let container = document.getElementById("chat-messages");
         let row = document.createElement("div");
         row.classList=['row align-items-center bg-primary']

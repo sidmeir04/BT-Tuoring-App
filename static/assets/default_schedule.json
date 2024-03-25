@@ -1,7 +1,7 @@
 {
-    "monday": {"start_time": "00:00", "end_time": "00:00", "times":""},
-    "tuesday": {"start_time": "00:00", "end_time": "00:00", "times":""},
-    "wednesday": {"start_time": "00:00", "end_time": "00:00", "times":""},
-    "thursday": {"start_time": "00:00", "end_time": "00:00", "times":""},
-    "friday": {"start_time": "00:00", "end_time": "00:00", "times":""}
+    "monday": {"start_time": "00:00", "end_time": "00:00", "times":"", "subject":""},
+    "tuesday": {"start_time": "00:00", "end_time": "00:00", "times":"", "subject":""},
+    "wednesday": {"start_time": "00:00", "end_time": "00:00", "times":"", "subject":""},
+    "thursday": {"start_time": "00:00", "end_time": "00:00", "times":"", "subject":""},
+    "friday": {"start_time": "00:00", "end_time": "00:00", "times":"", "subject":""}
 }
