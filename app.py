@@ -150,16 +150,17 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
 
-    if current_user.role == 0:
-        number = .23
-        if number > .75:
-            color = 'success'
-        elif number > .25:
-            color = 'warning'
-        else:
-            color = 'danger'
-        print(color)
-        return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, completed = False).all())
+    # if current_user.role == 0:
+    number = .23
+    if number > .75:
+        color = 'success'
+    elif number > .25:
+        color = 'warning'
+    else:
+        color = 'danger'
+    print(color)
+    print(current_user.id)
+    return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=1, completed = False).all())
     # elif current_user.role == 1:
     #     return render_template('index1.html',username=current_user.username)
     # return redirect(url_for('login'))

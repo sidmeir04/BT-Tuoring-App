@@ -206,9 +206,9 @@
                 '</div>';
         let container = document.getElementById("chat-messages");
         let row = document.createElement("div");
-        row.classList=['row align-items-center']
+        row.classList=['row align-items-center bg-primary']
         let box = document.createElement("div")
-        box.classList=['h5 bg-primary text-white p-2']
+        box.classList=['h5 text-white p-2']
         box.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
         row.appendChild(box)
         container.appendChild(row);

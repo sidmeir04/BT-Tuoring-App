@@ -1,5 +1,5 @@
 {% extends 'blank.html' %}
-{%set user_name = user.username%}
+{%set user_name = username%}
 {%set active_page='dashboard'%}
 {% block content %}
 <!-- Begin Page Content -->
@@ -142,18 +142,16 @@
                             </thead>
                             <tbody>
                                 {% for session in sessions%}
-                                <tbody>
                                     <tr>
                                         <td>{{session.start_time}}</td>
                                         <td>{{session.end_time}}</td>
-                                        <!-- <td>{{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
+                                        <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
                                         <td>
-                                            <a href="{{url_for('details',identification=active_page)}}" class="btn btn-primary btn-circle">
+                                            <a href="{{url_for('details',identification=session.id)}}" class="btn btn-primary btn-circle">
                                                 <i class="fa fa-ellipsis-v"></i>
                                             </a>
                                         </td>
                                     </tr>
-                                </tbody>
                                 {% endfor %}
                             </tbody>
                         </table>
