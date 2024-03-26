@@ -41,7 +41,11 @@ users = {}
 #the "connect" here is a keyword, when the server first starts it will say connected
 @socketio.on("connect")
 def handle_connect():
+    user_id = request.sid
+    specific_history = None
+
     print(current_user)
+    print(request.sid)
     print("Client connected!")
 
 @socketio.on("user_join")
@@ -105,6 +109,12 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+class MessageHistory(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    people = db.Column(JSON, default=load_basic_json_file)
+    messages = db.Column(JSON, default=load_basic_json_file)
+    session = db.relationship('Session', backref='messagehistory', lazy = True)
+
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
@@ -114,6 +124,7 @@ class Session(db.Model):
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
     completed = db.Column(db.Boolean, default = False)
+    message_history = db.Column(db.Integer, db.ForeignKey('message_history.id')) # Tutor's ID number
 
 
 class Periods(db.Model):
@@ -124,10 +135,6 @@ class Periods(db.Model):
     thursday = db.Column(db.String(256), default = '')
     friday = db.Column(db.String(256), default = '')
 
-class MessageHistory(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    people = db.Column(JSON, default=load_basic_json_file)
-    messages = db.Column(JSON, default=load_basic_json_file)
 
 
 with app.app_context():
@@ -317,6 +324,8 @@ def string_to_time(time_str):
 @app.route('/book_session/<id>/<date>')
 def book_session(id, date):
     user = User.query.get(id)
+    current = current_user.id
+
     day = date_to_day(date)
     data = user.schedule_data[day]
     current_user_id = current_user.get_id()
@@ -328,9 +337,17 @@ def book_session(id, date):
         subject = data['subject'],
         date = datetime.strptime(date, '%Y-%m-%d').date()
     )
+
+    people = {0:{'user':user,'id':''},0:{'user':current,'id':''}}
+    conversation = MessageHistory(
+        people=people,
+        messages=load_basic_json_file(),
+        session=new_session)
+    
     user.schedule_data[day]['times'] += ' ' + str(date)
     flag_modified(user, 'schedule_data')
     db.session.add(new_session)
+    db.session.add(conversation)
     db.session.commit()
     flash('Booked Session', 'success')
     return redirect(url_for('session_manager'))

@@ -124,12 +124,13 @@
             </div>
 
         </div>
-        <div class="col-xl-5 col-lg-5 d-flex">
+        <div class="col-xl-5 col-lg-5">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Upcoming Appointments</h6>
                 </div>
                 <div class="card-body">
+                    {%if sessions%}
                     <div class="table-responsive">
                         <table class="table" id="dataTable" width="100%" cellspacing="0">
                             <thead>
@@ -158,6 +159,11 @@
                             </tbody>
                         </table>
                     </div>
+                    {%else%}
+                    <div class="text-center text-primary h5">
+                        No current appointments
+                    </div>
+                    {%endif%}
                 </div>
             </div>
         </div>
