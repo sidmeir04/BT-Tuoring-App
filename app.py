@@ -42,6 +42,7 @@ users = {}
 @socketio.on("connect")
 def handle_connect():
     print(current_user)
+    print(request.sid)
     print("Client connected!")
 
 @socketio.on("user_join")
