@@ -134,9 +134,10 @@
                         <table class="table" id="dataTable" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
-                                    <th>Status</th>
-                                    <th>Date</th>
+                                    <th>Start</th>
+                                    <th>End</th>
                                     <th>Period</th>
+                                    <th>Date</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -146,6 +147,7 @@
                                         <td>{{session.start_time}}</td>
                                         <td>{{session.end_time}}</td>
                                         <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
+                                        <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                         <td>
                                             <a href="{{url_for('details',identification=session.id)}}" class="btn btn-primary btn-circle">
                                                 <i class="fa fa-ellipsis-v"></i>
@@ -248,5 +250,44 @@
         </div>
     </div>
 </div>
+
+<style>
+    .menu {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        padding: 5px 0;
+        z-index: 1000;
+    }
+</style>
+
+    <button id="menuButton" class="btn btn-primary">Open Menu</button>
+    <div id="menu" class="menu">
+        <a class="dropdown-item" href="#">Link 1</a>
+        <a class="dropdown-item" href="#">Link 2</a>
+        <a class="dropdown-item" href="#">Link 3</a>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $("#menuButton").on("click", function(e){
+            e.preventDefault();
+            $("#menu").toggle().css({
+                top: e.pageY + "px",
+                left: e.pageX + "px"
+            });
+        });
+
+        $(document).on("click", function(e){
+            if (!$(e.target).closest("#menuButton, #menu").length) {
+                $("#menu").hide();
+            }
+        });
+    });
+</script>
 <!-- /.container-fluid -->
 {% endblock %}

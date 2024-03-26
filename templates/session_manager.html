@@ -64,6 +64,7 @@
                     </tr>
                 </thead>
                 {% for user in users %}
+                {% if date not in user.schedule_data[day]['times'].split(' ') %}
                 <tbody>
                     <tr>
                         <td>{{user.schedule_data[day]['start_time']}}</td>
@@ -73,6 +74,7 @@
                         <td><a href="/book_session/{{user.id}}/{{date}}">Book Session</a></td>
                     </tr>
                 </tbody>
+                {% endif %}
                 {% endfor %}
             </table>
         </div>

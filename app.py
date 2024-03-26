@@ -109,7 +109,7 @@ class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
-    date = db.Column(db.DateTime)
+    date = db.Column(db.Date)
     subject = db.Column(db.String(255))
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
@@ -325,8 +325,11 @@ def book_session(id, date):
         start_time = string_to_time(data['start_time']),
         end_time = string_to_time(data['end_time']),
         student = current_user_id,
-        # subject = data['subject'],
+        subject = data['subject'],
+        date = datetime.strptime(date, '%Y-%m-%d').date()
     )
+    user.schedule_data[day]['times'] += ' ' + str(date)
+    flag_modified(user, 'schedule_data')
     db.session.add(new_session)
     db.session.commit()
     flash('Booked Session', 'success')
