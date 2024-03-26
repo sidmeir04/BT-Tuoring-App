@@ -113,7 +113,7 @@ class MessageHistory(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     people = db.Column(JSON, default=load_basic_json_file)
     messages = db.Column(JSON, default=load_basic_json_file)
-    session = db.relationship('Session', backref='messagehistory', lazy = True)
+    session = db.relationship('Session', backref='message_history', lazy = True)
 
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -124,7 +124,7 @@ class Session(db.Model):
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
     completed = db.Column(db.Boolean, default = False)
-    message_history = db.Column(db.Integer, db.ForeignKey('message_history.id')) # Tutor's ID number
+    message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'), nullable = False)
 
 
 class Periods(db.Model):
@@ -392,10 +392,6 @@ def utilities_other():
 def details():
     ID = request.args.get('identification')
     return render_template('appointment_details.html')
-
-# @app.route('/login')
-# def login():
-#     return render_template('login.html')
 
 @app.errorhandler(404)
 def not_found(e):

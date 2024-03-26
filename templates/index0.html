@@ -256,44 +256,30 @@
         </div>
     </div>
 </div>
-
-<style>
-    .menu {
-        display: none;
-        position: absolute;
-        background-color: #fff;
-        border: 1px solid #ccc;
-        padding: 5px 0;
-        z-index: 1000;
-    }
-</style>
-
-    <button id="menuButton" class="btn btn-primary">Open Menu</button>
-    <div id="menu" class="menu">
-        <a class="dropdown-item" href="#">Link 1</a>
-        <a class="dropdown-item" href="#">Link 2</a>
-        <a class="dropdown-item" href="#">Link 3</a>
+<button onclick="showDiv('showme', this)">Test</button>
+<div class="dt-demo-selector__options" style="display: none;" id = 'showme'>
+    <div class="dt-demo-selector__title">Colour scheme
+        <p><a href="https://datatables.net/tn/20#Theme">What is this?</a></p>
     </div>
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <div class="dt-demo-selector__option selected" data-val="auto">
+        <i class="dt-demo-icon auto"></i><span>Auto</span>
+    </div>
+    <div class="dt-demo-selector__option" data-val="light">
+        <i class="dt-demo-icon light"></i><span>Light</span>
+    </div>
+    <div class="dt-demo-selector__option" data-val="dark">
+        <i class="dt-demo-icon dark"></i><span>Dark</span>
+    </div>
+</div>
 <script>
-    $(document).ready(function(){
-        $("#menuButton").on("click", function(e){
-            e.preventDefault();
-            $("#menu").toggle().css({
-                top: e.pageY + "px",
-                left: e.pageX + "px"
-            });
-        });
-
-        $(document).on("click", function(e){
-            if (!$(e.target).closest("#menuButton, #menu").length) {
-                $("#menu").hide();
-            }
-        });
-    });
-</script>
+    function showDiv(divId, element)
+    {
+        if (document.getElementById(divId).style.display == 'none'){
+            document.getElementById(divId).style.display = 'block'
+        } else{
+            document.getElementById(divId).style.display = 'none'
+        }
+    }
+    </script>
 <!-- /.container-fluid -->
 {% endblock %}
