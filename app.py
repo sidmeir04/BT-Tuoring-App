@@ -83,7 +83,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 db = SQLAlchemy(app)
 
 def load_basic_json_file():
-    with open('static/assets/basic_json_file', 'r') as file:
+    with open('static/assets/basic_json_file.json', 'r') as file:
         basic = json.load(file)
     return basic
 
@@ -124,7 +124,7 @@ class Session(db.Model):
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
     completed = db.Column(db.Boolean, default = False)
-    message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'), nullable = False)
+    message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
 
 
 class Periods(db.Model):
@@ -335,18 +335,18 @@ def book_session(id, date):
         end_time = string_to_time(data['end_time']),
         student = current_user_id,
         subject = data['subject'],
-        date = datetime.strptime(date, '%Y-%m-%d').date()
+        date = datetime.strptime(date, '%Y-%m-%d').date(),
+        message_history_id = 1
     )
-
+    db.session.add(new_session)
+    db.session.commit()
     people = {0:{'user':user,'id':''},0:{'user':current,'id':''}}
     conversation = MessageHistory(
         people=people,
-        messages=load_basic_json_file(),
-        session=new_session)
+    )
     
     user.schedule_data[day]['times'] += ' ' + str(date)
     flag_modified(user, 'schedule_data')
-    db.session.add(new_session)
     db.session.add(conversation)
     db.session.commit()
     flash('Booked Session', 'success')
