@@ -1,2 +1,1 @@
-
-    specific_history = None
+app.config['SESSION_COOKIE_PATH'] = '/'

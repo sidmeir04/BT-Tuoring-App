@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import JSON
+import random
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 import csv
@@ -39,33 +40,47 @@ app = create_app()
 users = {}
 
 #the "connect" here is a keyword, when the server first starts it will say connected
+
+@app.route('/appointment_details')
+def details():
+    ID = request.args.get('identification')
+    open_sesssion = Session.query.get(ID)
+    message_history = MessageHistory.query.get(open_sesssion.message_history_id)
+    messages = message_history.messages
+    keys = sorted(messages.keys())
+    messages = [messages[i] for i in keys]
+    return render_template('appointment_details.html',session=open_sesssion,history=open_sesssion.message_history_id,thiss=current_user,messages=messages)
+
+
 @socketio.on("connect")
 def handle_connect():
-    user_id = request.sid
-    specific_history = None
-
-    print(current_user)
-    print(request.sid)
     print("Client connected!")
 
 @socketio.on("user_join")
-def handle_user_join(username):
-    print(f"User {username} joined!")
-    users[username] = request.sid
+def handle_user_join(user_id,history_id):
+    history = MessageHistory.query.get(history_id)
+    history.people[user_id] = request.sid
+    flag_modified(history,'people')
+    db.session.commit()
 
 @socketio.on("new_message")
-def handle_new_message(message):
-    print(f"New message: {message}")
-    username = None 
-    for user in users:
-        if users[user] == request.sid:
-            username = user
-    print(message,username)
-    emit("chat", {"message": message, "username": username}, broadcast=True)
+def handle_new_message(message,username,history_id):
+    history = MessageHistory.query.get(history_id)
+    people = history.people
+    print(people)
+    other = people[0] if people[0] != current_user.username else people[1]
+    emit("chat", {"message": message, "username": username}, room=history.people[other])
 
-@app.route('/testing')
-def testing_socketio():
-    return render_template("index_temp.html")
+@socketio.on("leave_site")
+def handle_leave_site(history_id,user_id):
+    print('sdfssa')
+    emit('cleanup_complete',room=request.sid)
+    print('hello friend')
+    history = MessageHistory.query.get(history_id)
+    history.people[user_id] = ''
+    flag_modified(history,'people')
+    db.session.commit()
+    print('Exited ')
 
 import functions
 
@@ -80,10 +95,17 @@ login_manager.login_view = 'login' #specify the login route
 
 # Database configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
+app.config['SESSION_COOKIE_NAME'] = 'Session_Cookie'
+app.config['SESSION_COOKIE_PATH'] = '/'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = True  # For HTTPS only
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'  # Recommended for security
+app.config['SESSION_PERMANENT'] = False  # Session only lasts until the browser is closed
+
 db = SQLAlchemy(app)
 
 def load_basic_json_file():
-    with open('static/assets/basic_json_file', 'r') as file:
+    with open('static/assets/basic_json_file.json', 'r') as file:
         basic = json.load(file)
     return basic
 
@@ -140,6 +162,10 @@ class Periods(db.Model):
 with app.app_context():
     db.create_all()
 
+@app.route('/welcome')
+def welcome():
+    return render_template('welcome.html')
+
 # to prevent needing to change all the html file templates
 @app.route('/index.html')
 def reroute_user():
@@ -170,15 +196,14 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
     # if current_user.role == 0:
-    number = .23
+    number = .31
     if number > .75:
         color = 'success'
     elif number > .25:
         color = 'warning'
     else:
         color = 'danger'
-    print(color)
-    print(current_user.id)
+
     return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, completed = False).all())
     # elif current_user.role == 1:
     #     return render_template('index1.html',username=current_user.username)
@@ -329,25 +354,30 @@ def book_session(id, date):
     day = date_to_day(date)
     data = user.schedule_data[day]
     current_user_id = current_user.get_id()
+    print(id,current_user_id)
+    people = {id:'',current_user_id:''}
+    print(people)
+    conversation = MessageHistory(
+        people=people,
+        messages=load_basic_json_file())
+    db.session.add(conversation)
+    db.session.commit()
+
+    print(conversation.id)
+
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
         end_time = string_to_time(data['end_time']),
         student = current_user_id,
         subject = data['subject'],
-        date = datetime.strptime(date, '%Y-%m-%d').date()
+        date = datetime.strptime(date, '%Y-%m-%d').date(),
+        message_history_id = conversation.id
     )
-
-    people = {0:{'user':user,'id':''},0:{'user':current,'id':''}}
-    conversation = MessageHistory(
-        people=people,
-        messages=load_basic_json_file(),
-        session=new_session)
     
     user.schedule_data[day]['times'] += ' ' + str(date)
     flag_modified(user, 'schedule_data')
     db.session.add(new_session)
-    db.session.add(conversation)
     db.session.commit()
     flash('Booked Session', 'success')
     return redirect(url_for('session_manager'))
@@ -387,11 +417,6 @@ def utilities_color():
 @app.route('/utilities-other')
 def utilities_other():
     return render_template('utilities-other.html') 
-
-@app.route('/appointment_details')
-def details():
-    ID = request.args.get('identification')
-    return render_template('appointment_details.html')
 
 @app.errorhandler(404)
 def not_found(e):

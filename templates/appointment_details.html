@@ -1,4 +1,5 @@
 {%extends "blank.html"%}
+{%set active_material = 0%}
 {%block content%}
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -11,7 +12,7 @@
             <a href="/"><i class="fa fa-arrow-left"></i></a>    
         </div>
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <h1 class="h3 mb-0 text-gray-800">Ticket Number {12192}</h1>
+            <h1 class="h3 mb-0 text-gray-800">Ticket Number {{session.id}}</h1>
         </div>
 
         <div class="row">
@@ -24,7 +25,7 @@
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                     Date</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">3/4/2500</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.date}}</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -60,7 +61,7 @@
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                     Subject</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">Biomolecular Quantumn Chemistry</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.subject}}</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -78,7 +79,7 @@
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                     Recipient</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">Oscar Jepsen</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">TBD</div>
                             </div>
                             <div class="col-auto">
                                 <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -92,20 +93,21 @@
         </div>
 
         <div class="row">
-            <div class="col-8">
+            <div class="col-8 pl-0">
                 <div class="card shadow mb-4">
                     <!-- Card Header - Dropdown -->
                     <div
                         class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                         <h6 class="m-0 font-weight-bold text-primary">Supplemental Materials</h6>
                         <div class="dropdown no-arrow">
-                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                            <a class="dropdown-toggle btn-primary p-2" href="#" role="button" id="dropdownMenuLink"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span>View Materials</span>
                                 <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
                                 aria-labelledby="dropdownMenuLink">
-                                <div class="dropdown-header">Dropdown Header:</div>
+                                <div class="dropdown-header">Dropdown Header</div>
                                 <a class="dropdown-item" href="#">Action</a>
                                 <a class="dropdown-item" href="#">Another action</a>
                                 <div class="dropdown-divider"></div>
@@ -120,7 +122,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-4">
+            <div class="col-4 pr-0">
                 <div class="card shadow mb-4" style="height:40vw">
                     <!-- Card Header - Dropdown -->
                     <div
@@ -144,7 +146,13 @@
                     <!-- Card Body -->
                     <div class="card-body overflow-auto">
                         <div id="chat-messages" class="container-fluid">
-
+                            {%for message in messages%}
+                                <div class="row align-items center bg-primary">
+                                    <div class="h5 text-white p-2">
+                                        {{message}}
+                                    </div>
+                                </div>
+                            {%endfor%}
                         </div>
                     </div>
                     <div class="card-footer px-0">
@@ -168,48 +176,52 @@
 </div>
 <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
 
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+
 <script>
     const socket = io({autoConnect: true});
 
-    // also a keyword connect
+    // Event listener for socket connection
     socket.on("connect", function() {
-        socket.emit("user_join", username);
-    })
+        console.log('Socket connected');
+        // Emit the 'user_join' event with template variables
+        socket.emit("user_join", "{{ thiss.id }}", "{{ history }}");
+    });
 
+    // Event listener for send button click
     document.getElementById("send-button").addEventListener("click", function () {
-        send_message()
-    })
+        send_message();
+    });
 
+    // Event listener for message input keyup
     document.getElementById("message").addEventListener("keyup", function (event) {
-        if (event.key == 'Enter'){
-            send_message()
+        if (event.key === 'Enter'){
+            send_message();
         }
-    })
+    });
 
+    // Function to send a message
     function send_message(){
         let message = document.getElementById("message").value;
-        if (message != 0){
-            socket.emit("new_message", message);
+        if (message.trim() !== ""){
+            // Emit the 'new_message' event with the username
+            socket.emit("new_message", message, "{{ thiss.username }}","{{history}}");
             document.getElementById("message").value = "";
         }
     }
 
-    //new function idea:
-    //create a div, and create a flex row for each image
-    //if sent by the user logged into this account, make it blue, and align to the right
-    //else make it gray and align to the right
+    // Event listener for receiving chat messages
     socket.on("chat", function(data) {
         let container = document.getElementById("chat-messages");
         let row = document.createElement("div");
-        row.classList=['row align-items-center bg-primary']
-        let box = document.createElement("div")
-        box.classList=['h5 text-white p-2']
+        row.classList.add('row', 'align-items-center', 'bg-primary');
+        let box = document.createElement("div");
+        box.classList.add('h5', 'text-white', 'p-2');
         box.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
-        row.appendChild(box)
+        row.appendChild(box);
         container.appendChild(row);
-    })
+    });
 </script>
-<!-- End of Main Content -->
 
 <!-- Footer -->
 

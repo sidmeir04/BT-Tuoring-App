@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Title Goes Here</title>
+        <link href="static/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+        <link
+            href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+            rel="stylesheet">
+
+        <!-- Custom styles for this template-->
+        <link href="static/assets/css/sb-admin-2.min.css" rel="stylesheet">
+        <style>
+            /* Custom CSS */
+            .shifting-gradient {
+              /* Set the initial gradient */
+              background-image: linear-gradient(40deg,rgb(124, 115, 199),rgb(20, 118, 216),rgb(25, 218, 173));
+              /* Set the size and padding for demonstration */
+              /* Apply transition */
+              animation: bgAnimatedGradient 20s infinite linear;
+              background-size: 350% auto;
+            }
+    
+            @keyframes bgAnimatedGradient{
+                0%{
+                    background-position: 0% 85%;
+                }
+                25%{
+                    background-position:85% 55%;
+                }
+                75%{
+                    background-position:35% 40%;
+                }
+                75%{
+                    background-position:90% 30%;
+                }
+                100%{
+                    background-position: 0% 85%;
+                }
+            }
+
+            #main-img {
+            /* Set initial background image */
+            background-image: url('https://eyd2i3ne78n.exactdn.com/englewood-nj/wp-content/uploads/sites/482/2023/12/Homepage_AboutThisCenter.jpg');
+            /* Set background size and other properties */
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            height: 80vh;
+            /* width: auto; */
+            /* Apply animation */
+            animation: cycleBackground 20s infinite;
+            }
+
+            @keyframes cycleBackground {
+            0%, 25% {
+                background-image: url('https://eyd2i3ne78n.exactdn.com/englewood-nj/wp-content/uploads/sites/482/2023/12/Homepage_AboutThisCenter.jpg');
+            }
+            25%, 50% {
+                background-image: url('https://livelymindstutoring.com/wp-content/uploads/2018/02/Tutoring-picture.jpeg');
+            }
+            50%, 75% {
+                background-image: url('https://www.corpnet.com/wp-content/uploads/2019/02/Female-Tutor-Working-With-Male-Student.jpg');
+            }
+            75%, 100% {
+                background-image: url('https://eyd2i3ne78n.exactdn.com/englewood-nj/wp-content/uploads/sites/482/2023/12/Homepage_AboutThisCenter.jpg');
+            }
+            }
+        </style>
+    </head>
+    <body class="shifting-gradient p-3 mt-5">
+        <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow fixed-top px-4">
+            <a class="navbar-brand" href="#">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Square_-_black_simple.svg/2048px-Square_-_black_simple.svg.png" width="30" height="30" class="d-inline-block align-top" alt="">
+                Bootstrap
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+                <a class="nav-item nav-link" href="#">Features</a>
+                <a class="nav-item nav-link" href="#">Pricing</a>
+                <a class="nav-item nav-link disabled" href="#">Disabled</a>
+            </div>
+            <div class="navbar-nav ml-auto">
+                <a class="nav-item nav-link btn btn-primary" href="/login">
+                    <span class="text-white">Login</span>
+                </a>
+            </div>
+        </nav>
+
+
+        <div class="container-fluid px-4 mb-0 pb-0 bg-white pb-3">
+            <div id="main-img" class="row">
+                <div class="px-0 col-4 mx-5 d-flex justify-content-center align-items-center">
+                    <div class="text-white px-3 mx-0 py-4" style="background-color: rgba(175, 175, 175, 0.9);">
+                        <div class="h1 font-weight-bold">
+                            Brand Name
+                        </div>
+                        <div class="h3">
+                            Making education easier for kids across the country
+                        </div>
+                        <div class="btn btn-primary mt-3">
+                            <a href="/register" style="text-decoration: none;" class="text-white">Sign Up</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3 px-5 pb-5">
+                <div class="col-4 text-dark px-5 mt-5">
+                    <div class="h2 font-weight-bold align-self-stretch">
+                        Benefit 1
+                    </div>
+                    <div class="h3">
+                        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Rem eligendi earum cum nemo
+                    </div>
+                </div>
+                <div class="col-4 text-dark px-5 mt-5">
+                    <div class="h2 font-weight-bold align-self-stretch">
+                        Benefit 1
+                    </div>
+                    <div class="h3">
+                        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Rem eligendi earum cum nemo
+                    </div>
+                </div>
+                <div class="col-4 text-dark px-5 mt-5">
+                    <div class="h2 font-weight-bold align-self-stretch">
+                        Benefit 1
+                    </div>
+                    <div class="h3">
+                        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Rem eligendi earum cum nemo
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid pb-4 mt-0 py-3 pr-5">
+            <div class="row my-2">
+                <div class="col-4 d-flex align-items-center pl-5 text-white">
+                    <div>
+                        <div class="h3 font-weight-bold mb-4">
+                            Teacher or Administrator?
+                        </div>
+                        <div class="h4 mb-5">
+                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quod officiis modi quidem sunt repellat, doloremque ea vitae, rerum atque culpa assumenda quaerat reiciendis! Quod ducimus exercitationem, quisquam nobis asperiores cum.
+                        </div>
+                        <div class="btn btn-dark mt-3">
+                            Teacher Services
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1"></div>
+                <div class="col-7">
+                    <img src="https://lsc.cornell.edu/wp-content/uploads/2021/07/k-g-g0905-achi-39404-lyj2328-1-tutoring.jpg" alt="" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid pt-3 px-4 bg-white">
+            <div class="row my-2 mb-4 pb-5">
+                <div class="col-7">
+                    <img src="https://lsc.cornell.edu/wp-content/uploads/2021/07/k-g-g0905-achi-39404-lyj2328-1-tutoring.jpg" alt="" class="img-fluid">
+                </div>
+                <!-- <div class="col-1"></div> -->
+                <div class="col-4 d-flex align-items-center pl-5 text-dark">
+                    <div>
+                        <div class="h1 font-weight-bold mb-4">
+                            Interactive Client Interface
+                        </div>
+                        <div class="h4 mb-5">
+                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quod officiis modi quidem sunt repellat, doloremque ea vitae, rerum atque culpa assumenda quaerat reiciendis! Quod ducimus exercitationem, quisquam nobis asperiores cum.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-2 mb-4 pb-5">
+                <div class="col-7">
+                    <img src="https://lsc.cornell.edu/wp-content/uploads/2021/07/k-g-g0905-achi-39404-lyj2328-1-tutoring.jpg" alt="" class="img-fluid">
+                </div>
+                <!-- <div class="col-1"></div> -->
+                <div class="col-4 d-flex align-items-center pl-5 text-dark">
+                    <div>
+                        <div class="h1 font-weight-bold mb-4">
+                            Interactive Client Interface
+                        </div>
+                        <div class="h4 mb-5">
+                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quod officiis modi quidem sunt repellat, doloremque ea vitae, rerum atque culpa assumenda quaerat reiciendis! Quod ducimus exercitationem, quisquam nobis asperiores cum.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-2 mb-4 pb-5">
+                <div class="col-7">
+                    <img src="https://lsc.cornell.edu/wp-content/uploads/2021/07/k-g-g0905-achi-39404-lyj2328-1-tutoring.jpg" alt="" class="img-fluid">
+                </div>
+                <!-- <div class="col-1"></div> -->
+                <div class="col-4 d-flex align-items-center pl-5 text-dark">
+                    <div>
+                        <div class="h1 font-weight-bold mb-4">
+                            Interactive Client Interface
+                        </div>
+                        <div class="h4 mb-5">
+                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quod officiis modi quidem sunt repellat, doloremque ea vitae, rerum atque culpa assumenda quaerat reiciendis! Quod ducimus exercitationem, quisquam nobis asperiores cum.
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        </div>
+        <div class="container-fluid pb-4 mt-0 py-3 pr-5">
+            <div class="row my-2">
+                <div class="col-4 d-flex align-items-center pl-5 text-white">
+                    <div>
+                        <div class="h3 font-weight-bold mb-4">
+                            Curiouse About Us?
+                        </div>
+                        <div class="h4 mb-5">
+                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quod officiis modi quidem sunt repellat, doloremque ea vitae, rerum atque culpa assumenda quaerat reiciendis! Quod ducimus exercitationem, quisquam nobis asperiores cum.
+                        </div>
+                        <div class="btn btn-dark mt-3">
+                            Creator Page
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1"></div>
+                <div class="col-7">
+                    <img src="https://lsc.cornell.edu/wp-content/uploads/2021/07/k-g-g0905-achi-39404-lyj2328-1-tutoring.jpg" alt="" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        <footer class="d-flex sticky-footer bg-secondary mt-0 text-white px-3">
+                <div class="copyright text-center text-white d-flex align-items-center">
+                    <span>Copyright &copy; Duolingo 2023</span>
+                </div>
+                <div class="ml-auto p-2">Logo Here</div>
+                <div class="p-2">Logo Here</div>
+                <div class="p-2">Logo Here</div>
+        </footer>
+
+
+
+            <!-- Bootstrap core JavaScript-->
+        <script src="static/assets/vendor/jquery/jquery.min.js"></script>
+        <script src="static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Core plugin JavaScript-->
+        <script src="static/assets/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+        <!-- Custom scripts for all pages-->
+        <script src="static/assets/js/sb-admin-2.min.js"></script>
+        <script src="static/assets/vendor/jquery/jquery.min.js"></script>
+        <script src="static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Core plugin JavaScript-->
+        <script src="static/assets/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+        <!-- Custom scripts for all pages-->
+        <script src="static/assets/js/sb-admin-2.min.js"></script>
+
+        <!-- Page level plugins -->
+        <script src="static/assets/vendor/chart.js/Chart.min.js"></script>
+
+        <!-- Page level custom scripts -->
+        <script src="static/assets/js/demo/chart-area-demo.js"></script>
+        <script src="static/assets/js/demo/chart-pie-demo.js"></script>
+        <script src="static/assets/js/demo/chart-bar-demo.js"></script>
+        <!-- Bootstrap core JavaScript-->
+        <script src="static/assets/vendor/jquery/jquery.min.js"></script>
+        <script src="static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Core plugin JavaScript-->
+        <script src="static/assets/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+        <!-- Custom scripts for all pages-->
+        <script src="static/assets/js/sb-admin-2.min.js"></script>
+    </body>
+</html>
