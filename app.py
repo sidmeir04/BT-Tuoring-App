@@ -383,6 +383,7 @@ def book_session(id, date):
     
     user.schedule_data[day]['times'] += ' ' + str(date)
     flag_modified(user, 'schedule_data')
+    db.session.add(people)
     db.session.commit()
     flash('Booked Session', 'success')
     return redirect(url_for('session_manager'))
