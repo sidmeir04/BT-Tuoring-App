@@ -105,7 +105,7 @@ app.config['SESSION_PERMANENT'] = False  # Session only lasts until the browser 
 db = SQLAlchemy(app)
 
 def load_basic_json_file():
-    with open('static/assets/basic_json_file.json', 'r') as file:
+    with open('static/assets/basic_json_file.json.json', 'r') as file:
         basic = json.load(file)
     return basic
 
@@ -146,7 +146,7 @@ class Session(db.Model):
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
     completed = db.Column(db.Boolean, default = False)
-    message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'), nullable = False)
+    message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
 
 
 class Periods(db.Model):
@@ -372,12 +372,17 @@ def book_session(id, date):
         student = current_user_id,
         subject = data['subject'],
         date = datetime.strptime(date, '%Y-%m-%d').date(),
-        message_history_id = conversation.id
+        message_history_id = 1
+    )
+    db.session.add(new_session)
+    db.session.commit()
+    people = {0:{'user':user,'id':''},0:{'user':current,'id':''}}
+    conversation = MessageHistory(
+        people=people,
     )
     
     user.schedule_data[day]['times'] += ' ' + str(date)
     flag_modified(user, 'schedule_data')
-    db.session.add(new_session)
     db.session.commit()
     flash('Booked Session', 'success')
     return redirect(url_for('session_manager'))
