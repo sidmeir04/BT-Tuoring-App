@@ -1,0 +1,86 @@
+{% extends 'blank.html' %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row px-2 mt-3 align-items-center mb-3">
+        <form action="/find_session" method="POST" class="d-flex align-items-center" style="width:100%;">
+            <div class="form-group">
+                <div class="dropdown">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Filter By
+                  </button>
+
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <div class="container p-2">
+                            <div class="form-group mb-3">
+                                <label for="dateInput" class="mb-0">Date</label>
+                                <input type="date" class="form-control" id="dateInput" name="modal_date">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="specific_tutorInput" class="mb-0">Specific Tutor</label>
+                                <input type="text" class="form-control" id="specific_tutorInput" name="specific_tutor" placeholder="Tutor Name">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mx-2 px-0">
+                <select class="form-control" id="exampleDropdown" name="period">
+                    <option value="">Period</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                </select>
+            </div>
+            <div id="showme" style="display: none">
+                <div class="form-group">
+                    <input type="time" class="form-control form-control-user" name="start_time">
+                </div>
+                <div class="form-group">
+                    <input type="time" class="form-control form-control-user" name="end_time">
+                </div>
+            </div>
+            <div class="form-group mx-2 px-0 ml-auto">
+                <input type="text" class="form-control form-control-user" name="subject" placeholder="Enter session subject">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-lg py-1 px-2">Search</button>
+            </div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <table class="table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Tutor Name</th>
+                        <th>Subject</th>
+                        <th>Schedule Session</th>
+                    </tr>
+                </thead>
+                {% for user in users %}
+                {% if date not in user.schedule_data[day]['times'].split(' ') %}
+                <tbody>
+                    <tr>
+                        <td>{{user.schedule_data[day]['start_time']}}</td>
+                        <td>{{user.schedule_data[day]['end_time']}}</td>
+                        <td>{{user.username}}</td>
+                        <td>{{user.schedule_data[day]['subject']}}</td>
+                        <td><a href="/book_session/{{user.id}}/{{date}}">Book Session</a></td>
+                    </tr>
+                </tbody>
+                {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
