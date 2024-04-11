@@ -1,0 +1,47 @@
+{% extends 'blank.html' %}
+{% block content %}
+<div class="container">
+    <h2 class="text-center">My Schedule</h2>
+    <table class="table calendar-table">
+        <thead>
+            <tr class="row">
+                <th class="time-column col-2">&nbsp;</th>
+                <th class="text-center col-2">Monday</th>
+                <th class="text-center col-2">Tuesday</th>
+                <th class="text-center col-2">Wednesday</th>
+                <th class="text-center col-2">Thursday</th>
+                <th class="text-center col-2">Friday</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Loop for each hour interval -->
+            <!-- You can adjust the number of rows and intervals as needed -->
+            <!-- Example: 24 rows for 24-hour format -->
+            <!-- Example: Loop 7 times for each day of the week -->
+            <!-- Example: Adjust the time format as needed (AM/PM, 24-hour) -->
+            <!-- Example: Adjust the event cell height based on the duration of events -->
+            <!-- You'll need to handle events dynamically using JavaScript -->
+            {% for period in range(0,9) %}
+            <tr class="row">
+                {%for day in range(-1,5)%}
+                    {%if day == -1%}
+                        <td class="time-column py-5 col-2">Period {{ period + 1 }}</td>
+                    {%else%}
+                        {%if booked_periods[day] - 1 == period%}
+                            <td class="p-1 overflow-auto col-2 d-flex justify-content-center">
+                                <div class="card bg-success d-flex align-items-center justify-content-center w-100">
+                                    <div class="text-white text-center">
+                                        Available from <br> 00:00 to 00:00
+                                    </div>
+                                </div>
+                            </td>
+                        {%endif%}
+                    {%endif%}
+                {%endfor%}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{%endblock%}

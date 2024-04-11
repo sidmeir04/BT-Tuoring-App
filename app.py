@@ -4,7 +4,6 @@ from sqlalchemy import JSON
 import random
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
-import csv
 from sqlalchemy import desc, asc
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -197,7 +196,7 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
     # if current_user.role == 0:
-    number = .31
+    number = .45
     if number > .75:
         color = 'success'
     elif number > .25:
@@ -316,6 +315,36 @@ def date_to_day(date):
     dayNumber = weekday(year, month, day)
     day = days[dayNumber].lower()
     return day
+
+@app.route('/add_session',methods=['GET','POST'])
+def add_session():
+    return render_template('session_manager3.html')
+
+@app.route('/find_session',methods=['GET','POST'])
+def find_session():
+    if request.method == 'POST':
+        x = request.form.get('modal_date')
+        print(x)
+    return render_template('session_manager2.html')
+
+@app.route('/scheduler',methods=['POST','GET'])
+def scheduler():
+    schedule = current_user.schedule_data
+    periods = [-1,-1,-1,-1,-1]
+    period_data = {495 + i*45:i for i in range(1,10)}
+    for j,day in enumerate(['monday','tuesday','wednesday','thursday','friday']):
+        current = schedule[day]
+        start,end = current['start_time'].split(':'),current['end_time'].split(':')
+        start = int(start[0]) * 60 + int(start[1])
+        end = int(end[0]) * 60 + int(end[1])
+        if not end or not start:continue
+        for period in period_data.keys():
+            print(period,end)
+            if period >= end:
+                periods[j] = period_data[period]
+                break
+    print(periods)
+    return render_template('scheduler.html',booked_periods=periods)
 
 @app.route('/session_manager', methods = ['POST','GET'])
 def session_manager():
