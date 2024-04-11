@@ -105,7 +105,7 @@ app.config['SESSION_PERMANENT'] = False  # Session only lasts until the browser 
 db = SQLAlchemy(app)
 
 def load_basic_json_file():
-    with open('static/assets/basic_json_file.json.json', 'r') as file:
+    with open('static/assets/basic_json_file.json', 'r') as file:
         basic = json.load(file)
     return basic
 
@@ -145,7 +145,8 @@ class Session(db.Model):
     subject = db.Column(db.String(255))
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
-    completed = db.Column(db.Boolean, default = False)
+    tutor_form_completed = db.Column(db.Boolean, default = False)
+    student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
 
 
@@ -173,7 +174,7 @@ def reroute_user():
 
 @login_manager.user_loader
 def load_user(user):
-    return User.get(user)
+    return User.get(int(user))
 
 @app.route('/createDB')
 def createDB():
@@ -204,7 +205,7 @@ def index():
     else:
         color = 'danger'
 
-    return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, completed = False).all())
+    return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, tutor_form_completed = False).all(), student_sessions = Session.query.filter_by(student=current_user.id, student_form_completed = False).all())
     # elif current_user.role == 1:
     #     return render_template('index1.html',username=current_user.username)
     # return redirect(url_for('login'))
@@ -287,6 +288,23 @@ def register():
         return redirect(url_for('login'))
     return render_template("register.html")
 
+@app.route('/complete_session/<id>')
+def complete_session(id):
+    session = Session.query.get(id)
+    if current_user.id == session.tutor:
+        return redirect(url_for('completion_form',type = 2))
+    if current_user.id == session.student:
+        return redirect(url_for('completion_form',type = 1))
+    return redirect(url_for('index'))
+
+@app.route('/completion_form', methods = ['GET','POST'])
+def completion_form():
+    if request.method == 'POST':
+        # do stuff
+        pass
+    type = request.args.get('type')
+    return render_template('completion_form.html', type = type)
+
 def time_to_min(time):
     factors = (60, 1, 1/60)
 
@@ -314,7 +332,7 @@ def session_manager():
         end_time = request.form.get('end_time')
         day = date_to_day(date)
         period_data = Periods.query.get(period)
-        if type == '1':
+        if type == '1': # if user is creating a new session
             user = current_user
             data = getattr(period_data, day, 'default')
             #Check that the times are correct
@@ -325,13 +343,16 @@ def session_manager():
             if not (period_start <= time_to_min(start_time) or time_to_min(start_time) <= period_end or period_start <= time_to_min(end_time) or time_to_min(end_time) <= period_end):
                 flash('invalid times', 'warning')
                 return redirect(url_for('session_manager'))
+            if not user.schedule_data[day] == {"start_time": "00:00", "end_time": "00:00", "times":"", "subject":""}:
+                flash('Already Turtoing This Day', 'warning')
+                return redirect(url_for('session_manager'))
             setattr(period_data, day, data + ' ' + str(user.id))
             user.schedule_data[day]['start_time'] = str(start_time)
             user.schedule_data[day]['end_time'] = str(end_time)
             user.schedule_data[day]['subject'] = str(subject)
             flag_modified(user, 'schedule_data')
             db.session.commit()
-        elif type == '0':
+        elif type == '0': # if user is looking up a session
             data = getattr(period_data, day, '')
             user_ids = data.split(' ')
             for id in user_ids:
@@ -383,7 +404,7 @@ def book_session(id, date):
     
     user.schedule_data[day]['times'] += ' ' + str(date)
     flag_modified(user, 'schedule_data')
-    db.session.add(people)
+    db.session.add(conversation)
     db.session.commit()
     flash('Booked Session', 'success')
     return redirect(url_for('session_manager'))

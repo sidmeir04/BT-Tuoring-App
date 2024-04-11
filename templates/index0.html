@@ -2,6 +2,51 @@
 {%set user_name = username%}
 {%set active_page='dashboard'%}
 {% block content %}
+<style>
+/* Dropdown Button */
+.dropbtn {
+  background-color: #04AA6D;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 3;
+  right: 0; /* Position the dropdown to the left */
+  left: auto; /* Reset the right property */
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #ddd;}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {display: block;}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {background-color: #3e8e41;}
+</style>
 <!-- Begin Page Content -->
 <div class="container-fluid mr-0 pr-0">
 
@@ -127,7 +172,7 @@
         <div class="col-xl-5 col-lg-5 pr-0">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Upcoming Appointments</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Upcoming Teaching Sessions</h6>
                 </div>
                 <div class="card-body">
                     {%if sessions%}
@@ -150,15 +195,59 @@
                                         <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
                                         <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                         <td>
-                                            <a href="{{url_for('details',identification=session.id)}}" class="btn btn-primary btn-circle">
+                                            <div class="dropdown">
                                                 <i class="fa fa-ellipsis-v"></i>
-                                            </a>
+                                                <div class="dropdown-content">
+                                                  <a href="{{url_for('details',identification=session.id)}}">Messages</a>
+                                                  <a href="/complete_session/{{session.id}}">Mark as Done</a>
+                                                  <a href="#">Remove Session</a>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Upcoming Learning Sessions</h6>
+                        </div>
+                        <table class="table" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Period</th>
+                                    <th>Date</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in student_sessions%}
+                                    <tr>
+                                        <td>{{session.start_time}}</td>
+                                        <td>{{session.end_time}}</td>
+                                        <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
+                                        <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <div class="dropdown-content">
+                                                    <a href="{{url_for('details',identification=session.id)}}">Messages</a>
+                                                    <a href="/complete_session/{{session.id}}">Mark as Done</a>
+                                                    <a href="#">Remove Session</a>
+                                                </div>
+                                                <i class="fa fa-ellipsis-v"></i>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
                     </div>
+
                     {%else%}
                     <div class="text-center text-primary h5">
                         No current appointments
@@ -256,30 +345,5 @@
         </div>
     </div>
 </div>
-<button onclick="showDiv('showme', this)">Test</button>
-<div class="dt-demo-selector__options" style="display: none;" id = 'showme'>
-    <div class="dt-demo-selector__title">Colour scheme
-        <p><a href="https://datatables.net/tn/20#Theme">What is this?</a></p>
-    </div>
-    <div class="dt-demo-selector__option selected" data-val="auto">
-        <i class="dt-demo-icon auto"></i><span>Auto</span>
-    </div>
-    <div class="dt-demo-selector__option" data-val="light">
-        <i class="dt-demo-icon light"></i><span>Light</span>
-    </div>
-    <div class="dt-demo-selector__option" data-val="dark">
-        <i class="dt-demo-icon dark"></i><span>Dark</span>
-    </div>
-</div>
-<script>
-    function showDiv(divId, element)
-    {
-        if (document.getElementById(divId).style.display == 'none'){
-            document.getElementById(divId).style.display = 'block'
-        } else{
-            document.getElementById(divId).style.display = 'none'
-        }
-    }
-    </script>
 <!-- /.container-fluid -->
 {% endblock %}
