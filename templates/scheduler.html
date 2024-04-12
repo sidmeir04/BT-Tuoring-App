@@ -1,7 +1,20 @@
 {% extends 'blank.html' %}
 {% block content %}
 <div class="container">
-    <h2 class="text-center">My Schedule</h2>
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="text-center">My Schedule</h2>
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="ToggleView" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              View
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a class="dropdown-item" href="#" onclick="handleSelection('View')">View</a>
+              <a class="dropdown-item" href="#" onclick="handleSelection('Add')">Add</a>
+              <a class="dropdown-item" href="#" onclick="handleSelection('Edit')">Edit</a>
+            </div>
+          </div>
+    </div>
+    
     <table class="table calendar-table">
         <thead>
             <tr class="row">
@@ -27,12 +40,18 @@
                     {%if day == -1%}
                         <td class="time-column py-5 col-2">Period {{ period + 1 }}</td>
                     {%else%}
-                        {%if booked_periods[day] - 1 == period%}
+                        {%if booked_periods[day][period]%}
                             <td class="p-1 overflow-auto col-2 d-flex justify-content-center">
-                                <div class="card bg-success d-flex align-items-center justify-content-center w-100">
+                                <div class="existant-element card bg-success d-flex align-items-center justify-content-center w-100">
                                     <div class="text-white text-center">
-                                        Available from <br> 00:00 to 00:00
+                                        Available from <br> {{booked_periods[day][period][0]}} to {{booked_periods[day][period][1]}}
                                     </div>
+                                </div>
+                            </td>
+                        {%else%}
+                            <td class="non-existant-element p-1 col-2 d-flex justify-content-center align-items-center overflow-auto">
+                                <div class="d-none card justify-content-center align-items-center w-100 h-100">
+                                    <i class="fas fa-clipboard-list fa-3x text-gray-300"></i>
                                 </div>
                             </td>
                         {%endif%}
@@ -43,5 +62,54 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    function handleSelection(option){
+        let view_mode = document.getElementById('ToggleView')
+        if (option === 'View'){
+            view_mode.textContent = 'View'
+            clearEventListeners()
+        }
+        else if (option == 'Add'){
+            view_mode.textContent = 'Add'
+            addEvents()
+        }
+        else{
+            view_mode.textContent = 'Edit'
+            editEvents()
+        }
+    }
+
+    function clearEventListeners() {
+        const elements = document.querySelectorAll('div');
+        elements.forEach(element => {
+            const clonedElement = element.cloneNode(true); // Clone the element
+            element.parentNode.replaceChild(clonedElement, element); // Replace the original element with the cloned one
+        });
+    }
+
+
+    function addEvents(){
+        const emptyElements = document.querySelectorAll('.non-existant-element');
+        emptyElements.forEach(emptyElement => {
+            emptyElement.addEventListener('mouseenter', function () {
+                console.log('s')
+                const child = emptyElement.children[0];
+                child.classList.add("d-flex");
+                child.classList.add("bg-info");
+                child.classList.remove("d-none");
+            });
+            emptyElement.addEventListener('mouseleave', function () {
+                const child = emptyElement.children[0];
+                child.classList.remove("d-flex");
+                child.classList.add("d-none");
+            });
+        });
+    }
+    
+    function editEvents(){
+
+    }
+</script>
 
 {%endblock%}
