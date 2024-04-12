@@ -312,20 +312,19 @@ def find_session():
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
     schedule = current_user.schedule_data
-    periods = [-1,-1,-1,-1,-1]
+    periods = [[0 for _ in range(9)] for _ in range(5)]
     period_data = {495 + i*45:i for i in range(1,10)}
     for j,day in enumerate(['monday','tuesday','wednesday','thursday','friday']):
         current = schedule[day]
+        start1,end1 = current['start_time'],current['end_time']
         start,end = current['start_time'].split(':'),current['end_time'].split(':')
         start = int(start[0]) * 60 + int(start[1])
         end = int(end[0]) * 60 + int(end[1])
         if not end or not start:continue
         for period in period_data.keys():
-            print(period,end)
             if period >= end:
-                periods[j] = period_data[period]
+                periods[j][period_data[period] - 1] = (start1,end1)
                 break
-    print(periods)
     return render_template('scheduler.html',booked_periods=periods)
 
 @app.route('/session_manager', methods = ['POST','GET'])
