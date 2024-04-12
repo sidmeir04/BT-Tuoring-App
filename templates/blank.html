@@ -141,9 +141,12 @@
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Login Screens:</h6>
+                            {% if not current_user.is_authenticated %}
                             <a class="collapse-item" href="/login">Login</a>
                             <a class="collapse-item" href="/register">Register</a>
                             <a class="collapse-item" href="/forgot-password">Forgot Password</a>
+                            {% endif %}
+                            <a class="collapse-item" href="/welcome">Welcome Page (NF)</a>
                             <a class="collapse-item" href="/session_manager">Session Manager</a>
                             <a class="collapse-item" href="/find_session">Find Session</a>
                             <a class="collapse-item" href="/add_session">Add Session</a>
