@@ -123,6 +123,7 @@ class User(db.Model, UserMixin):
     role = db.Column(db.Integer,nullable=False)
     schedule_data = db.Column(JSON, default=load_default_schedule)
     sessions = db.relationship('Session', backref='user', lazy = True)
+    feedbacks = db.relationship('Feedback', backref='user', lazy = True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -147,6 +148,16 @@ class Session(db.Model):
     tutor_form_completed = db.Column(db.Boolean, default = False)
     student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
+
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    on_time = db.Column(db.Integer)
+    understanding = db.Column(db.Integer)
+    date = db.Column(db.String(255))
+    review_text = db.Column(db.String(255))
+    subject = db.Column(db.String(255))
+    review_for = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
+    review_from = db.Column(db.String(255), nullable = False)
 
 
 class Periods(db.Model):
@@ -291,18 +302,47 @@ def register():
 def complete_session(id):
     session = Session.query.get(id)
     if current_user.id == session.tutor:
-        return redirect(url_for('completion_form',type = 2))
+        return redirect(f"/completion_form/{session.id}?type={2}")
     if current_user.id == session.student:
-        return redirect(url_for('completion_form',type = 1))
+        return redirect(f"/completion_form/{session.id}?type={1}")
     return redirect(url_for('index'))
 
-@app.route('/completion_form', methods = ['GET','POST'])
-def completion_form():
-    if request.method == 'POST':
-        # do stuff
-        pass
+@app.route('/completion_form/<id>', methods = ['GET','POST'])
+def completion_form(id):
     type = request.args.get('type')
-    return render_template('completion_form.html', type = type)
+    if request.method == 'POST':
+        understanding = request.form.get('personal_rating')
+        on_time = request.form.get('on_time')
+        review = request.form.get('message')
+        session = Session.query.get(id)
+        if int(type) == 1:
+            review_for = session.tutor
+        else:
+            review_for = session.student
+        feedback = Feedback(
+            on_time = on_time,
+            understanding = understanding,
+            date = datetime.today().strftime('%Y-%m-%d'),
+            review_text = review,
+            review_for = review_for,    
+            review_from = current_user.username,
+            subject = session.subject
+        )
+        if current_user.id == session.tutor:
+            session.tutur_form_completed = True
+        else:
+            session.student_form_completed = True
+
+        # if session.tutur_form_completed and session.student_form_completed:
+        #     session.delete()
+        db.session.add(feedback)
+        db.session.commit()
+    return render_template('completion_form.html', type = type, id = id)
+
+@app.route('/show_feedback')
+def show_feedback():
+    reviews = Feedback.query.filter_by(review_for = current_user.id)
+    return render_template('show_feedback.html', reviews = reviews)
 
 def time_to_min(time):
     factors = (60, 1, 1/60)
