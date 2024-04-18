@@ -207,7 +207,7 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
     # if current_user.role == 0:
-    number = .45
+    number = .48    
     if number > .75:
         color = 'success'
     elif number > .25:
@@ -369,6 +369,28 @@ def find_session():
 
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
+    if request.method == 'POST':
+            _,day = request.form.get('modalPass').split(',')
+            day = int(day)
+            days = ['monday','tuseday','wednesday','thursday','friday']
+            print(request.form.items())
+            if 'delete' not in request.form.items():
+                start_time = request.form.get('start_time')
+                end_time = request.form.get('end_time')
+                current_user.schedule_data[days[day]]['start_time'] = start_time
+                current_user.schedule_data[days[day]]['end_time'] = end_time
+                current_user.schedule_data[days[day]]['times'] = '2024-02-02'
+                current_user.schedule_data[days[day]]['subject'] = 'random'
+            else:
+                current_user.schedule_data[days[day]]['start_time'] = "00:00"
+                current_user.schedule_data[days[day]]['end_time'] = "00:00"
+                current_user.schedule_data[days[day]]['times'] = ''
+                current_user.schedule_data[days[day]]['subject'] = ''
+            
+            flag_modified(current_user,'schedule_data')
+            db.session.commit()
+            redirect(url_for('scheduler'))
+    #reads the schedule data from the db
     schedule = current_user.schedule_data
     periods = [[0 for _ in range(9)] for _ in range(5)]
     period_data = {495 + i*45:i for i in range(1,10)}
@@ -383,6 +405,7 @@ def scheduler():
             if period >= end:
                 periods[j][period_data[period] - 1] = (start1,end1)
                 break
+
     return render_template('scheduler.html',booked_periods=periods)
 
 @app.route('/session_manager', methods = ['POST','GET'])

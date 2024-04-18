@@ -42,15 +42,15 @@
                     {%else%}
                         {%if booked_periods[day][period]%}
                             <td class="p-1 overflow-auto col-2 d-flex justify-content-center">
-                                <div class="existant-element card bg-success d-flex align-items-center justify-content-center w-100">
+                                <div class="position-relative existant-element card bg-success d-flex align-items-center justify-content-center w-100" id="{{period}},{{day}}">
                                     <div class="text-white text-center">
                                         Available from <br> {{booked_periods[day][period][0]}} to {{booked_periods[day][period][1]}}
                                     </div>
                                 </div>
                             </td>
                         {%else%}
-                            <td class="non-existant-element p-1 col-2 d-flex justify-content-center align-items-center overflow-auto">
-                                <div class="d-none card justify-content-center align-items-center w-100 h-100">
+                            <td class="non-existant-element p-1 col-2 d-flex justify-content-center align-items-center overflow-auto" id="{{period}},{{day}}">
+                                <div class="d-none card bg-info justify-content-center align-items-center w-100 h-100">
                                     <i class="fas fa-clipboard-list fa-3x text-gray-300"></i>
                                 </div>
                             </td>
@@ -61,14 +61,52 @@
             {% endfor %}
         </tbody>
     </table>
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Default Text Go Brrrr</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="/scheduler" method="POST">
+                    <div class="modal-body">
+                        <div class="text-center h2 mb-3" id="modalText">
+                            Default Text Go Brrr
+                        </div>
+                        <div class="d-flex justify-content-around">
+                            <div class="form-group">
+                                <label for="start_time">Start Time</label>
+                                <input type="time" class="form-control" id="start_time" name="start_time">
+                            </div>
+                            <div class="form-group">
+                                <label for="end_time">End Time</label>
+                                <input type="time" class="form-control" id="end_time" name="end_time">
+                            </div>
+                        </div>
+                        <div class="form-group d-none">
+                            <input type="hidden" class="form-control" id="modalPass" name="modalPass">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn d-none btn-danger" id="delete" name="delete">Delete</button>
+                        <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Set Schedule</button>
+                    </div>                  
+                </form>
+            </div>
+        </div>    
+    </div>
 </div>
 
 <script>
     function handleSelection(option){
+        clearEventListeners()
         let view_mode = document.getElementById('ToggleView')
+
         if (option === 'View'){
             view_mode.textContent = 'View'
-            clearEventListeners()
         }
         else if (option == 'Add'){
             view_mode.textContent = 'Add'
@@ -86,18 +124,29 @@
             const clonedElement = element.cloneNode(true); // Clone the element
             element.parentNode.replaceChild(clonedElement, element); // Replace the original element with the cloned one
         });
-    }
+        $('#addModal').modal('hide');
 
+    }
 
     function addEvents(){
         const emptyElements = document.querySelectorAll('.non-existant-element');
         emptyElements.forEach(emptyElement => {
             emptyElement.addEventListener('mouseenter', function () {
-                console.log('s')
                 const child = emptyElement.children[0];
                 child.classList.add("d-flex");
-                child.classList.add("bg-info");
                 child.classList.remove("d-none");
+            });
+            emptyElement.addEventListener('click', function () {
+                let choose = emptyElement.id.split(',')
+                document.getElementById('modalLabel').textContent = 'Set an Available Time'
+                $('#addModal').modal('show');
+                document.getElementById('modalPass').value = emptyElement.id
+                choose[0] = parseInt(choose[0]) + 1
+                x = ['Monday','Tuesday','Wednesday','Thursday','Friday']
+                x = x[choose[1]]
+                document.getElementById('delete').classList.remove('d-flex')
+                document.getElementById('delete').classList.add('d-none')
+                document.getElementById('modalText').textContent = "Available on " + x + " during Period " + choose[0]
             });
             emptyElement.addEventListener('mouseleave', function () {
                 const child = emptyElement.children[0];
@@ -108,7 +157,29 @@
     }
     
     function editEvents(){
-
+        const bookedElements = document.querySelectorAll('.existant-element');
+        bookedElements.forEach(bookedElement => {
+            bookedElement.addEventListener('mouseenter', function () {
+                bookedElement.classList.add("bg-warning");
+                bookedElement.classList.remove("bg-success");
+            });
+            bookedElement.addEventListener('click', function () {
+                let choose = bookedElement.id.split(',')
+                document.getElementById('modalLabel').textContent = 'Edit Available Time'
+                $('#addModal').modal('show');
+                document.getElementById('modalPass').value = bookedElement.id
+                choose[0] = parseInt(choose[0]) + 1
+                x = ['Monday','Tuesday','Wednesday','Thursday','Friday']
+                x = x[choose[1]]
+                document.getElementById('delete').classList.add('d-flex')
+                document.getElementById('delete').classList.remove('d-none')
+                document.getElementById('modalText').textContent = "Available on " + x + " during Period " + choose[0]
+            });
+            bookedElement.addEventListener('mouseleave', function () {
+                bookedElement.classList.add("bg-success");
+                bookedElement.classList.remove("bg-warning");
+            });
+        });
     }
 </script>
 
