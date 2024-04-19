@@ -207,7 +207,7 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
     # if current_user.role == 0:
-    number = .48    
+    number = .56    
     if number > .75:
         color = 'success'
     elif number > .25:
@@ -370,11 +370,10 @@ def find_session():
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
     if request.method == 'POST':
-            _,day = request.form.get('modalPass').split(',')
+            day = request.form.get('modalPass').split(',')[1]
             day = int(day)
-            days = ['monday','tuseday','wednesday','thursday','friday']
-            print(request.form.items())
-            if 'delete' not in request.form.items():
+            days = ['monday','tuesday','wednesday','thursday','friday']
+            if 'delete' not in request.form:
                 start_time = request.form.get('start_time')
                 end_time = request.form.get('end_time')
                 current_user.schedule_data[days[day]]['start_time'] = start_time
@@ -390,6 +389,7 @@ def scheduler():
             flag_modified(current_user,'schedule_data')
             db.session.commit()
             redirect(url_for('scheduler'))
+
     #reads the schedule data from the db
     schedule = current_user.schedule_data
     periods = [[0 for _ in range(9)] for _ in range(5)]
