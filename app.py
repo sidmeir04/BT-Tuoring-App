@@ -208,7 +208,7 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
     # if current_user.role == 0:
-    number = .48    
+    number = .56    
     if number > .75:
         color = 'success'
     elif number > .25:
@@ -375,7 +375,7 @@ lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
     if request.method == 'POST': 
-        _,day = request.form.get('modalPass').split(',')
+        day = request.form.get('modalPass').split(',')[1]
         day = int(day)
         print(request.form.items())
         period_data = Periods.query.get(period)

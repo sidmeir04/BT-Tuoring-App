@@ -43,7 +43,7 @@
                     {%else%}
                         {%if booked_periods[day][period]%}
                             <td class="p-1 overflow-auto col-2 d-flex justify-content-center">
-                                <div class="position-relative existant-element card bg-success d-flex align-items-center justify-content-center w-100" id="{{period}},{{day}}">
+                                <div class="position-relative existant-element card bg-success d-flex align-items-center justify-content-center w-100" id="{{period}},{{day}},{{booked_periods[day][period][0]}},{{booked_periods[day][period][1]}}">
                                     <div class="text-white text-center">
                                         Available from <br> {{booked_periods[day][period][0]}} to {{booked_periods[day][period][1]}}
                                     </div>
@@ -128,6 +128,8 @@
             const clonedElement = element.cloneNode(true); // Clone the element
             element.parentNode.replaceChild(clonedElement, element); // Replace the original element with the cloned one
         });
+        document.getElementById('start_time').value = null
+        document.getElementById('end_time').value = null
         $('#addModal').modal('hide');
     }
 
@@ -174,6 +176,10 @@
                 choose[0] = parseInt(choose[0]) + 1
                 x = ['Monday','Tuesday','Wednesday','Thursday','Friday']
                 x = x[choose[1]]
+                
+                document.getElementById('start_time').value = choose[2]
+                document.getElementById('end_time').value = choose[3]
+
                 document.getElementById('delete').classList.add('d-flex')
                 document.getElementById('delete').classList.remove('d-none')
                 document.getElementById('modalText').textContent = "Available on " + x + " during Period " + choose[0]
