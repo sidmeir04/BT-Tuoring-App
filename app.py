@@ -156,6 +156,7 @@ class Feedback(db.Model):
     date = db.Column(db.String(255))
     review_text = db.Column(db.String(255))
     subject = db.Column(db.String(255))
+    tutoring = db.Column(db.Boolean)
     review_for = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     review_from = db.Column(db.String(255), nullable = False)
 
@@ -330,13 +331,16 @@ def completion_form(id):
         )
         if current_user.id == session.tutor:
             session.tutur_form_completed = True
+            feedback.tutoring = False
         else:
             session.student_form_completed = True
+            feedback.tutoring = True
 
-        # if session.tutur_form_completed and session.student_form_completed:
-        #     session.delete()
+        if session.tutur_form_completed and session.student_form_completed:
+            db.session.delete(session)
         db.session.add(feedback)
         db.session.commit()
+        return redirect(url_for('index'))
     return render_template('completion_form.html', type = type, id = id)
 
 @app.route('/show_feedback')
@@ -367,34 +371,39 @@ def find_session():
         print(x)
     return render_template('session_manager2.html')
 
+lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
-    if request.method == 'POST':
-            _,day = request.form.get('modalPass').split(',')
-            day = int(day)
-            days = ['monday','tuseday','wednesday','thursday','friday']
-            print(request.form.items())
-            if 'delete' not in request.form.items():
-                start_time = request.form.get('start_time')
-                end_time = request.form.get('end_time')
-                current_user.schedule_data[days[day]]['start_time'] = start_time
-                current_user.schedule_data[days[day]]['end_time'] = end_time
-                current_user.schedule_data[days[day]]['times'] = '2024-02-02'
-                current_user.schedule_data[days[day]]['subject'] = 'random'
-            else:
-                current_user.schedule_data[days[day]]['start_time'] = "00:00"
-                current_user.schedule_data[days[day]]['end_time'] = "00:00"
-                current_user.schedule_data[days[day]]['times'] = ''
-                current_user.schedule_data[days[day]]['subject'] = ''
-            
-            flag_modified(current_user,'schedule_data')
-            db.session.commit()
-            redirect(url_for('scheduler'))
+    if request.method == 'POST': 
+        _,day = request.form.get('modalPass').split(',')
+        day = int(day)
+        print(request.form.items())
+        period_data = Periods.query.get(period)
+        data = getattr(period_data, day, 'default')
+        if 'delete' not in request.form.items():
+            start_time = request.form.get('start_time')
+            end_time = request.form.get('end_time')
+            current_user.schedule_data[lower_days[day]]['start_time'] = start_time
+            current_user.schedule_data[lower_days[day]]['end_time'] = end_time
+            current_user.schedule_data[lower_days[day]]['times'] = '2024-02-02'
+            current_user.schedule_data[lower_days[day]]['subject'] = 'random'
+            setattr(period_data, day, data + ' ' + str(current_user.id))
+
+        else:
+            current_user.schedule_data[lower_days[day]]['start_time'] = "00:00"
+            current_user.schedule_data[lower_days[day]]['end_time'] = "00:00"
+            current_user.schedule_data[lower_days[day]]['times'] = ''
+            current_user.schedule_data[lower_days[day]]['subject'] = ''
+            setattr(period_data, day, ' '.join(data.split(' ').replace(str(current_user.id), '')))
+        
+        flag_modified(current_user,'schedule_data')
+        db.session.commit()
+        redirect(url_for('scheduler'))
     #reads the schedule data from the db
     schedule = current_user.schedule_data
     periods = [[0 for _ in range(9)] for _ in range(5)]
     period_data = {495 + i*45:i for i in range(1,10)}
-    for j,day in enumerate(['monday','tuesday','wednesday','thursday','friday']):
+    for j,day in enumerate(lower_days):
         current = schedule[day]
         start1,end1 = current['start_time'],current['end_time']
         start,end = current['start_time'].split(':'),current['end_time'].split(':')

@@ -11,6 +11,7 @@
               <a class="dropdown-item" href="#" onclick="handleSelection('View')">View</a>
               <a class="dropdown-item" href="#" onclick="handleSelection('Add')">Add</a>
               <a class="dropdown-item" href="#" onclick="handleSelection('Edit')">Edit</a>
+              <a class="dropdown-item" href="#" onclick="handleSelection('Manual_Add')">Maunal Add</a>
             </div>
           </div>
     </div>
@@ -27,13 +28,13 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Loop for each hour interval -->
-            <!-- You can adjust the number of rows and intervals as needed -->
-            <!-- Example: 24 rows for 24-hour format -->
-            <!-- Example: Loop 7 times for each day of the week -->
-            <!-- Example: Adjust the time format as needed (AM/PM, 24-hour) -->
-            <!-- Example: Adjust the event cell height based on the duration of events -->
-            <!-- You'll need to handle events dynamically using JavaScript -->
+            <!-- Loop for each hour interval
+                You can adjust the number of rows and intervals as needed
+                Example: 24 rows for 24-hour format
+                Example: Loop 7 times for each day of the week
+                Example: Adjust the time format as needed (AM/PM, 24-hour)
+                Example: Adjust the event cell height based on the duration of events
+                You'll need to handle events dynamically using JavaScript -->
             {% for period in range(0,9) %}
             <tr class="row">
                 {%for day in range(-1,5)%}
@@ -112,6 +113,9 @@
             view_mode.textContent = 'Add'
             addEvents()
         }
+        else if (option == 'Manual_Add'){
+            window.location.replace("http://127.0.0.1:5000/session_manager")
+        }
         else{
             view_mode.textContent = 'Edit'
             editEvents()
@@ -125,7 +129,6 @@
             element.parentNode.replaceChild(clonedElement, element); // Replace the original element with the cloned one
         });
         $('#addModal').modal('hide');
-
     }
 
     function addEvents(){

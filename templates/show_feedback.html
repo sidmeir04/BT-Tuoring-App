@@ -232,6 +232,7 @@
             </div>
             <div class="solu_description">
                 <p>
+                  Role: {% if review.tutoring %} Tutor {% else %} Student {% endif %} <br>
                   Timing: {{review.on_time}} <br>
                   Personal Rating: {{review.understanding}}
                 </p>
