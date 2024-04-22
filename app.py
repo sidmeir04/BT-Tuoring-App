@@ -366,16 +366,28 @@ def add_session():
 
 @app.route('/find_session',methods=['GET','POST'])
 def find_session():
+    users = []
+    day = None
+    date = None
     if request.method == 'POST':
-        x = request.form.get('modal_date')
-        print(x)
-    return render_template('session_manager2.html')
+        date = request.form.get('modal_date')
+        period = request.form.get('period')
+        day = date_to_day(date)
+        period_data = Periods.query.get(period)
+        data = getattr(period_data, day, '')
+        user_ids = data.split(' ')
+        for id in user_ids:
+            user = User.query.get(id)
+            users.append(user)
+        print(users)
+    return render_template('session_manager2.html', users = users[1:], day = day, date = date)
 
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
     if request.method == 'POST': 
-        day = request.form.get('modalPass').split(',')[1]
+        thing = request.form.get('modalPass').split(',')[1]
+        period,day = thing[0],thing[1]
         day = int(day)
         print(request.form.items())
         period_data = Periods.query.get(period)
