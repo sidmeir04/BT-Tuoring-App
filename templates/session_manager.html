@@ -64,13 +64,13 @@
                     </tr>
                 </thead>
                 {% for user in users %}
-                {% if date not in user.schedule_data[day]['times'].split(' ') %}
+                {% if date not in user.schedule_data[day][period]['times'].split(' ') %}
                 <tbody>
                     <tr>
-                        <td>{{user.schedule_data[day]['start_time']}}</td>
-                        <td>{{user.schedule_data[day]['end_time']}}</td>
-                        <td>{{user.username}}</td>
-                        <td>{{user.schedule_data[day]['subject']}}</td>
+                        <td>{{user.schedule_data[day][period]['start_time']}}</td>
+                        <td>{{user.schedule_data[day][period]['end_time']}}</td>
+                        <td>{{user.name}}</td>
+                        <td>{{user.schedule_data[day][period]['subject']}}</td>
                         <td><a href="/book_session/{{user.id}}/{{date}}">Book Session</a></td>
                     </tr>
                 </tbody>

@@ -66,20 +66,16 @@ def handle_user_join(user_id,history_id):
 def handle_new_message(message,username,history_id):
     history = MessageHistory.query.get(history_id)
     people = history.people
-    print(people)
     other = people[0] if people[0] != current_user.username else people[1]
     emit("chat", {"message": message, "username": username}, room=history.people[other])
 
 @socketio.on("leave_site")
 def handle_leave_site(history_id,user_id):
-    print('sdfssa')
     emit('cleanup_complete',room=request.sid)
-    print('hello friend')
     history = MessageHistory.query.get(history_id)
     history.people[user_id] = ''
     flag_modified(history,'people')
     db.session.commit()
-    print('Exited ')
 
 import functions
 
@@ -349,6 +345,7 @@ def show_feedback():
     return render_template('show_feedback.html', reviews = reviews)
 
 def time_to_min(time):
+    print(time)
     factors = (60, 1, 1/60)
 
     return sum(i*j for i, j in zip(map(int, time.split(':')), factors))
@@ -367,34 +364,53 @@ def add_session():
 @app.route('/find_session',methods=['GET','POST'])
 def find_session():
     if request.method == 'POST':
-        x = request.form.get('modal_date')
-        print(x)
-    return render_template('session_manager2.html')
+        date = request.form.get('modal_date')
+        period = request.form.get('period')
+        tutor_name = request.form.get('specific_tutor')
+        # send to the front end, use jinja if to only show the session if that tutor is assigned
+        subject = request.form.get('subject')
+        if period == '-1':
+            pass
+            # get the period data for that period and use it
+            # include return statement within this if
+        if date:
+            pass
+            # get the day of the week, look through period data to get the data from every period on that day
+            # could create seperate function for this or other parts to aviod repeating code, and expandability
+    return render_template('find_session.html')
 
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
-    if request.method == 'POST': 
-        day = request.form.get('modalPass').split(',')[1]
+    if request.method == 'POST':
+        thing = request.form.get('modalPass').split(',')
+        period,day = int(thing[0])+1,thing[1]
         day = int(day)
-        print(request.form.items())
         period_data = Periods.query.get(period)
-        data = getattr(period_data, day, 'default')
+        data = getattr(period_data, lower_days[day], 'default')
         if 'delete' not in request.form.items():
             start_time = request.form.get('start_time')
             end_time = request.form.get('end_time')
-            current_user.schedule_data[lower_days[day]]['start_time'] = start_time
-            current_user.schedule_data[lower_days[day]]['end_time'] = end_time
-            current_user.schedule_data[lower_days[day]]['times'] = '2024-02-02'
-            current_user.schedule_data[lower_days[day]]['subject'] = 'random'
-            setattr(period_data, day, data + ' ' + str(current_user.id))
+            period_start = 450 + int(period)*45
+            period_end = period_start + 41
+            start_min = time_to_min(start_time)
+            end_min = time_to_min(end_time)
+            if (start_min < period_start or end_min > period_end or start_min > end_min):
+                flash('invalid times', 'warning')
+                return redirect(url_for('scheduler'))
+            current_user.schedule_data[lower_days[day]][str(period)]['start_time'] = start_time
+            current_user.schedule_data[lower_days[day]][str(period)]['end_time'] = end_time
+            current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
+            current_user.schedule_data[lower_days[day]][str(period)]['subject'] = 'random'
+            if str(current_user.id) not in getattr(period_data, lower_days[day], 'default').split(' '):
+                setattr(period_data, lower_days[day], data + ' ' + str(current_user.id))
 
         else:
-            current_user.schedule_data[lower_days[day]]['start_time'] = "00:00"
-            current_user.schedule_data[lower_days[day]]['end_time'] = "00:00"
-            current_user.schedule_data[lower_days[day]]['times'] = ''
-            current_user.schedule_data[lower_days[day]]['subject'] = ''
-            setattr(period_data, day, ' '.join(data.split(' ').replace(str(current_user.id), '')))
+            current_user.schedule_data[lower_days[day]][str(period)]['start_time'] = "00:00"
+            current_user.schedule_data[lower_days[day]][str(period)]['end_time'] = "00:00"
+            current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
+            current_user.schedule_data[lower_days[day]][str(period)]['subject'] = ''
+            setattr(period_data, lower_days[day], ' '.join(data.split(' ').replace(str(current_user.id), '')))
         
         flag_modified(current_user,'schedule_data')
         db.session.commit()
@@ -404,16 +420,17 @@ def scheduler():
     periods = [[0 for _ in range(9)] for _ in range(5)]
     period_data = {495 + i*45:i for i in range(1,10)}
     for j,day in enumerate(lower_days):
-        current = schedule[day]
-        start1,end1 = current['start_time'],current['end_time']
-        start,end = current['start_time'].split(':'),current['end_time'].split(':')
-        start = int(start[0]) * 60 + int(start[1])
-        end = int(end[0]) * 60 + int(end[1])
-        if not end or not start:continue
-        for period in period_data.keys():
-            if period >= end:
-                periods[j][period_data[period] - 1] = (start1,end1)
-                break
+        for period in range(1,10):
+            current = schedule[day][str(period)]
+            start1,end1 = current['start_time'],current['end_time']
+            start,end = current['start_time'].split(':'),current['end_time'].split(':')
+            start = int(start[0]) * 60 + int(start[1])
+            end = int(end[0]) * 60 + int(end[1])
+            if not end or not start:continue
+            for period in period_data.keys():
+                if period >= end:
+                    periods[j][period_data[period] - 1] = (start1,end1)
+                    break
 
     return render_template('scheduler.html',booked_periods=periods)
 
@@ -423,6 +440,7 @@ def session_manager():
     users = []
     day = None
     date = None
+    period = ''
     if request.method == 'POST':
         type = request.form.get('type')
         period = request.form.get('period')
@@ -439,17 +457,13 @@ def session_manager():
             period_start = 450 + int(period)*45
             period_end = period_start + 41
             # time_to_min(end_time) > time_to_min(start_time)
-            print(start_time, end_time)
             if not (period_start <= time_to_min(start_time) or time_to_min(start_time) <= period_end or period_start <= time_to_min(end_time) or time_to_min(end_time) <= period_end):
                 flash('invalid times', 'warning')
                 return redirect(url_for('session_manager'))
-            if not user.schedule_data[day] == {"start_time": "00:00", "end_time": "00:00", "times":"", "subject":""}:
-                flash('Already Turtoing This Day', 'warning')
-                return redirect(url_for('session_manager'))
             setattr(period_data, day, data + ' ' + str(user.id))
-            user.schedule_data[day]['start_time'] = str(start_time)
-            user.schedule_data[day]['end_time'] = str(end_time)
-            user.schedule_data[day]['subject'] = str(subject)
+            user.schedule_data[day][str(period)]['start_time'] = str(start_time)
+            user.schedule_data[day][str(period)]['end_time'] = str(end_time)
+            user.schedule_data[day][str(period)]['subject'] = str(subject)
             flag_modified(user, 'schedule_data')
             db.session.commit()
         elif type == '0': # if user is looking up a session
@@ -459,7 +473,7 @@ def session_manager():
                 user = User.query.get(id)
                 users.append(user)
         
-    return render_template('session_manager.html', users = users[1:], day = day, date = date)
+    return render_template('session_manager.html', users = users[1:], day = day, date = date, period = str(period))
 
 def string_to_time(time_str):
     hour, minute = map(int, time_str.split(':'))
@@ -475,17 +489,13 @@ def book_session(id, date):
     day = date_to_day(date)
     data = user.schedule_data[day]
     current_user_id = current_user.get_id()
-    print(id,current_user_id)
     people = {id:'',current_user_id:''}
-    print(people)
     conversation = MessageHistory(
         people=people,
-        messages=load_basic_json_file())
+        messages=load_basic_json_file()
+    )
     db.session.add(conversation)
     db.session.commit()
-
-    print(conversation.id)
-
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
