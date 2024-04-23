@@ -363,6 +363,9 @@ def add_session():
 
 @app.route('/find_session',methods=['GET','POST'])
 def find_session():
+    users = []
+    day = None
+    date = None
     if request.method == 'POST':
         date = request.form.get('modal_date')
         period = request.form.get('period')
