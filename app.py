@@ -234,7 +234,7 @@ def login():
             return redirect(url_for('index'))
         else:
             flash("Invalid credentials!","danger")
-    return render_template("login.html")
+    return render_template("user_handling/login.html")
 
 @app.route('/logout',methods=['POST'])
 def logout():
@@ -275,7 +275,7 @@ def register():
         if password != confirm_password:
             # Handle password mismatch
             flash("Passwords do not match.", "danger")
-            return render_template("register.html")
+            return render_template("user_handling/register.html")
 
         # Create a new user instance
         new_user = User(
@@ -293,7 +293,7 @@ def register():
         
         flash("Account created successfully! Please check your email to verify.", "success")
         return redirect(url_for('login'))
-    return render_template("register.html")
+    return render_template("user_handling/register.html")
 
 @app.route('/complete_session/<id>')
 def complete_session(id):
@@ -524,39 +524,39 @@ def book_session(id, date):
 
 @app.route('/charts')
 def charts():
-    return render_template('charts.html')
+    return render_template('template_pages/charts.html')
 
 @app.route('/forgot_password')
 def forgot_password():
-    return render_template('forgot_password.html')
+    return render_template('user_handling/forgot_password.html')
 
 @app.route('/buttons')
 def buttons():
-    return render_template('buttons.html') 
+    return render_template('template_pages/buttons.html') 
 
 @app.route('/cards')
 def cards():
-    return render_template('cards.html')
+    return render_template('template_pages/cards.html')
 
 @app.route('/tables')
 def tables():
-    return render_template('tables.html') 
+    return render_template('template_pages/tables.html') 
 
 @app.route('/utilities-animation')
 def utilities_animation():
-    return render_template('utilities-animation.html') 
+    return render_template('template_pages/utilities-animation.html') 
 
 @app.route('/utilities-border')
 def utilities_border():
-    return render_template('utilities-border.html') 
+    return render_template('template_pages/utilities-border.html') 
 
 @app.route('/utilities-color')
 def utilities_color():
-    return render_template('utilities-color.html') 
+    return render_template('template_pages/utilities-color.html') 
 
 @app.route('/utilities-other')
 def utilities_other():
-    return render_template('utilities-other.html') 
+    return render_template('template_pages/utilities-other.html') 
 
 @app.errorhandler(404)
 def not_found(e):
