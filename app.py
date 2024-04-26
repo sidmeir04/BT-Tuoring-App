@@ -208,7 +208,7 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
     # if current_user.role == 0:
-    number = .56    
+    number = .58    
     if number > .75:
         color = 'success'
     elif number > .25:
