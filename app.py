@@ -120,6 +120,7 @@ class User(db.Model, UserMixin):
     schedule_data = db.Column(JSON, default=load_default_schedule)
     sessions = db.relationship('Session', backref='user', lazy = True)
     feedbacks = db.relationship('Feedback', backref='user', lazy = True)
+    # hours_of_service = db.Column(db.Float, defualt = 0.0)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -204,7 +205,7 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
     # if current_user.role == 0:
-    number = .56    
+    number = .69420    
     if number > .75:
         color = 'success'
     elif number > .25:
@@ -373,6 +374,7 @@ def find_session():
         # send to the front end, use jinja if to only show the session if that tutor is assigned
         subject = request.form.get('subject')
         if period == '-1':
+            data = Periods.query.get(int(period))
             pass
             # get the period data for that period and use it
             # include return statement within this if
@@ -494,8 +496,7 @@ def book_session(id, date):
     current_user_id = current_user.get_id()
     people = {id:'',current_user_id:''}
     conversation = MessageHistory(
-        people=people,
-        messages=load_basic_json_file()
+        people=people
     )
     db.session.add(conversation)
     db.session.commit()
@@ -510,7 +511,7 @@ def book_session(id, date):
     )
     db.session.add(new_session)
     db.session.commit()
-    people = {0:{'user':user,'id':''},0:{'user':current,'id':''}}
+    people = {0:{'user':user,'id':''},1:{'user':current,'id':''}}
     conversation = MessageHistory(
         people=people,
     )
