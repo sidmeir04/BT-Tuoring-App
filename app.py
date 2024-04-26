@@ -362,6 +362,7 @@ def date_to_day(date):
 def add_session():
     return render_template('session_manager3.html')
 
+lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/find_session',methods=['GET','POST'])
 def find_session():
     users = []
@@ -373,18 +374,30 @@ def find_session():
         tutor_name = request.form.get('specific_tutor')
         # send to the front end, use jinja if to only show the session if that tutor is assigned
         subject = request.form.get('subject')
-        if period == '-1':
+        print(date)
+        if period != '-1':
             data = Periods.query.get(int(period))
-            pass
-            # get the period data for that period and use it
-            # include return statement within this if
+            if date:
+                day = date_to_day(date)
+                data = getattr(data, day, 'defualt')
+                user_names = [(User.query.get(int(id)).username,id,period) for id in data.split(' ')[1:]]
+                users = [User.query.get(int(id)).schedule_data[day][period] for id in data.split(' ')[1:]]
+                return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate)
+
+            users = []
+            user_names = []
+            for day in lower_days:
+                day_data = getattr(data, day, 'defualt')
+                print(day_data)
+                [user_names.append((User.query.get(int(id)).username,id,period)) for id in day_data.split(' ')[1:]]
+                [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
+            return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate)
         if date:
             pass
             # get the day of the week, look through period data to get the data from every period on that day
             # could create seperate function for this or other parts to aviod repeating code, and expandability
-    return render_template('find_session.html')
+    return render_template('find_session.html', enumerate = enumerate)
 
-lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
     if request.method == 'POST':
@@ -486,13 +499,13 @@ def string_to_time(time_str):
     result_time = time(hour=hour, minute=minute)
     return result_time
     
-@app.route('/book_session/<id>/<date>')
-def book_session(id, date):
+@app.route('/book_session/<id>/<date>/<period>')
+def book_session(id, date, period):
     user = User.query.get(id)
     current = current_user.id
 
     day = date_to_day(date)
-    data = user.schedule_data[day]
+    data = user.schedule_data[day][period]
     current_user_id = current_user.get_id()
     people = {id:'',current_user_id:''}
     conversation = MessageHistory(
@@ -511,12 +524,12 @@ def book_session(id, date):
     )
     db.session.add(new_session)
     db.session.commit()
-    people = {0:{'user':user,'id':''},1:{'user':current,'id':''}}
+    people = {0:{'user':user,'id':''},0:{'user':current,'id':''}}
     conversation = MessageHistory(
         people=people,
     )
     
-    user.schedule_data[day]['times'] += ' ' + str(date)
+    user.schedule_data[day][period]['times'] += ' ' + str(date)
     flag_modified(user, 'schedule_data')
     db.session.add(conversation)
     db.session.commit()
