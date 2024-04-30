@@ -14,7 +14,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from calendar import weekday
 import json
 from sqlalchemy.orm.attributes import flag_modified
-from datetime import time
+from datetime import time, timedelta
 from flask import request, Flask
 from flask_socketio import emit
 from flask import Blueprint, render_template
@@ -358,45 +358,56 @@ def date_to_day(date):
     day = days[dayNumber].lower()
     return day
 
-@app.route('/add_session',methods=['GET','POST'])
-def add_session():
-    return render_template('session_manager3.html')
-
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
+def find_next_day_of_week(day_of_week):
+    day_index = lower_days.index(day_of_week.lower())
+    today = datetime.now().weekday()
+    days_ahead = (day_index - today) % 7
+    if days_ahead == 0:
+        days_ahead = 7
+    next_day = datetime.now() + timedelta(days=days_ahead)
+
+    return next_day.strftime("%Y-%m-%d")
+
 @app.route('/find_session',methods=['GET','POST'])
 def find_session():
     users = []
     day = None
     date = None
+    tutor_name = ''
     if request.method == 'POST':
         date = request.form.get('modal_date')
         period = request.form.get('period')
         tutor_name = request.form.get('specific_tutor')
         # send to the front end, use jinja if to only show the session if that tutor is assigned
         subject = request.form.get('subject')
-        print(date)
+        if not tutor_name:
+            tutor_name = ''
         if period != '-1':
             data = Periods.query.get(int(period))
             if date:
                 day = date_to_day(date)
                 data = getattr(data, day, 'defualt')
-                user_names = [(User.query.get(int(id)).username,id,period) for id in data.split(' ')[1:]]
+                user_names = [(User.query.get(int(id)).username,id,period,date) for id in data.split(' ')[1:]]
                 users = [User.query.get(int(id)).schedule_data[day][period] for id in data.split(' ')[1:]]
-                return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate)
-
+            else:
+                users = []
+                user_names = []
+                for day in lower_days:
+                    day_data = getattr(data, day, 'defualt')
+                    [user_names.append((User.query.get(int(id)).username,id,period,find_next_day_of_week(day))) for id in day_data.split(' ')[1:]]
+                    [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
+        elif date:
             users = []
             user_names = []
-            for day in lower_days:
-                day_data = getattr(data, day, 'defualt')
-                print(day_data)
-                [user_names.append((User.query.get(int(id)).username,id,period)) for id in day_data.split(' ')[1:]]
-                [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
-            return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate)
-        if date:
-            pass
-            # get the day of the week, look through period data to get the data from every period on that day
-            # could create seperate function for this or other parts to aviod repeating code, and expandability
-    return render_template('find_session.html', enumerate = enumerate)
+            day = date_to_day(date)
+            day_data = [getattr(Periods.query.get(i),day) for i in range(1,10)]
+            for period,period_data in enumerate(day_data):
+                if period_data:
+                    [user_names.append((User.query.get(int(id)).username,id,period+1,date)) for id in period_data.split(' ')[1:]]
+                    [users.append(User.query.get(int(id)).schedule_data[day][str(period+1)]) for id in period_data.split(' ')[1:]]
+        return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower())
+    return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower())
 
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
@@ -518,7 +529,7 @@ def book_session(id, date, period):
         start_time = string_to_time(data['start_time']),
         end_time = string_to_time(data['end_time']),
         student = current_user_id,
-        subject = data['subject'],
+        # subject = data['subject'],
         date = datetime.strptime(date, '%Y-%m-%d').date(),
         message_history_id = 1
     )
