@@ -66,18 +66,18 @@
                         <th>Schedule Session</th>
                     </tr>
                 </thead>
-                {% for user in users %}
-                {% if date not in user.schedule_data[day]['times'].split(' ') %}
+                {% for num,user in enumerate(users) %}
+                <!-- {% if date not in user['times'].split(' ') %} -->
                 <tbody>
                     <tr>
-                        <td>{{user.schedule_data[day]['start_time']}}</td>
-                        <td>{{user.schedule_data[day]['end_time']}}</td>
-                        <td>{{user.username}}</td>
-                        <td>{{user.schedule_data[day]['subject']}}</td>
-                        <td><a href="/book_session/{{user.id}}/{{date}}">Book Session</a></td>
+                        <td>{{user['start_time']}}</td>
+                        <td>{{user['end_time']}}</td>
+                        <td>{{user_names[num][0]}}</td>
+                        <td>{{user['subject']}}</td>
+                        <td><a href="/book_session/{{user_names[num][1]}}/2024-04-24/{{user_names[num][2]}}">Book Session</a></td>
                     </tr>
                 </tbody>
-                {% endif %}
+                <!-- {% endif %} -->
                 {% endfor %}
             </table>
         </div>
