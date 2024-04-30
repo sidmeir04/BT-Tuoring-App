@@ -214,9 +214,7 @@ def index():
         color = 'danger'
 
     return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, tutor_form_completed = False).all(), student_sessions = Session.query.filter_by(student=current_user.id, student_form_completed = False).all())
-    # elif current_user.role == 1:
-    #     return render_template('index1.html',username=current_user.username)
-    # return redirect(url_for('login'))
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -546,6 +544,10 @@ def book_session(id, date, period):
     db.session.commit()
     flash('Booked Session', 'success')
     return redirect(url_for('session_manager'))
+
+@app.route('/profile')
+def profile():
+    return render_template('profile.html')
 
 @app.route('/charts')
 def charts():
