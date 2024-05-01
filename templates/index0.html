@@ -208,11 +208,11 @@
             </div>
         </div>
         <div class="col-xl-4 col-lg-4 pr-0">
-            <div class="card shadow mb-4">
+            <div class="card shadow mb-3" style="height: 40vh;">
                 <div class="card-header p-1">
                     <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-0 my-md-0 mw-100 navbar-search w-100">
                         <div class="input-group w-100">
-                            <input type="text" class="form-control border-0 small text-primary" placeholder="Search for..."
+                            <input type="text" class="form-control border-0 small text-primary" placeholder="Search messages..."
                                 aria-label="Search" aria-describedby="basic-addon2">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="button">
@@ -222,7 +222,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="card-body d-flex" style="height: 25vh;">
+                <div class="card-body d-flex">
                     <table class="table-responsive table">
                         <tbody>
                             {%for _ in range(9)%}
@@ -249,6 +249,30 @@
                                             <span class="mr-2 d-none d-lg-inline text-gray-600 small">The message preview goes here</span> -->
                                         </div>
                                     </div>
+                                </td>
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card shadow mb-4" style="height: 30vh;">
+                <div class="card-header p-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Session Terminations</h6>
+                </div>
+                <div class="card-body d-flex">
+                    <table class="table-responsive table">
+                        <tbody>
+                            {%for _ in range(3)%}
+                            <tr>
+                                <td>
+                                    person's name here
+                                </td>
+                                <td>
+                                    Date here
+                                </td>
+                                <td>
+                                    More info
                                 </td>
                             </tr>
                             {%endfor%}
