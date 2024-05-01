@@ -297,6 +297,11 @@ def register():
 @app.route('/complete_session/<id>')
 def complete_session(id):
     session = Session.query.get(id)
+    date = session.date
+    today = datetime.now().date()
+    if date >= today:
+        flash('Tutoring Session has not Happened yet', 'warning')
+        return redirect(url_for('index'))
     if current_user.id == session.tutor:
         return redirect(f"/completion_form/{session.id}?type={2}")
     if current_user.id == session.student:
