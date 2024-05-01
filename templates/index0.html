@@ -90,7 +90,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body align-items-center justify-content-center" style="min-height: 50vh;">
+                <div class="card-body align-items-center justify-content-center" style="min-height: 70vh;">
                     <div class="row">
                         <div class="col-6">
                             {%if sessions%}
@@ -114,23 +114,24 @@
                                                 <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                                 <td>
                                                     <div class="dropdown">
+                                                        
                                                         <div class="dropdown-content">
-                                                        <a href="{{url_for('details',identification=session.id)}}">Messages</a>
-                                                        <a href="/complete_session/{{session.id}}">Mark as Done</a>
-                                                        <a href="/delete_session/{{session.id}}">Remove Session</a>
+                                                            <a href="{{url_for('details',identification=session.id)}}">Messages</a>
+                                                            <a href="/complete_session/{{session.id}}">Mark as Done</a>
+                                                            <a href="/delete_session/{{session.id}}">Remove Session</a>
                                                         </div>
+                                                        <button style = "width: 2vw;
+                                                        height: 2vw;
+                                                        border-radius: 20px;
+                                                        background-color: #007bff;
+                                                        border: none;
+                                                        color: white;
+                                                        font-size: 1.2em;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        cursor: pointer;"><i class="fa fa-ellipsis-v"></i></button>
                                                     </div>
-                                                    <button style = "width: 40px;
-                                                    height: 40px;
-                                                    border-radius: 20px;
-                                                    background-color: #007bff;
-                                                    border: none;
-                                                    color: white;
-                                                    font-size: 1.2em;
-                                                    display: flex;
-                                                    align-items: center;
-                                                    justify-content: center;
-                                                    cursor: pointer;"><i class="fa fa-ellipsis-v"></i></button>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -170,8 +171,8 @@
                                                             <a href="/complete_session/{{session.id}}">Mark as Done</a>
                                                             <a href="/delete_session/{{session.id}}">Remove Session</a>
                                                         </div>
-                                                        <button style = "width: 40px;
-                                                        height: 40px;
+                                                        <button style = "width: 2vw;
+                                                        height: 2vw;
                                                         border-radius: 20px;
                                                         background-color: #007bff;
                                                         border: none;
@@ -215,7 +216,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="card-body d-flex" style="height: 40vh;">
+                <div class="card-body d-flex" style="height: 25vh;">
                     <table class="table-responsive table">
                         <tbody>
                             {%for _ in range(9)%}
