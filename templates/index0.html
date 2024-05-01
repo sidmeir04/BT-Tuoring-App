@@ -62,7 +62,16 @@
     </div>
     <div class="row py-2 mb-4 bg-gradient-secondary px-0">
     </div>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}   
     <!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Dashboard: Welcome {{username}}</h1>
     </div> -->
@@ -105,13 +114,23 @@
                                                 <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                                 <td>
                                                     <div class="dropdown">
-                                                        <i class="fa fa-ellipsis-v"></i>
                                                         <div class="dropdown-content">
                                                         <a href="{{url_for('details',identification=session.id)}}">Messages</a>
                                                         <a href="/complete_session/{{session.id}}">Mark as Done</a>
-                                                        <a href="#">Remove Session</a>
+                                                        <a href="/delete_session/{{session.id}}">Remove Session</a>
                                                         </div>
                                                     </div>
+                                                    <button style = "width: 40px;
+                                                    height: 40px;
+                                                    border-radius: 20px;
+                                                    background-color: #007bff;
+                                                    border: none;
+                                                    color: white;
+                                                    font-size: 1.2em;
+                                                    display: flex;
+                                                    align-items: center;
+                                                    justify-content: center;
+                                                    cursor: pointer;"><i class="fa fa-ellipsis-v"></i></button>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -149,9 +168,19 @@
                                                         <div class="dropdown-content">
                                                             <a href="{{url_for('details',identification=session.id)}}">Messages</a>
                                                             <a href="/complete_session/{{session.id}}">Mark as Done</a>
-                                                            <a href="#">Remove Session</a>
+                                                            <a href="/delete_session/{{session.id}}">Remove Session</a>
                                                         </div>
-                                                        <i class="fa fa-ellipsis-v"></i>
+                                                        <button style = "width: 40px;
+                                                        height: 40px;
+                                                        border-radius: 20px;
+                                                        background-color: #007bff;
+                                                        border: none;
+                                                        color: white;
+                                                        font-size: 1.2em;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        cursor: pointer;"><i class="fa fa-ellipsis-v"></i></button>
                                                     </div>
                                                 </td>
                                             </tr>
