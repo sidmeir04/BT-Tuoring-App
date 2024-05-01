@@ -77,6 +77,8 @@ def handle_leave_site(history_id,user_id):
     flag_modified(history,'people')
     db.session.commit()
 
+import functions
+
 user_type_key = {0:'student',
                  1:'teacher',
                  2:'administrator',
