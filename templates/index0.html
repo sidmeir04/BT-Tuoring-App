@@ -108,8 +108,8 @@
                                     <tbody>
                                         {% for session in sessions%}
                                             <tr>
-                                                <td>{{session.start_time}}</td>
-                                                <td>{{session.end_time}}</td>
+                                                <td>{{session.start_time.strftime("%H:%M")}}</td>
+                                                <td>{{session.end_time.strftime("%H:%M")}}</td>
                                                 <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
                                                 <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                                 <td>
@@ -119,18 +119,18 @@
                                                         <a href="/complete_session/{{session.id}}">Mark as Done</a>
                                                         <a href="/delete_session/{{session.id}}">Remove Session</a>
                                                         </div>
+                                                        <button style = "width: 40px;
+                                                        height: 40px;
+                                                        border-radius: 20px;
+                                                        background-color: #007bff;
+                                                        border: none;
+                                                        color: white;
+                                                        font-size: 1.2em;
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        cursor: pointer;"><i class="fa fa-ellipsis-v"></i></button>
                                                     </div>
-                                                    <button style = "width: 40px;
-                                                    height: 40px;
-                                                    border-radius: 20px;
-                                                    background-color: #007bff;
-                                                    border: none;
-                                                    color: white;
-                                                    font-size: 1.2em;
-                                                    display: flex;
-                                                    align-items: center;
-                                                    justify-content: center;
-                                                    cursor: pointer;"><i class="fa fa-ellipsis-v"></i></button>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -159,8 +159,8 @@
                                     <tbody>
                                         {% for session in student_sessions%}
                                             <tr>
-                                                <td>{{session.start_time}}</td>
-                                                <td>{{session.end_time}}</td>
+                                                <td>{{session.start_time.strftime("%H:%M")}}</td>
+                                                <td>{{session.end_time.strftime("%H:%M")}}</td>
                                                 <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
                                                 <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                                 <td>
