@@ -72,102 +72,92 @@
         <div class="col-xl-8 col-lg-8 pr-0">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <div class="row">
-                        <div class="col-6">
-                            <h6 class="m-0 font-weight-bold text-primary">Upcoming Teaching Sessions</h6>
-                        </div>
-                        <div class="col-6">
-                            <h6 class="m-0 font-weight-bold text-primary">Upcoming Learning Sessions</h6>
-                        </div>
-                    </div>
+                    <h6 class="m-0 font-weight-bold text-primary">Upcoming Teaching Sessions</h6>
                 </div>
                 <div class="card-body align-items-center justify-content-center" style="min-height: 40vh;">
+                    {%if sessions%}
                     <div class="row">
-                        <div class="col-6">
-                            {%if sessions%}
-                            <div class="table-responsive">
-                                <table class="table" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
+                        <div class="table-responsive">
+                            <table class="table" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Period</th>
+                                        <th>Date</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in sessions%}
                                         <tr>
-                                            <th>Start</th>
-                                            <th>End</th>
-                                            <th>Period</th>
-                                            <th>Date</th>
-                                            <th></th>
+                                            <td>{{session.start_time}}</td>
+                                            <td>{{session.end_time}}</td>
+                                            <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
+                                            <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                    <div class="dropdown-content">
+                                                    <a href="{{url_for('details',identification=session.id)}}">Messages</a>
+                                                    <a href="/complete_session/{{session.id}}">Mark as Done</a>
+                                                    <a href="#">Remove Session</a>
+                                                    </div>
+                                                </div>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for session in sessions%}
-                                            <tr>
-                                                <td>{{session.start_time}}</td>
-                                                <td>{{session.end_time}}</td>
-                                                <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
-                                                <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
-                                                <td>
-                                                    <div class="dropdown">
-                                                        <i class="fa fa-ellipsis-v"></i>
-                                                        <div class="dropdown-content">
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Upcoming Learning Sessions</h6>
+                        </div>
+                    <div class="row"></div>
+                        <div class="table-responsive">
+                            <table class="table" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                        <th>Period</th>
+                                        <th>Date</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in student_sessions%}
+                                        <tr>
+                                            <td>{{session.start_time}}</td>
+                                            <td>{{session.end_time}}</td>
+                                            <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
+                                            <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <div class="dropdown-content">
                                                         <a href="{{url_for('details',identification=session.id)}}">Messages</a>
                                                         <a href="/complete_session/{{session.id}}">Mark as Done</a>
                                                         <a href="#">Remove Session</a>
-                                                        </div>
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {%else%}
-                            <div class="text-center text-primary h5">
-                                No current appointments
-                            </div>
-                            {%endif%}
-                        </div>
-                        <div class="col-6">
-                            {%if student_sessions%}
-                            <div class="table-responsive">
-                                <table class="table" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>Start</th>
-                                            <th>End</th>
-                                            <th>Period</th>
-                                            <th>Date</th>
-                                            <th></th>
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </div>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for session in student_sessions%}
-                                            <tr>
-                                                <td>{{session.start_time}}</td>
-                                                <td>{{session.end_time}}</td>
-                                                <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
-                                                <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
-                                                <td>
-                                                    <div class="dropdown">
-                                                        <div class="dropdown-content">
-                                                            <a href="{{url_for('details',identification=session.id)}}">Messages</a>
-                                                            <a href="/complete_session/{{session.id}}">Mark as Done</a>
-                                                            <a href="#">Remove Session</a>
-                                                        </div>
-                                                        <i class="fa fa-ellipsis-v"></i>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {%else%}
-                            <div class="text-center text-primary h5">
-                                No current appointments
-                            </div>
-                            {%endif%}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <br>
+                            <br>
+                            <br>
+                            <br>
                         </div>
                     </div>
-                    
+                    {%else%}
+                    <div class="text-center text-primary h5">
+                        No current appointments
+                    </div>
+                    {%endif%}
                 </div>
             </div>
         </div>
