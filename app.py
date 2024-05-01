@@ -322,17 +322,17 @@ def completion_form(id):
             review_from = current_user.username,
             subject = session.subject
         )
-        if current_user.id == session.tutor:
-            session.tutur_form_completed = True
+        if int(current_user.id) == int(session.tutor):
+            session.tutor_form_completed = True
             feedback.tutoring = False
         else:
             session.student_form_completed = True
             feedback.tutoring = True
 
-        if session.tutur_form_completed and session.student_form_completed:
-            db.session.delete(session)
         db.session.add(feedback)
         db.session.commit()
+        if session.tutor_form_completed and session.student_form_completed:
+            return redirect(f'/delete_session/{session.id}')
         return redirect(url_for('index'))
     return render_template('completion_form.html', type = type, id = id)
 
@@ -342,7 +342,6 @@ def show_feedback():
     return render_template('show_feedback.html', reviews = reviews)
 
 def time_to_min(time):
-    print(time)
     factors = (60, 1, 1/60)
 
     return sum(i*j for i, j in zip(map(int, time.split(':')), factors))
@@ -458,6 +457,18 @@ def scheduler():
                     break
 
     return render_template('scheduler.html',booked_periods=periods)
+
+@app.route('/delete_session/<session_id>')
+def delete_session(session_id):
+    session = Session.query.get(session_id)
+    if session.tutor_form_completed and session.student_form_completed:
+        db.session.delete(session)
+        db.session.commit()
+        flash('Session Deleted', 'success')
+
+    else:
+        flash('Tutor and Student Forms not Complete', 'warning')
+    return redirect(url_for('index'))
 
 @app.route('/session_manager', methods = ['POST','GET'])
 def session_manager():
