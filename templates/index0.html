@@ -114,13 +114,8 @@
                                                 <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                                 <td>
                                                     <div class="dropdown">
-                                                        
-                                                        <div class="dropdown-content">
-                                                            <a href="{{url_for('details',identification=session.id)}}">Messages</a>
-                                                            <a href="/complete_session/{{session.id}}">Mark as Done</a>
-                                                            <a href="/delete_session/{{session.id}}">Remove Session</a>
-                                                        </div>
-                                                        <button style = "width: 2vw;
+                                                        <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                        style = "width: 2vw;
                                                         height: 2vw;
                                                         border-radius: 20px;
                                                         background-color: #007bff;
@@ -130,16 +125,21 @@
                                                         display: flex;
                                                         align-items: center;
                                                         justify-content: center;
-                                                        cursor: pointer;"><i class="fa fa-ellipsis-v"></i></button>
+                                                        cursor: pointer;">
+                                                            <i class="fa fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                            <a class="dropdown-item" href="{{ url_for('details', identification=session.id) }}">Messages</a>
+                                                            <a class="dropdown-item" href="/complete_session/{{ session.id }}">Mark as Done</a>
+                                                            <a class="dropdown-item" href="/delete_session/{{ session.id }}">Remove Session</a>
+                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
-                                <br>
-                                <br>
-                                <br>
+
                             </div>
                             {%else%}
                             <div class="text-center text-primary h5">
@@ -169,12 +169,8 @@
                                                 <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                                 <td>
                                                     <div class="dropdown">
-                                                        <div class="dropdown-content">
-                                                            <a href="{{url_for('details',identification=session.id)}}">Messages</a>
-                                                            <a href="/complete_session/{{session.id}}">Mark as Done</a>
-                                                            <a href="/delete_session/{{session.id}}">Remove Session</a>
-                                                        </div>
-                                                        <button style = "width: 2vw;
+                                                        <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                                        style = "width: 2vw;
                                                         height: 2vw;
                                                         border-radius: 20px;
                                                         background-color: #007bff;
@@ -184,16 +180,22 @@
                                                         display: flex;
                                                         align-items: center;
                                                         justify-content: center;
-                                                        cursor: pointer;"><i class="fa fa-ellipsis-v"></i></button>
+                                                        cursor: pointer;">
+                                                            <i class="fa fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                            <a class="dropdown-item" href="{{ url_for('details', identification=session.id) }}">Messages</a>
+                                                            <a class="dropdown-item" href="/complete_session/{{ session.id }}">Mark as Done</a>
+                                                            <a class="dropdown-item" href="/delete_session/{{ session.id }}">Remove Session</a>
+                                                        </div>
                                                     </div>
+                                                    
                                                 </td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
-                                <br>
-                                <br>
-                                <br>
+
                             </div>
 
                             {%else%}
@@ -326,11 +328,39 @@
         <div class="col-xl-6 col-md-12 mb-4">
             <div class="card shadow h-100 py-4">
                 <div class="card-body">
-                    A moving display will be here soon
+                    <div id="movingDisplay" class="text-center">
+                        <h4 class="font-weight-bold text-primary mb-3">Moving Display</h4>
+                        <div id="movingText" class="text-info font-weight-bold" style="overflow: hidden;">
+                            {% for _ in range(10) %}
+                                <div class="d-inline-block px-3">
+                                    <span>This is some scrolling text!</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <!-- /.container-fluid -->
+<script>
+    var movingText = document.getElementById('movingText');
+    var clones = movingText.cloneNode(true);
+    movingText.parentNode.appendChild(clones);
+
+    var initialWidth = movingText.offsetWidth;
+    var distance = 0;
+
+    function animateText() {
+        distance++;
+        movingText.style.transform = 'translateX(' + distance + 'px)';
+        if (distance >= initialWidth) {
+            distance = -initialWidth;
+        }
+        requestAnimationFrame(animateText);
+    }
+
+    animateText();
+</script>
 {% endblock %}
