@@ -142,6 +142,7 @@ class Session(db.Model):
     subject = db.Column(db.String(255))
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
+    period = db.Column(db.Integer)
     tutor_form_completed = db.Column(db.Boolean, default = False)
     student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
@@ -297,11 +298,11 @@ def register():
 @app.route('/complete_session/<id>')
 def complete_session(id):
     session = Session.query.get(id)
-    date = session.date
-    today = datetime.now().date()
-    if date >= today:
-        flash('Tutoring Session has not Happened yet', 'warning')
-        return redirect(url_for('index'))
+    # date = session.date
+    # today = datetime.now().date()
+    # if date >= today:
+    #     flash('Tutoring Session has not Happened yet', 'warning')
+    #     return redirect(url_for('index'))
     if current_user.id == session.tutor:
         return redirect(f"/completion_form/{session.id}?type={2}")
     if current_user.id == session.student:
@@ -469,6 +470,11 @@ def scheduler():
 def delete_session(session_id):
     session = Session.query.get(session_id)
     if session.tutor_form_completed and session.student_form_completed:
+        user = User.query.get(session.tutor)
+        date = date_to_day(session.date.strftime('%Y-%m-%d'))
+        print(date)
+        print(user.schedule_data[date][str(session.period)]['times'])
+        user.schedule_data[date][str(session.period)]['times'] = user.schedule_data[date][str(session.period)]['times'].replace(session.date.strftime('%Y-%m-%d'), "")
         db.session.delete(session)
         db.session.commit()
         flash('Session Deleted', 'success')
@@ -543,6 +549,7 @@ def book_session(id, date, period):
         start_time = string_to_time(data['start_time']),
         end_time = string_to_time(data['end_time']),
         student = current_user_id,
+        period = period,
         # subject = data['subject'],
         date = datetime.strptime(date, '%Y-%m-%d').date(),
         message_history_id = 1
