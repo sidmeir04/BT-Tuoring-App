@@ -2,51 +2,206 @@
 {%set user_name = username%}
 {%set active_page='dashboard'%}
 {% block content %}
-<style>
-/* Dropdown Button */
-.dropbtn {
-  background-color: #04AA6D;
-  color: white;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
+<!-- 
+<div class="carousel">
+    <div class="carousel-inner">
+      <div class="item active">
+        <div class="container">
+          <blockquote>Most people are other people. Their thoughts are someone else's opinions, their lives a mimicry, their passions a quotation.</blockquote>
+          <p class="author">Oscar Wilde</p>
+        </div>
+      </div>
+      <div class="item">
+        <div class="container">
+          <blockquote>Do something every day that you don't want to do. This is the golden rule for acquiring the habit of doing your duty without pain.</blockquote>
+          <p class="author">Mark Twain</p>
+        </div>
+      </div>
+      <div class="item">
+        <div class="container">
+          <blockquote>The worst sin towards our fellow creatures is not to hate them, but to be indifferent to them. That's the essence of inhumanity.</blockquote>
+          <p class="author">George Bernard Shaw</p>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-control left">
+      <div class="arrow left"></div>
+    </div>
+    <div class="carousel-control right">
+      <div class="arrow right"></div>
+    </div>
+    <ol class="carousel-indicators">
+      <li class="active"></li>
+      <li></li>
+      <li></li>
+    </ol>
+</div> -->
+  
+<!-- <style>
+    body {
+  font-family: 'Montserrat', sans-serif;
+  color: #FFFFFF;
+  background-color: #1E88E5;
 }
 
-/* The container <div> - needed to position the dropdown content */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-/* Dropdown Content (Hidden by Default) */
-.dropdown-content {
-  display: none;
+.carousel {
   position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 3;
-  right: 0; /* Position the dropdown to the left */
-  left: auto; /* Reset the right property */
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  padding: 90px 0;
+  text-align: center;
+  background-color: #1E88E5;
+  transform: translate(-50%, -50%);
 }
 
-/* Links inside the dropdown */
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
+.carousel-inner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.carousel-inner > .item {
+  position: relative;
+  display: none;
+  animation: 0.5s ease-in-out;
+}
+
+.carousel-inner > .active,
+.carousel-inner > .next {
   display: block;
 }
 
-/* Change color of dropdown links on hover */
-.dropdown-content a:hover {background-color: #ddd;}
+.carousel-inner > .next {
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
 
-/* Show the dropdown menu on hover */
-.dropdown:hover .dropdown-content {display: block;}
+.carousel-inner > .to-left {
+  animation-name: left;
+}
 
-/* Change the background color of the dropdown button when the dropdown content is shown */
-.dropdown:hover .dropbtn {background-color: #3e8e41;}
-</style>
+.carousel-inner > .from-right {
+  animation-name: right;
+}
+
+.carousel-inner > .to-right {
+  animation-name: right;
+  animation-direction: reverse;
+}
+
+.carousel-inner > .from-left {
+  animation-name: left;
+  animation-direction: reverse;
+}
+
+.container {
+  margin: 0 auto;
+}
+
+blockquote {
+  padding: 10px 20px;
+  margin: 30px 90px;
+  font-size: 32px;
+}
+
+.author {
+  margin: 0;
+  opacity: 0.5;
+}
+
+.carousel-control {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 15%;
+  cursor: pointer;
+}
+
+.carousel-control.right {
+  right: 0;
+  left: auto;
+}
+
+.carousel-control > .arrow {
+  position: absolute;
+  top: 50%;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjYiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNiAyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+QXJyb3c8L3RpdGxlPjxwYXRoIGQ9Ik0yNS42IDEwLjk3NGwtOC41MyA4LjYyYTEuMzYgMS4zNiAwIDAgMS0xLjkzNS4wMDMgMS4zODcgMS4zODcgMCAwIDEtLjAwMi0xLjk1bDYuMjAxLTYuMjY4SDEuMzY4QTEuMzc0IDEuMzc0IDAgMCAxIDAgMTBjMC0uNzYyLjYxMy0xLjM4IDEuMzY4LTEuMzhoMTkuOTY2bC02LjItNi4yNjdhMS4zODcgMS4zODcgMCAwIDEgLjAwMS0xLjk1IDEuMzYgMS4zNiAwIDAgMSAxLjkzNi4wMDJsOC41MyA4LjYyMWMuNTMyLjUzOC41MzIgMS40MSAwIDEuOTQ4IiBmaWxsPSIjRkZGRkZGIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48L3N2Zz4=") center center no-repeat;
+  background-size: 26px 20px;
+  opacity: 0.6;
+  transform: translateY(-50%);
+}
+
+.carousel-control > .arrow:hover {
+  opacity: 0.8;
+}
+
+.carousel-control > .arrow.left {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.carousel-control > .arrow.right {
+  right: 50%;
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+  transform: translateX(-50%);
+}
+
+.carousel-indicators li {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  cursor: pointer;
+  border: 1px solid #FFFFFF;
+  border-radius: 10px;
+}
+
+.carousel-indicators li.active {
+  background-color: #FFFFFF;
+}
+
+@media (min-width: 992px) {
+  .container {
+    width: 970px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    width: 1170px;
+  }
+}
+
+@keyframes left {
+  from {
+    left: 0;
+  }
+  to {
+    left: -100%;
+  }
+}
+
+@keyframes right {
+  from {
+    left: 100%;
+  }
+  to {
+    left: 0;
+  }
+}
+</style> -->
 <!-- Begin Page Content -->
 <div class="container-fluid mr-0 pr-0">
 
@@ -320,47 +475,90 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Earnings (Monthly) Card Example -->
-
-        <!-- Pending Requests Card Example -->
+        </div>  
         <div class="col-xl-6 col-md-12 mb-4">
             <div class="card shadow h-100 py-4">
                 <div class="card-body">
-                    <div id="movingDisplay" class="text-center">
-                        <h4 class="font-weight-bold text-primary mb-3">Moving Display</h4>
-                        <div id="movingText" class="text-info font-weight-bold" style="overflow: hidden;">
-                            {% for _ in range(10) %}
-                                <div class="d-inline-block px-3">
-                                    <span>This is some scrolling text!</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
+
+                      
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- /.container-fluid -->
 <!-- <script>
-    var movingText = document.getElementById('movingText');
-    var clones = movingText.cloneNode(true);
-    movingText.parentNode.appendChild(clones);
+    var items = document.querySelectorAll('.carousel .item');
+var dots = document.querySelectorAll('.carousel-indicators li');
+var currentItem = 0;
+var isEnabled = true;
 
-    var initialWidth = movingText.offsetWidth;
-    var distance = 0;
+function changeCurrentItem(n) {
+	currentItem = (n + items.length) % items.length;
+}
 
-    function animateText() {
-        distance++;
-        movingText.style.transform = 'translateX(' + distance + 'px)';
-        if (distance >= initialWidth) {
-            distance = -initialWidth;
-        }
-        requestAnimationFrame(animateText);
-    }
+function nextItem(n) {
+	hideItem('to-left');
+	changeCurrentItem(n + 1);
+	showItem('from-right');
+}
 
-    animateText();
+function previousItem(n) {
+	hideItem('to-right');
+	changeCurrentItem(n - 1);
+	showItem('from-left');
+}
+
+function goToItem(n) {
+	if (n < currentItem) {
+		hideItem('to-right');
+		currentItem = n;
+		showItem('from-left');
+	} else {
+		hideItem('to-left');
+		currentItem = n;
+		showItem('from-right');
+	}
+}
+
+function hideItem(direction) {
+	isEnabled = false;
+	items[currentItem].classList.add(direction);
+	dots[currentItem].classList.remove('active');
+	items[currentItem].addEventListener('animationend', function() {
+		this.classList.remove('active', direction);
+	});
+}
+
+function showItem(direction) {
+	items[currentItem].classList.add('next', direction);
+	dots[currentItem].classList.add('active');
+	items[currentItem].addEventListener('animationend', function() {
+		this.classList.remove('next', direction);
+		this.classList.add('active');
+		isEnabled = true;
+	});
+}
+
+document.querySelector('.carousel-control.left').addEventListener('click', function() {
+	if (isEnabled) {
+		previousItem(currentItem);
+	}
+});
+
+document.querySelector('.carousel-control.right').addEventListener('click', function() {
+	if (isEnabled) {
+		nextItem(currentItem);
+	}
+});
+
+document.querySelector('.carousel-indicators').addEventListener('click', function(e) {
+	var target = [].slice.call(e.target.parentNode.children).indexOf(e.target);
+	if (target !== currentItem && target < dots.length) {
+		goToItem(target);
+	}
+});
 </script> -->
+  
+
+
 {% endblock %}
