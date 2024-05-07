@@ -206,7 +206,7 @@ def index():
     #else go to login
     if not current_user.is_authenticated:return redirect(url_for('login'))
     # if current_user.role == 0:
-    number = .69420    
+    number = 4.20    
     if number > .75:
         color = 'success'
     elif number > .25:
@@ -386,6 +386,8 @@ def find_session():
         subject = request.form.get('subject')
         if not tutor_name:
             tutor_name = ''
+        users = []
+        user_names = []
         if period != '-1':
             data = Periods.query.get(int(period))
             if date:
@@ -394,15 +396,11 @@ def find_session():
                 user_names = [(User.query.get(int(id)).username,id,period,date) for id in data.split(' ')[1:]]
                 users = [User.query.get(int(id)).schedule_data[day][period] for id in data.split(' ')[1:]]
             else:
-                users = []
-                user_names = []
                 for day in lower_days:
                     day_data = getattr(data, day, 'defualt')
                     [user_names.append((User.query.get(int(id)).username,id,period,find_next_day_of_week(day))) for id in day_data.split(' ')[1:]]
                     [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
         elif date:
-            users = []
-            user_names = []
             day = date_to_day(date)
             day_data = [getattr(Periods.query.get(i),day) for i in range(1,10)]
             for period,period_data in enumerate(day_data):
@@ -420,7 +418,7 @@ def scheduler():
         day = int(day)
         period_data = Periods.query.get(period)
         data = getattr(period_data, lower_days[day], 'default')
-        if 'delete' not in request.form.items():
+        if ('delete', '') not in request.form.items():
             start_time = request.form.get('start_time')
             end_time = request.form.get('end_time')
             period_start = 450 + int(period)*45
@@ -442,7 +440,9 @@ def scheduler():
             current_user.schedule_data[lower_days[day]][str(period)]['end_time'] = "00:00"
             current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
             current_user.schedule_data[lower_days[day]][str(period)]['subject'] = ''
-            setattr(period_data, lower_days[day], ' '.join(data.split(' ').replace(str(current_user.id), '')))
+            data = data.split(' ')
+            data.remove(str(current_user.id))
+            setattr(period_data, lower_days[day], ' '.join(data))
         
         flag_modified(current_user,'schedule_data')
         db.session.commit()
@@ -472,10 +472,9 @@ def delete_session(session_id):
     if session.tutor_form_completed and session.student_form_completed:
         user = User.query.get(session.tutor)
         date = date_to_day(session.date.strftime('%Y-%m-%d'))
-        print(date)
-        print(user.schedule_data[date][str(session.period)]['times'])
         user.schedule_data[date][str(session.period)]['times'] = user.schedule_data[date][str(session.period)]['times'].replace(session.date.strftime('%Y-%m-%d'), "")
         db.session.delete(session)
+        flag_modified(user,'schedule_data')
         db.session.commit()
         flash('Session Deleted', 'success')
 

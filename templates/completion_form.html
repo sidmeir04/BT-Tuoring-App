@@ -98,7 +98,7 @@
         <div class="card-body bg-light">
    
             <form id="contact-form" role="form" action="/completion_form/{{id}}?type={{type}}" method = 'POST'>
-                <div class="controls">
+                <!-- <div class="controls"> -->
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group hCmtez">
@@ -112,6 +112,7 @@
                                         </div>
                                     </label>
                                     {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -159,18 +160,18 @@
                             <div class="form-group">
                                 <label for="feedback_text">Do you have any feedback for your {% if type == "1"%}tutor{% else %}student{% endif %}?</label>
                                 <textarea id="feedback_text" name="message" class="form-control" placeholder="Write your feedback here." rows="4" required="required" data-error="Please, leave us a message."></textarea>
-                                </div>
-
                             </div>
+
                         </div>
+                    </div>
 
 
-                        <div class="col-md-12">
-                            <div class="d-flex justify-content-center mx-4 mt-3 mb-3 mb-lg-4">
-                                <button type="submit" class="btn btn-primary btn-lg">Submit Feedback</button>
-                            </div>
-                        
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-center mx-4 mt-3 mb-3 mb-lg-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit Feedback</button>
                         </div>
+                    
+                    </div>
 
                     </div>
                 </form>
