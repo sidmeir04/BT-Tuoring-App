@@ -378,6 +378,8 @@ def find_session():
     day = None
     date = None
     tutor_name = ''
+    users = []
+
     if request.method == 'POST':
         date = request.form.get('modal_date')
         period = request.form.get('period')
