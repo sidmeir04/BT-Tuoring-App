@@ -569,9 +569,27 @@ def book_session(id, date, period):
     flash('Booked Session', 'success')
     return redirect(url_for('session_manager'))
 
-@app.route('/profile')
+@app.route('/profile',methods=['POST','GET'])
 def profile():
-    return render_template('profile.html')
+    if request.method == 'POST':
+        #gets the values
+        name = request.form.get("name")
+        last_name = request.form.get("last_name")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        username = request.form.get("username")
+
+        #sets the values
+        current_user.name=name,
+        current_user.last_name=last_name,
+        current_user.email=email,
+        current_user.username=username,
+        current_user.set_password(password)
+
+        # Save the new user to the database
+        db.session.commit()
+
+    return render_template('profile.html',user = current_user)
 
 @app.route('/charts')
 def charts():
