@@ -120,7 +120,7 @@ class User(db.Model, UserMixin):
     schedule_data = db.Column(JSON, default=load_default_schedule)
     sessions = db.relationship('Session', backref='user', lazy = True)
     feedbacks = db.relationship('Feedback', backref='user', lazy = True)
-    # hours_of_service = db.Column(db.Float, defualt = 0.0)
+    hours_of_service = db.Column(db.Float, defualt = 0.0)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -146,6 +146,7 @@ class Session(db.Model):
     tutor_form_completed = db.Column(db.Boolean, default = False)
     student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
+    termination_request = db.Column(db.Boolean, default = False)
 
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -304,14 +305,15 @@ def complete_session(id):
     #     flash('Tutoring Session has not Happened yet', 'warning')
     #     return redirect(url_for('index'))
     if current_user.id == session.tutor:
-        return redirect(f"/completion_form/{session.id}?type={2}")
+        return redirect(f"/completion_form?type={2}&id={session.id}")
     if current_user.id == session.student:
-        return redirect(f"/completion_form/{session.id}?type={1}")
+        return redirect(f"/completion_form?type={1}&id={session.id}")
     return redirect(url_for('index'))
 
-@app.route('/completion_form/<id>', methods = ['GET','POST'])
-def completion_form(id):
+@app.route('/completion_form', methods = ['GET','POST'])
+def completion_form():
     type = request.args.get('type')
+    id = request.args.get('id')
     if request.method == 'POST':
         understanding = request.form.get('personal_rating')
         on_time = request.form.get('on_time')
