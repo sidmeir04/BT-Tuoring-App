@@ -73,49 +73,42 @@
         <div class="col-xl-12 col-lg-12 d-block p-3" style="min-height:70vh;">
 
             <!-- Area Chart -->
-            <div class="card shadow mb-4 d-block rotating" style="height:100%">
+            <div class="card shadow mb-4 d-block" style="height:100%">
                 <div class="card-body">
                     <div class="row">
                         <div class="col-6 p-5">
-                            <img class="img-profile rounded-circle rotating"
+                            <img class="img-profile rounded-circle"
                                     src="static/assets/img/undraw_profile.svg">
                         </div>
-                        <div class="col-6 d-flex justify-content-center align-items-center">
-                            <form action = '/register' method = 'POST'>
-                                <div class="form-group row">
-                                    <div class="col-sm-12 mb-3 mb-sm-0">
-                                        <input type="text" class="form-control form-control-user" name="username"
-                                            placeholder="Username">
+                        <div class="col-6">
+                            <a href="" class="">Reset Password</a>
+                            <div class="d-flex h-100 justify-content-center align-items-center">
+                                <form action = '/profile' method = 'POST'>
+                                    <div class="form-group row">
+                                        <div class="col-sm-12 mb-3 mb-sm-0">
+                                            <input type="text" class="form-control form-control-user" name="username"
+                                                placeholder="Username" value="{{user.username}}">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <input type="text" class="form-control form-control-user" name="name"
-                                            placeholder="First Name">
+                                    <div class="form-group row">
+                                        <div class="col-sm-6 mb-3 mb-sm-0">
+                                            <input type="text" class="form-control form-control-user" name="name"
+                                                placeholder="First Name" value="{{user.name}}">
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input type="text" class="form-control form-control-user" name="last_name"
+                                                placeholder="Last Name" value="{{user.last_name}}">
+                                        </div>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <input type="text" class="form-control form-control-user" name="last_name"
-                                            placeholder="Last Name">
+                                    <div class="form-group">
+                                        <input type="email" class="form-control form-control-user" name="email"
+                                            placeholder="example@email.com" value="{{user.email}}">
                                     </div>
-                                </div>
-                                <div class="form-group">
-                                    <input type="email" class="form-control form-control-user" name="email"
-                                        placeholder="example@email.com">
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <input type="password" class="form-control form-control-user"
-                                            name="password" placeholder="Password">
+                                    <div class="d-flex justify-content-center mx-4 mt-3 mb-3 mb-lg-4">
+                                        <button type="submit" class="btn btn-primary btn-lg">Confirm Changes</button>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <input type="password" class="form-control form-control-user"
-                                            name="confirm_password" placeholder="Repeat Password">
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-center mx-4 mt-3 mb-3 mb-lg-4">
-                                    <button type="submit" class="btn btn-primary btn-lg">Confirm Changes</button>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
