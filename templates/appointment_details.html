@@ -15,160 +15,206 @@
             <h1 class="h3 mb-0 text-gray-800">Ticket Number {{session.id}}</h1>
         </div>
 
-        <div class="row">
-
-            <!-- Earnings (Monthly) Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    Date</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.date}}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Earnings (Annual) Card Example -->
-            <div class="col-xl-2 col-md-6 mb-4">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                    Period</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">10</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tasks Card Example -->
-            <div class="col-xl-4 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                    Subject</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.subject}}</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pending Requests Card Example -->
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-warning shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    Recipient</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">TBD</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-comments fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
+            <button class="btn btn-primary" onclick="do_open('overview')">
+                Overview
+            </button>
+            <button class="btn btn-primary" onclick="do_open('messaging')">
+                Messages
+            </button>
+            <button class="btn btn-primary" onclick="do_open('materials')">
+                Materials
+            </button>
         </div>
+
         <div class="row py-2 mb-4 bg-gradient-secondary px-0">
         </div>
 
-        <div class="row">
-            <div class="col-8 pl-0">
-                <div class="card shadow mb-4">
-                    <!-- Card Header - Dropdown -->
-                    <div
-                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Supplemental Materials</h6>
-                        <div class="dropdown no-arrow">
-                            <a class="dropdown-toggle btn-primary p-2" href="#" role="button" id="dropdownMenuLink"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span>View Materials</span>
-                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                aria-labelledby="dropdownMenuLink">
-                                <div class="dropdown-header">Dropdown Header</div>
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Card Body -->
-                    <div class="card-body">
-                        <img class="img-fluid" src="https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg" alt="">
-                    </div>
-                </div>
-            </div>
-            <div class="col-4 pr-0">
-                <div class="card shadow mb-4" style="height:40vw">
-                    <!-- Card Header - Dropdown -->
-                    <div
-                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">Dropdown Card Example</h6>
-                        <div class="dropdown no-arrow">
-                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                aria-labelledby="dropdownMenuLink">
-                                <div class="dropdown-header">Dropdown Header:</div>
-                                <a class="dropdown-item" href="#">Action</a>
-                                <a class="dropdown-item" href="#">Another action</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Something else here</a>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Card Body -->
-                    <div class="card-body overflow-auto">
-                        <div id="chat-messages" class="container-fluid">
-                            {%for message in messages%}
-                                <div class="row align-items center bg-primary">
-                                    <div class="h5 text-white p-2">
-                                        {{message}}
-                                    </div>
-                                </div>
-                            {%endfor%}
-                        </div>
-                    </div>
-                    <div class="card-footer px-0">
-                        <div class="col-12 w-auto mx-0">
-                            <div class="d-flex justify-content-center mx-0">
-                                <textarea style="resize:none;" type="text" class="form-control ml-0 mr-2" placeholder="Example input" aria-label="Example input" aria-describedby="send-button" id="message" rows="1"></textarea>
-                                <button class="btn btn-primary pb-0" type="button" id="send-button" data-mdb-ripple-color="dark">
-                                    <i class="material-icons mb-0">&#xe163;</i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="d-none" id="overview">
+            <div class="row">
 
+                <!-- Earnings (Monthly) Card Example -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Date</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.date}}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Earnings (Annual) Card Example -->
+                <div class="col-xl-2 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Period</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">10</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Card Example -->
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Subject</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.subject}}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Requests Card Example -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Recipient</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">TBD</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <div class="d-none" id="materials">
+            <div class="row">
+                <div class="col-8 pl-0">
+                    <div class="card shadow mb-4">
+                        <!-- Card Header - Dropdown -->
+                        <div
+                            class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Supplemental Materials</h6>
+                            <div class="dropdown no-arrow">
+                                <a class="dropdown-toggle btn-primary p-2" href="#" role="button" id="dropdownMenuLink"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span>View Materials</span>
+                                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                    aria-labelledby="dropdownMenuLink">
+                                    <div class="dropdown-header">Dropdown Header</div>
+                                    <a class="dropdown-item" href="#">Action</a>
+                                    <a class="dropdown-item" href="#">Another action</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#">Something else here</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <img class="img-fluid" src="https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-block" id="messaging">
+            <div class="row">
+                <div class="col-3">
+                    People
+                </div>
+                <div class="col-9">
+                    <div class="card shadow mb-4">
+                        <!-- Card Header - Dropdown -->
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Message History</h6>
+                            <div class="dropdown no-arrow">
+                                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                    aria-labelledby="dropdownMenuLink">
+                                    <div class="dropdown-header">Dropdown Header:</div>
+                                    <a class="dropdown-item" href="#">Action</a>
+                                    <a class="dropdown-item" href="#">Another action</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#">Something else here</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <div id="chat-messages" class="container-fluid" style="height: 40vh; overflow-y: auto;">
+                                <!-- Set max-height and enable vertical scrolling -->
+                                {%for message in messages%}
+                                    {%if message['mine']%}
+                                    <div class="d-flex justify-content-end mb-2 align-items-end">
+                                        <div class="justify-content-end" style="max-width: 70%;">
+                                            <small class="d-flex justify-content-end text-end mx-2" width="100%">{{thiss.username}}</small>
+                                            <div class="rounded bg-primary text-white p-2 mx-2" style="max-width: 100%;">
+                                                <!-- Message Content -->
+                                                {{ message['message'] }}
+                                            </div>
+                                        </div>
+                                        <!-- Profile Icon -->
+                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+                                    </div>
+                                    
+                                    {%else%}
+                                    
+                                    <div class="d-flex justify-content-start mb-2 align-items-end">
+                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+
+                                        <div class="justify-content-end" style="max-width: 70%;">
+                                            <small class="d-flex justify-content-start text-end mx-2" width="100%">{{thiss.username}}</small>
+                                            <div class="rounded bg-secondary text-white p-2 mx-2" style="max-width: 100%;">
+                                                <!-- Message Content -->
+                                                {{ message['message'] }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {%endif%}
+                                {%endfor%}
+                            </div>
+                        </div>
+                        <div class="card-footer px-0">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <textarea class="form-control" id="message" rows="1" placeholder="Type your message here..." style="resize: none;"></textarea>
+                                    <button class="btn btn-primary" type="button" id="send-button">
+                                        <i class="material-icons">&#xe163;</i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
 
     </div>
     <!-- /.container-fluid -->
@@ -177,6 +223,23 @@
 <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
 
 <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+
+<script>
+    function do_open(choice){
+        console.log(choice)
+        console.log(choice)
+        overview = document.getElementById('overview')
+        message = document.getElementById('messaging')
+        material = document.getElementById('materials')
+
+        overview.classList = ['d-none']
+        message.classList = ['d-none']
+        material.classList = ['d-none']
+
+        document.getElementById(choice).classList = ['d-block']
+    }
+
+</script>
 
 <script>
     const socket = io({autoConnect: true});
@@ -194,32 +257,58 @@
     });
 
     // Event listener for message input keyup
-    document.getElementById("message").addEventListener("keyup", function (event) {
-        if (event.key === 'Enter'){
-            send_message();
-        }
-    });
+    // document.getElementById("message").addEventListener("keyup", function (event) {
+    //     if (event.key === 'Enter'){
+    //         send_message();
+    //     }
+    // });
 
     // Function to send a message
     function send_message(){
         let message = document.getElementById("message").value;
+        console.log(message)
         if (message.trim() !== ""){
             // Emit the 'new_message' event with the username
             socket.emit("new_message", message, "{{ thiss.username }}","{{history}}");
             document.getElementById("message").value = "";
+            
+
+            
+            thing = `<div class="d-flex justify-content-end mb-2 align-items-end">
+                                        <div class="justify-content-end" style="max-width: 70%;">
+                                            <small class="d-flex justify-content-end text-end mx-2" width="100%">{{thiss.username}}</small>
+                                            <div class="rounded bg-primary text-white p-2 mx-2" style="max-width: 100%;">
+                                                ${message}
+                                            </div>
+                                        </div>
+                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+                                    </div>`
+            console.log(thing)
+            // Append the main container to a target element (e.g., the body)
+            document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
         }
     }
 
     // Event listener for receiving chat messages
     socket.on("chat", function(data) {
-        let container = document.getElementById("chat-messages");
-        let row = document.createElement("div");
-        row.classList.add('row', 'align-items-center', 'bg-primary');
-        let box = document.createElement("div");
-        box.classList.add('h5', 'text-white', 'p-2');
-        box.appendChild(document.createTextNode(data["username"] + ": " + data["message"]));
-        row.appendChild(box);
-        container.appendChild(row);
+        // Create necessary DOM elements
+
+    // Append the message container to the main container
+    thing = `<div class="d-flex justify-content-start mb-2 align-items-end">
+                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+
+                                        <div class="justify-content-end" style="max-width: 70%;">
+                                            <small class="d-flex justify-content-start text-end mx-2" width="100%">${data['username']}</small>
+                                            <div class="rounded bg-secondary text-white p-2 mx-2" style="max-width: 100%;">
+                                                <!-- Message Content -->
+                                                ${data['message']}
+                                            </div>
+                                        </div>
+                                    </div>`
+
+    // Append the main container to a target element (e.g., the body)
+    document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
+
     });
 </script>
 

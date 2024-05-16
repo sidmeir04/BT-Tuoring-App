@@ -45,18 +45,20 @@ def details():
     ID = request.args.get('identification')
     open_sesssion = Session.query.get(ID)
     message_history = MessageHistory.query.get(open_sesssion.message_history_id)
-    messages = message_history.messages
-    keys = sorted(messages.keys())
-    messages = [messages[i] for i in keys]
+    messages = message_history.messages['list']
+    messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message']}  for i in messages]
+    print(messages)
     return render_template('appointment_details.html',session=open_sesssion,history=open_sesssion.message_history_id,thiss=current_user,messages=messages)
 
 
 @socketio.on("connect")
 def handle_connect():
+    print(request.sid)
     print("Client connected!")
 
 @socketio.on("user_join")
 def handle_user_join(user_id,history_id):
+    #bug check 1: this part works
     history = MessageHistory.query.get(history_id)
     history.people[user_id] = request.sid
     flag_modified(history,'people')
@@ -65,19 +67,19 @@ def handle_user_join(user_id,history_id):
 @socketio.on("new_message")
 def handle_new_message(message,username,history_id):
     history = MessageHistory.query.get(history_id)
+    print(history)
     people = history.people
-    other = people[0] if people[0] != current_user.username else people[1]
+    choose = [i for i in people.keys()]
+    print(choose)
+    print(current_user.id)
+    other = choose[0] if choose[0] != str(current_user.id) else choose[1]
+    print(other)
+    #saves all messages to the database
+    history.messages['list'].append({'message':message,'sender':username})
+    flag_modified(history,'messages')
+    db.session.commit()
     emit("chat", {"message": message, "username": username}, room=history.people[other])
 
-@socketio.on("leave_site")
-def handle_leave_site(history_id,user_id):
-    emit('cleanup_complete',room=request.sid)
-    history = MessageHistory.query.get(history_id)
-    history.people[user_id] = ''
-    flag_modified(history,'people')
-    db.session.commit()
-
-import functions
 
 user_type_key = {0:'student',
                  1:'teacher',
@@ -114,6 +116,11 @@ def load_default_notifactions():
         default_notifactions = json.load(file)
     return default_notifactions
 
+def load_non_basic_json_file():
+    with open('static/assets/messages.json', 'r') as file:
+        default_schedule = json.load(file)
+    return default_schedule
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255),unique=True)
@@ -137,7 +144,7 @@ class User(db.Model, UserMixin):
 class MessageHistory(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     people = db.Column(JSON, default=load_basic_json_file)
-    messages = db.Column(JSON, default=load_basic_json_file)
+    messages = db.Column(JSON, default=load_non_basic_json_file)
     session = db.relationship('Session', backref='message_history', lazy = True)
 
 class Session(db.Model):
