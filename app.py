@@ -111,6 +111,11 @@ def load_default_schedule():
         default_schedule = json.load(file)
     return default_schedule
 
+def load_default_notifactions():
+    with open('static/assets/default_notifactions.json', 'r') as file:
+        default_notifactions = json.load(file)
+    return default_notifactions
+
 def load_non_basic_json_file():
     with open('static/assets/messages.json', 'r') as file:
         default_schedule = json.load(file)
@@ -125,6 +130,7 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Integer,nullable=False)
     schedule_data = db.Column(JSON, default=load_default_schedule)
+    notifaction_data = db.Column(JSON, default=load_default_notifactions)
     sessions = db.relationship('Session', backref='user', lazy = True)
     feedbacks = db.relationship('Feedback', backref='user', lazy = True)
     hours_of_service = db.Column(db.Float, default = 0.0)
@@ -349,7 +355,7 @@ def completion_form():
         db.session.add(feedback)
         db.session.commit()
         if session.tutor_form_completed and session.student_form_completed:
-            return redirect(f'/delete_session/{session.id}')
+            return redirect(f'/delete_session/{session.id}/1')
         return redirect(url_for('index'))
     return render_template('completion_form.html', type = type, id = id)
 
@@ -477,18 +483,25 @@ def scheduler():
 
     return render_template('scheduler.html',booked_periods=periods)
 
-@app.route('/delete_session/<session_id>')
-def delete_session(session_id):
+@app.route('/delete_session/<session_id>/<type>')
+def delete_session(session_id,type):
     session = Session.query.get(session_id)
-    if session.tutor_form_completed and session.student_form_completed:
+    if type != "1" or session.tutor_form_completed and session.student_form_completed:
         user = User.query.get(session.tutor)
         date = date_to_day(session.date.strftime('%Y-%m-%d'))
         user.schedule_data[date][str(session.period)]['times'] = user.schedule_data[date][str(session.period)]['times'].replace(session.date.strftime('%Y-%m-%d'), "")
+        if type != "1":
+            if session.tutor == current_user.id:
+                other_user = User.query.get(session.student)
+            else:
+                other_user = User.query.get(session.student)
+            temp = other_user.notifaction_data['deleted']
+            other_user.notifaction_data['deleted'] = temp + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
+            flag_modified(other_user, "notifaction_data")
         db.session.delete(session)
         flag_modified(user,'schedule_data')
         db.session.commit()
         flash('Session Deleted', 'success')
-
     else:
         flash('Tutor and Student Forms not Complete', 'warning')
     return redirect(url_for('index'))
@@ -571,12 +584,17 @@ def book_session(id, date, period):
         people=people,
     )
     
+    other_user = User.query.get(id)
+    temp = other_user.notifaction_data['deleted']
+    other_user.notifaction_data['deleted'] = temp + [f'{user.username} booked a session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
+    flag_modified(other_user, 'notifaction_data')
+    
     user.schedule_data[day][period]['times'] += ' ' + str(date)
     flag_modified(user, 'schedule_data')
     db.session.add(conversation)
     db.session.commit()
     flash('Booked Session', 'success')
-    return redirect(url_for('session_manager'))
+    return redirect(url_for('index'))
 
 @app.route('/profile',methods=['POST','GET'])
 def profile():
