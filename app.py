@@ -159,7 +159,6 @@ class Session(db.Model):
     tutor_form_completed = db.Column(db.Boolean, default = False)
     student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
-    termination_request = db.Column(db.Boolean, default = False)
 
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -185,6 +184,26 @@ class Periods(db.Model):
 
 with app.app_context():
     db.create_all()
+
+def my_function(user_id, button_id):
+    user = User.query.get(user_id)
+    temp = user.notifaction_data['deleted']
+    temp.remove(button_id)
+    user.notifaction_data['deleted'] = temp
+    print('test')
+    print(temp)
+    flag_modified(user, 'notifaction_data')
+    db.session.commit()
+    return None
+
+
+@app.route('/execute_function', methods=['POST'])
+def execute_function():
+    print('test')
+    user_id = request.json['user_id']
+    message = request.json['button_id']
+    my_function(user_id, message)
+    return redirect(url_for('index'))
 
 @app.route('/welcome')
 def welcome():
