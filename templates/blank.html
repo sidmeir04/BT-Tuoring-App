@@ -19,7 +19,6 @@
 
     <!-- Custom styles for this template-->
     <link href="static/assets/css/sb-admin-2.min.css" rel="stylesheet">
-
 </head>
 
 <body id="page-top" class="shifting-gradient">
@@ -213,17 +212,19 @@
                                     Alerts Center
                                 </h6>
                                 {% for notifaction in current_user.notifaction_data['deleted'] %}
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
+                                <div>
+                                    <a class="dropdown-item d-flex align-items-center" href="#">
+                                        <div class="mr-3">
+                                            <div class="icon-circle bg-primary">
+                                                <i class="fas fa-file-alt text-white"></i>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">{{notifaction}}</span>
-                                    </div>
-                                </a>
+                                        <div>
+                                            <div class="small text-gray-500">December 12, 2019</div>
+                                            <span class="font-weight-bold">{{notifaction}}</span>
+                                        </div>
+                                    </a>
+                                </div>
                                 {% endfor %}
                                 <!-- <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="mr-3">

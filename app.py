@@ -316,7 +316,7 @@ def complete_session(id):
         return redirect(f"/completion_form?type={1}&id={session.id}")
     return redirect(url_for('index'))
 
-@app.route('/completion_form', methods = ['GET','POST'])
+@app.route('/completion_form/', methods = ['GET','POST'])
 def completion_form():
     type = request.args.get('type')
     id = request.args.get('id')
@@ -348,6 +348,13 @@ def completion_form():
         db.session.add(feedback)
         db.session.commit()
         if session.tutor_form_completed and session.student_form_completed:
+            tutor = User.query.get(session.tutor)
+            datetime1 = datetime.combine(datetime.today(), session.end_time)
+            datetime2 = datetime.combine(datetime.today(), session.start_time)
+            difference =  datetime1 - datetime2
+            difference = difference.total_seconds()/3600
+            tutor.hours_of_service += float(difference)
+            db.session.commit()
             return redirect(f'/delete_session/{session.id}/1')
         return redirect(url_for('index'))
     return render_template('completion_form.html', type = type, id = id)
