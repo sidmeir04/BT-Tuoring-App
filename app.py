@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import JSON
 import random
@@ -185,29 +185,21 @@ class Periods(db.Model):
 with app.app_context():
     db.create_all()
 
-def my_function(user_id, button_id):
-    user = User.query.get(user_id)
-    temp = user.notifaction_data['deleted']
-    temp.remove(button_id)
-    user.notifaction_data['deleted'] = temp
-    print('test')
-    print(temp)
-    flag_modified(user, 'notifaction_data')
-    db.session.commit()
-    return None
-
-
-@app.route('/execute_function', methods=['POST'])
-def execute_function():
-    print('test')
-    user_id = request.json['user_id']
-    message = request.json['button_id']
-    my_function(user_id, message)
-    return redirect(url_for('index'))
-
 @app.route('/welcome')
 def welcome():
     return render_template('welcome.html')
+
+@app.route('/delete_notification', methods=['POST'])
+@login_required
+def delete_notification():
+    data = request.get_json()
+    notification = data.get('notif')
+    if notification in current_user.notifaction_data['deleted']:
+        current_user.notifaction_data['deleted'].remove(notification)
+        flag_modified(current_user, "notifaction_data")
+        db.session.commit()
+        return jsonify({"success": True})
+    return jsonify({"success": False})
 
 # to prevent needing to change all the html file templates
 @app.route('/index.html')
@@ -331,6 +323,11 @@ def register():
 @app.route('/complete_session/<id>')
 def complete_session(id):
     session = Session.query.get(id)
+    ##############################################################################################################################
+
+                                        # add for final product #
+
+    ##############################################################################################################################
     # date = session.date
     # today = datetime.now().date()
     # if date >= today:

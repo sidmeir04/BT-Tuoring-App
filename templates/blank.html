@@ -19,23 +19,6 @@
 
     <!-- Custom styles for this template-->
     <link href="static/assets/css/sb-admin-2.min.css" rel="stylesheet">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('.myButton').click(function() {
-                var userId = '{{ current_user.id }}'; // Get the current_user id from the template
-                var buttonId = $(this).attr('id'); // Get the id of the clicked button
-                $.ajax({
-                    type: 'POST',   
-                    url: '/execute_function',
-                    data: { user_id: userId, button_id: buttonId }, // Pass user id, button id, and button text in the request payload
-                    success: function(response) {
-                        alert(response);
-                    }
-                });
-            });
-        });
-    </script>
 </head>
 
 <body id="page-top" class="shifting-gradient">
@@ -225,28 +208,28 @@
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alerts Center
-                                </h6>
-                                {% for notifaction in current_user.notifaction_data['deleted'] %}
-                                <div>
-                                    <a class="dropdown-item d-flex align-items-center" href="#">
-                                        <div class="mr-3">
-                                            <div class="icon-circle bg-primary">
-                                                <i class="fas fa-file-alt text-white"></i>
-                                            </div>
+                                <h6 class="dropdown-header">Alerts Center</h6>
+                            {% for notifaction in current_user.notifaction_data['deleted'][::-1] %}
+                            <div>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <div class="mr-3">
+                                        <div class="icon-circle bg-primary">
+                                            <i class="fas fa-file-alt text-white"></i>
                                         </div>
-                                        <div>
-                                            <div class="small text-gray-500">December 12, 2019</div>
-                                            <span class="font-weight-bold">{{notifaction}}</span>
-                                        </div>
-                                        <div>
-                                            <!-- <button id="{{notifaction}}" class="mybutton">X</button> -->
-                                            <button id="{{notifaction}}" class="mybutton">X</button>
-                                        </div>
-                                    </a>
-                                </div>
-                                {% endfor %}
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">December 12, 2019</div>
+                                        <span class="font-weight-bold">{{notifaction}}</span>
+                                    </div>
+                                    <div>
+                                        <button value="{{notifaction}}" class="mybutton">X</button>
+                                    </div>
+                                    <div>
+                                        <button onclick="console.log('test')" class="mybutton">X</button>
+                                    </div>
+                                </a>
+                            </div>
+                            {% endfor %}
                             </div>
                         </li>
 
@@ -452,8 +435,30 @@
 
     <!-- Custom scripts for all pages-->
     <script src="static/assets/js/sb-admin-2.min.js"></script>
-    
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.mybutton').on('click', function() {
+                const notif = $(this).val();
+                const button = $(this);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/delete_notification',
+                    data: JSON.stringify({ notif: notif }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        button.closest('.dropdown-item').remove();
+                    },
+                    error: function(error) {
+                        console.error('Error deleting notification:', error);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
