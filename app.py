@@ -1,5 +1,6 @@
 #import all of the imports in a seperate document
 from all_imports import *
+
 #imports all of the lengthy functions for json file loading
 from json_file_loading import *
 
@@ -117,7 +118,10 @@ def details():
     messages = message_history.messages['list']
     messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message']}  for i in messages]
 
-    return render_template('appointment_details.html',session=open_sesssion,history=open_sesssion.message_history_id,thiss=current_user,messages=messages)
+    return render_template('appointment_details.html',
+                           session=open_sesssion,
+                           thiss=current_user,
+                           messages=messages)
 
 
 @socketio.on("connect")
@@ -128,22 +132,25 @@ def handle_connect():
 
 @socketio.on("user_join")
 def handle_user_join(user_id,history_id):
+    #gets the message history associated and updates the room id
     history = MessageHistory.query.get(history_id)
     history.people[user_id] = request.sid
     flag_modified(history,'people')
     db.session.commit()
 
 @socketio.on("new_message")
-def handle_new_message(message,username,history_id):
+def handle_new_message(message,sending_user_id,history_id):
+    sending_user = User.query.get(sending_user_id)
     history = MessageHistory.query.get(history_id)
     people = history.people
     choose = [i for i in people.keys()]
-    other = choose[0] if choose[0] != str(current_user.id) else choose[1]
+    print(choose)
+    other = choose[0] if choose[0] != str(sending_user.id) else choose[1]
     #saves all messages to the database
-    history.messages['list'].append({'message':message,'sender':username})
+    history.messages['list'].append({'message':message,'sender':sending_user.username})
     flag_modified(history,'messages')
     db.session.commit()
-    emit("chat", {"message": message, "username": username}, room=history.people[other])
+    emit("chat", {"message": message, "username": sending_user.username}, room=history.people[other])
 
 
 @app.route('/welcome')
@@ -166,6 +173,10 @@ def delete_notification():
 @app.route('/index.html')
 def reroute_user():
     return redirect(url_for('index'))
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 @app.route('/createDB')
 def createDB():
@@ -540,7 +551,6 @@ def string_to_time(time_str):
 @app.route('/book_session/<id>/<date>/<period>')
 def book_session(id, date, period):
     user = User.query.get(id)
-    current = current_user.id
 
     day = date_to_day(date)
     data = user.schedule_data[day][period]
@@ -549,8 +559,6 @@ def book_session(id, date, period):
     conversation = MessageHistory(
         people=people
     )
-    db.session.add(conversation)
-    db.session.commit()
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
@@ -561,12 +569,10 @@ def book_session(id, date, period):
         date = datetime.strptime(date, '%Y-%m-%d').date(),
         message_history_id = 1
     )
+    
+    db.session.add(conversation)
     db.session.add(new_session)
     db.session.commit()
-    people = {0:{'user':user,'id':''},0:{'user':current,'id':''}}
-    conversation = MessageHistory(
-        people=people,
-    )
     
     other_user = User.query.get(id)
     temp = other_user.notifaction_data['deleted']
