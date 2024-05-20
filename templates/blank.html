@@ -203,7 +203,9 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">3+</span>
+                                {%if current_user.notifaction_data['deleted'][::-1]|length != 0%}
+                                <span class="badge badge-danger badge-counter">{{current_user.notifaction_data['deleted'][::-1]|length}}</span>
+                                {%endif%}
                             </a>
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -374,7 +376,6 @@
     <script src="static/assets/js/sb-admin-2.min.js"></script>
 
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
             $('.mybutton').on('click', function() {

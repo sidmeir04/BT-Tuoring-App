@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import JSON
 import random
@@ -20,3 +20,4 @@ from flask_socketio import emit
 from flask import Blueprint, render_template
 from flask_socketio import SocketIO
 from sqlalchemy import func
+import json

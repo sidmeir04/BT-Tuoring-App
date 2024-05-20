@@ -242,13 +242,12 @@
 </script>
 
 <script>
+    //connects the socket
     const socket = io({autoConnect: true});
 
     // Event listener for socket connection
     socket.on("connect", function() {
-        console.log('Socket connected');
-        // Emit the 'user_join' event with template variables
-        socket.emit("user_join", "{{ thiss.id }}", "{{ history }}");
+        socket.emit("user_join", "{{ thiss.id }}", "{{ session.message_history_id }}");
     });
 
     // Event listener for send button click
@@ -256,24 +255,16 @@
         send_message();
     });
 
-    // Event listener for message input keyup
-    // document.getElementById("message").addEventListener("keyup", function (event) {
-    //     if (event.key === 'Enter'){
-    //         send_message();
-    //     }
-    // });
-
     // Function to send a message
     function send_message(){
         let message = document.getElementById("message").value;
-        console.log(message)
         if (message.trim() !== ""){
-            // Emit the 'new_message' event with the username
-            socket.emit("new_message", message, "{{ thiss.username }}","{{history}}");
-            document.getElementById("message").value = "";
-            
+            socket.emit("new_message", message, "{{ thiss.id }}","{{session.message_history_id}}");
 
-            
+            //resets the message
+            document.getElementById("message").value = "";
+
+            //displays the message sent on our end
             thing = `<div class="d-flex justify-content-end mb-2 align-items-end">
                                         <div class="justify-content-end" style="max-width: 70%;">
                                             <small class="d-flex justify-content-end text-end mx-2" width="100%">{{thiss.username}}</small>
@@ -282,32 +273,29 @@
                                             </div>
                                         </div>
                                         <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
-                                    </div>`
-            console.log(thing)
-            // Append the main container to a target element (e.g., the body)
+                                    </div>`  
             document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
         }
     }
 
     // Event listener for receiving chat messages
+    //recieves from the "new_messages" route
     socket.on("chat", function(data) {
-        // Create necessary DOM elements
+        // Append the message container to the main container
+        thing = `<div class="d-flex justify-content-start mb-2 align-items-end">
+                                            <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
 
-    // Append the message container to the main container
-    thing = `<div class="d-flex justify-content-start mb-2 align-items-end">
-                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
-
-                                        <div class="justify-content-end" style="max-width: 70%;">
-                                            <small class="d-flex justify-content-start text-end mx-2" width="100%">${data['username']}</small>
-                                            <div class="rounded bg-secondary text-white p-2 mx-2" style="max-width: 100%;">
-                                                <!-- Message Content -->
-                                                ${data['message']}
+                                            <div class="justify-content-end" style="max-width: 70%;">
+                                                <small class="d-flex justify-content-start text-end mx-2" width="100%">${data['username']}</small>
+                                                <div class="rounded bg-secondary text-white p-2 mx-2" style="max-width: 100%;">
+                                                    <!-- Message Content -->
+                                                    ${data['message']}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>`
+                                        </div>`
 
-    // Append the main container to a target element (e.g., the body)
-    document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
+        // Append the main container to a target element (e.g., the body)
+        document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
 
     });
 </script>
