@@ -167,10 +167,6 @@ def delete_notification():
 def reroute_user():
     return redirect(url_for('index'))
 
-@login_manager.user_loader
-def load_user(user):
-    return User.get(int(user))
-
 @app.route('/createDB')
 def createDB():
     for _ in range(1,10):
@@ -190,26 +186,8 @@ def createDB():
 def index():
     #redirects if not logged 
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
-    number = 4.20    
-    if number > .75:
-        color = 'success'
-    elif number > .25:
-        color = 'warning'
-    else:
-        color = 'danger'
-    
-    # user_id = current_user.id
-    # message_histories = MessageHistory.query.filter(
-    #     func.json_contains(MessageHistory.people, str(user_id))
-    # ).all()
-
-    # user_messages = []
-    # for message_history in message_histories:
-    #     user_messages.extend(message_history.messages)
-    # print(user_messages)
 
     return render_template('index0.html',username=current_user.username,
-                           number=number,color=color, 
                            sessions = Session.query.filter_by(tutor=current_user.id, 
                             tutor_form_completed = False).all(), 
                             student_sessions = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
@@ -263,7 +241,7 @@ def register():
         #handle if existing user
         user = User.query.filter_by(email=email).first()
         if user is not None and email == user.email:
-            # Handle password mismatch
+            # Handle email overlap
             flash("User already exist! Try a different email", "danger")
             return render_template("register.html")
         if password != confirm_password:
@@ -317,10 +295,12 @@ def completion_form():
         on_time = request.form.get('on_time')
         review = request.form.get('message')
         session = Session.query.get(id)
+
         if int(type) == 1:
             review_for = session.tutor
         else:
             review_for = session.student
+
         feedback = Feedback(
             on_time = on_time,
             understanding = understanding,
@@ -337,9 +317,16 @@ def completion_form():
             session.student_form_completed = True
             feedback.tutoring = True
 
+        other_user = User.query.get(review_for)
+        temp = other_user.notifaction_data['deleted']
+        other_user.notifaction_data['deleted'] = temp + [f'{other_user.username} gave you feedback']
+        flag_modified(other_user,"notifaction_data")
+
         db.session.add(feedback)
         db.session.commit()
+
         if session.tutor_form_completed and session.student_form_completed:
+            # delete the session and add community service hours to the user
             tutor = User.query.get(session.tutor)
             datetime1 = datetime.combine(datetime.today(), session.end_time)
             datetime2 = datetime.combine(datetime.today(), session.start_time)
@@ -357,9 +344,7 @@ def show_feedback():
     return render_template('show_feedback.html', reviews = reviews)
 
 def time_to_min(time):
-    factors = (60, 1, 1/60)
-
-    return sum(i*j for i, j in zip(map(int, time.split(':')), factors))
+    return sum(i*j for i, j in zip(map(int, time.split(':')), (60, 1, 1/60)))
 
 days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 def date_to_day(date):
@@ -376,7 +361,7 @@ def find_next_day_of_week(day_of_week):
     if days_ahead == 0:
         days_ahead = 7
     next_day = datetime.now() + timedelta(days=days_ahead)
-
+    # returns the date of the next time a day of the week would occur
     return next_day.strftime("%Y-%m-%d")
 
 @app.route('/find_session',methods=['GET','POST'])
@@ -398,6 +383,7 @@ def find_session():
         users = []
         user_names = []
         if period != '-1':
+            # if the period is not specified
             data = Periods.query.get(int(period))
             if date:
                 day = date_to_day(date)
@@ -407,15 +393,19 @@ def find_session():
             else:
                 for day in lower_days:
                     day_data = getattr(data, day, 'defualt')
+                    # adding data to existing lists, could probably be done with map
                     [user_names.append((User.query.get(int(id)).username,id,period,find_next_day_of_week(day))) for id in day_data.split(' ')[1:]]
                     [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
+
         elif date:
             day = date_to_day(date)
             day_data = [getattr(Periods.query.get(i),day) for i in range(1,10)]
             for period,period_data in enumerate(day_data):
                 if period_data:
+                    # adding data to existing lists, could probably be done with map
                     [user_names.append((User.query.get(int(id)).username,id,period+1,date)) for id in period_data.split(' ')[1:]]
                     [users.append(User.query.get(int(id)).schedule_data[day][str(period+1)]) for id in period_data.split(' ')[1:]]
+
         return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower())
     return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower())
 
@@ -427,6 +417,7 @@ def scheduler():
         day = int(day)
         period_data = Periods.query.get(period)
         data = getattr(period_data, lower_days[day], 'default')
+
         if ('delete', '') not in request.form.items():
             start_time = request.form.get('start_time')
             end_time = request.form.get('end_time')
@@ -434,6 +425,7 @@ def scheduler():
             period_end = period_start + 41
             start_min = time_to_min(start_time)
             end_min = time_to_min(end_time)
+
             if (start_min < period_start or end_min > period_end or start_min > end_min):
                 flash('invalid times', 'warning')
                 return redirect(url_for('scheduler'))
@@ -479,14 +471,14 @@ def scheduler():
 def delete_session(session_id,type):
     session = Session.query.get(session_id)
     if type != "1" or session.tutor_form_completed and session.student_form_completed:
-        user = User.query.get(session.tutor)
+        user = User.query.get(current_user.id)
         date = date_to_day(session.date.strftime('%Y-%m-%d'))
         user.schedule_data[date][str(session.period)]['times'] = user.schedule_data[date][str(session.period)]['times'].replace(session.date.strftime('%Y-%m-%d'), "")
         if type != "1":
             if session.tutor == current_user.id:
                 other_user = User.query.get(session.student)
             else:
-                other_user = User.query.get(session.student)
+                other_user = User.query.get(session.tutor)
             temp = other_user.notifaction_data['deleted']
             other_user.notifaction_data['deleted'] = temp + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
             flag_modified(other_user, "notifaction_data")

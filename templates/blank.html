@@ -222,10 +222,7 @@
                                         <span class="font-weight-bold">{{notifaction}}</span>
                                     </div>
                                     <div>
-                                        <button value="{{notifaction}}" class="mybutton">X</button>
-                                    </div>
-                                    <div>
-                                        <button onclick="console.log('test')" class="mybutton">X</button>
+                                        <button value="{{notifaction}}" class="remove_notifaction">X</button>
                                     </div>
                                 </a>
                             </div>
@@ -373,11 +370,9 @@
     <!-- Custom scripts for all pages-->
     <script src="static/assets/js/sb-admin-2.min.js"></script>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('.mybutton').on('click', function() {
+            $('.remove_notifaction').on('click', function() {
                 const notif = $(this).val();
                 const button = $(this);
 

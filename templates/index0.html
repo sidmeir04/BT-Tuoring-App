@@ -413,44 +413,17 @@ blockquote {
                     </table>
                 </div>
             </div>
-            <div class="card shadow mb-4" style="height: 30vh;">
-                <div class="card-header p-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Session Terminations</h6>
-                </div>
-                <div class="card-body d-flex">
-                    <table class="table-responsive table">
-                        <tbody>
-                            {%for _ in range(3)%}
-                            <tr>
-                                <td>
-                                    person's name here
-                                </td>
-                                <td>
-                                    Date here
-                                </td>
-                                <td>
-                                    More info
-                                </td>
-                            </tr>
-                            {%endfor%}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
     <div class="row py-2 mb-4 bg-gradient-secondary px-0">
     </div>
     <div class="row p-1 align-items-center">
 
-        <!-- Earnings (Monthly) Card Example -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <a class="col-xl-3 col-md-6 mb-4" href = "/scheduler">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center h-100">
                         <div class="col mr-2">
-                            <!-- <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Earnings (Annual)</div> -->
                             <div class="h5 mb-0 font-weight-bold text-gray-800">Set Schedule</div>
                         </div>
                         <div class="col-auto">
@@ -459,9 +432,8 @@ blockquote {
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
 
-        <!-- Earnings (Monthly) Card Example -->
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
@@ -476,14 +448,21 @@ blockquote {
                 </div>
             </div>
         </div>  
-        <div class="col-xl-6 col-md-12 mb-4">
-            <div class="card shadow h-100 py-4">
+        
+        <a class="col-xl-3 col-md-6 mb-4" href = "/find_session">
+            <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
-
-                      
+                    <div class="row no-gutters align-items-center h-100">
+                        <div class="col mr-2">
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Find Sessions</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 <!-- <script>
