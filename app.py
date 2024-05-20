@@ -1,84 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import JSON
-import random
-from sqlalchemy.exc import IntegrityError
-from werkzeug.utils import secure_filename
-from sqlalchemy import desc, asc
-from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
-import secrets
-from flask_mail import Message
-from flask_login import LoginManager, UserMixin
-from flask_login import login_user, current_user, logout_user, login_required
-from calendar import weekday
-import json
-from sqlalchemy.orm.attributes import flag_modified
-from datetime import time, timedelta
-from flask import request, Flask
-from flask_socketio import emit
-from flask import Blueprint, render_template
-from flask_socketio import SocketIO 
-
-socketio = SocketIO()
-
-main = Blueprint("main", __name__)
-
-def create_app():
-    app = Flask(__name__)
-    app.config["DEBUG"] = True
-
-    app.register_blueprint(main)
-
-    socketio.init_app(app)
-
-    return app
-
-app = create_app()
-
-users = {}
-
-#the "connect" here is a keyword, when the server first starts it will say connected
-
-@app.route('/appointment_details')
-def details():
-    ID = request.args.get('identification')
-    open_sesssion = Session.query.get(ID)
-    message_history = MessageHistory.query.get(open_sesssion.message_history_id)
-    messages = message_history.messages['list']
-    messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message']}  for i in messages]
-    print(messages)
-    return render_template('appointment_details.html',session=open_sesssion,history=open_sesssion.message_history_id,thiss=current_user,messages=messages)
-
-
-@socketio.on("connect")
-def handle_connect():
-    print(request.sid)
-    print("Client connected!")
-
-@socketio.on("user_join")
-def handle_user_join(user_id,history_id):
-    #bug check 1: this part works
-    history = MessageHistory.query.get(history_id)
-    history.people[user_id] = request.sid
-    flag_modified(history,'people')
-    db.session.commit()
-
-@socketio.on("new_message")
-def handle_new_message(message,username,history_id):
-    history = MessageHistory.query.get(history_id)
-    print(history)
-    people = history.people
-    choose = [i for i in people.keys()]
-    print(choose)
-    print(current_user.id)
-    other = choose[0] if choose[0] != str(current_user.id) else choose[1]
-    print(other)
-    #saves all messages to the database
-    history.messages['list'].append({'message':message,'sender':username})
-    flag_modified(history,'messages')
-    db.session.commit()
-    emit("chat", {"message": message, "username": username}, room=history.people[other])
+#import all of the imports in a seperate document
+from all_imports import *
+#imports all of the lengthy functions for json file loading
+from json_file_loading import *
 
 
 user_type_key = {0:'student',
@@ -86,40 +9,33 @@ user_type_key = {0:'student',
                  2:'administrator',
                  3:'developer'}
 
-# app = Flask(__name__)
+socketio = SocketIO()
+
+def create_app():
+    #setup the basics of the app
+    main = Blueprint("main", __name__)
+    app = Flask(__name__)
+    app.config["DEBUG"] = True
+    app.register_blueprint(main)
+    socketio.init_app(app)
+
+    #returning the app
+    return app
+
+app = create_app()
 login_manager = LoginManager(app)
-login_manager.login_view = 'login' #specify the login route
+login_manager.login_view = 'login'
 
 # Database configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
 app.config['SESSION_COOKIE_NAME'] = 'Session_Cookie'
 app.config['SESSION_COOKIE_PATH'] = '/'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = True  # For HTTPS only
-app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'  # Recommended for security
-app.config['SESSION_PERMANENT'] = False  # Session only lasts until the browser is closed
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
+app.config['SESSION_PERMANENT'] = False
 
 db = SQLAlchemy(app)
-
-def load_basic_json_file():
-    with open('static/assets/basic_json_file.json', 'r') as file:
-        basic = json.load(file)
-    return basic
-
-def load_default_schedule():
-    with open('static/assets/default_schedule.json', 'r') as file:
-        default_schedule = json.load(file)
-    return default_schedule
-
-def load_default_notifactions():
-    with open('static/assets/default_notifactions.json', 'r') as file:
-        default_notifactions = json.load(file)
-    return default_notifactions
-
-def load_non_basic_json_file():
-    with open('static/assets/messages.json', 'r') as file:
-        default_schedule = json.load(file)
-    return default_schedule
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -145,6 +61,7 @@ class MessageHistory(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     people = db.Column(JSON, default=load_basic_json_file)
     messages = db.Column(JSON, default=load_non_basic_json_file)
+    # missed = db.Column(db.Integer, default=0)
     session = db.relationship('Session', backref='message_history', lazy = True)
 
 class Session(db.Model):
@@ -181,19 +98,58 @@ class Periods(db.Model):
     thursday = db.Column(db.String(256), default = '')
     friday = db.Column(db.String(256), default = '')
 
-
-
 with app.app_context():
     db.create_all()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+@app.route('/appointment_details')
+def details():
+    #gets the session currently being viewed
+    ID = request.args.get('identification')
+    open_sesssion = Session.query.get(ID)
+
+    #gets the message history associated with the session
+    message_history = MessageHistory.query.get(open_sesssion.message_history_id)
+    messages = message_history.messages['list']
+    messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message']}  for i in messages]
+
+    return render_template('appointment_details.html',session=open_sesssion,history=open_sesssion.message_history_id,thiss=current_user,messages=messages)
+
+
+@socketio.on("connect")
+def handle_connect():
+    #here, there should be a code segment that clears the notifications of missed messages
+    #socketio connecting indicates that the user has viewed their messages
+    pass
+
+@socketio.on("user_join")
+def handle_user_join(user_id,history_id):
+    history = MessageHistory.query.get(history_id)
+    history.people[user_id] = request.sid
+    flag_modified(history,'people')
+    db.session.commit()
+
+@socketio.on("new_message")
+def handle_new_message(message,username,history_id):
+    history = MessageHistory.query.get(history_id)
+    people = history.people
+    choose = [i for i in people.keys()]
+    other = choose[0] if choose[0] != str(current_user.id) else choose[1]
+    #saves all messages to the database
+    history.messages['list'].append({'message':message,'sender':username})
+    flag_modified(history,'messages')
+    db.session.commit()
+    emit("chat", {"message": message, "username": username}, room=history.people[other])
+
 
 @app.route('/welcome')
 def welcome():
     return render_template('welcome.html')
-
-# to prevent needing to change all the html file templates
-@app.route('/index.html')
-def reroute_user():
-    return redirect(url_for('index'))
 
 @login_manager.user_loader
 def load_user(user):
@@ -216,10 +172,8 @@ def createDB():
 
 @app.route("/")
 def index():
-    #if logged in, go to dashboard
-    #else go to login
-    if not current_user.is_authenticated:return redirect(url_for('login'))
-    # if current_user.role == 0:
+    #redirects if not logged 
+    if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
     number = 4.20    
     if number > .75:
         color = 'success'
@@ -227,13 +181,23 @@ def index():
         color = 'warning'
     else:
         color = 'danger'
+    
+    # user_id = current_user.id
+    # message_histories = MessageHistory.query.filter(
+    #     func.json_contains(MessageHistory.people, str(user_id))
+    # ).all()
 
-    return render_template('index0.html',username=current_user.username,number=number,color=color, sessions = Session.query.filter_by(tutor=current_user.id, tutor_form_completed = False).all(), student_sessions = Session.query.filter_by(student=current_user.id, student_form_completed = False).all())
+    # user_messages = []
+    # for message_history in message_histories:
+    #     user_messages.extend(message_history.messages)
+    # print(user_messages)
 
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+    return render_template('index0.html',username=current_user.username,
+                           number=number,color=color, 
+                           sessions = Session.query.filter_by(tutor=current_user.id, 
+                            tutor_form_completed = False).all(), 
+                            student_sessions = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
+                            )
 
 @app.route('/login',methods=['GET','POST'])
 def login():
