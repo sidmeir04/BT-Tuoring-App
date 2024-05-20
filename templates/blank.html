@@ -19,7 +19,6 @@
 
     <!-- Custom styles for this template-->
     <link href="static/assets/css/sb-admin-2.min.css" rel="stylesheet">
-
 </head>
 
 <body id="page-top" class="shifting-gradient">
@@ -209,10 +208,9 @@
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alerts Center
-                                </h6>
-                                {% for notifaction in current_user.notifaction_data['deleted'] %}
+                                <h6 class="dropdown-header">Alerts Center</h6>
+                            {% for notifaction in current_user.notifaction_data['deleted'][::-1] %}
+                            <div>
                                 <a class="dropdown-item d-flex align-items-center" href="#">
                                     <div class="mr-3">
                                         <div class="icon-circle bg-primary">
@@ -223,31 +221,15 @@
                                         <div class="small text-gray-500">December 12, 2019</div>
                                         <span class="font-weight-bold">{{notifaction}}</span>
                                     </div>
-                                </a>
-                                {% endfor %}
-                                <!-- <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-success">
-                                            <i class="fas fa-donate text-white"></i>
-                                        </div>
+                                    <div>
+                                        <button value="{{notifaction}}" class="mybutton">X</button>
                                     </div>
                                     <div>
-                                        <div class="small text-gray-500">December 7, 2019</div>
-                                        $290.29 has been deposited into your account!
+                                        <button onclick="console.log('test')" class="mybutton">X</button>
                                     </div>
                                 </a>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-warning">
-                                            <i class="fas fa-exclamation-triangle text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 2, 2019</div>
-                                        Spending Alert: We've noticed unusually high spending for your account.
-                                    </div>
-                                </a> -->
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                            </div>
+                            {% endfor %}
                             </div>
                         </li>
 
@@ -390,8 +372,30 @@
 
     <!-- Custom scripts for all pages-->
     <script src="static/assets/js/sb-admin-2.min.js"></script>
-    
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.mybutton').on('click', function() {
+                const notif = $(this).val();
+                const button = $(this);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/delete_notification',
+                    data: JSON.stringify({ notif: notif }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        button.closest('.dropdown-item').remove();
+                    },
+                    error: function(error) {
+                        console.error('Error deleting notification:', error);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

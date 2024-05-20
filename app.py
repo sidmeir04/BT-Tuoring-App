@@ -76,7 +76,6 @@ class Session(db.Model):
     tutor_form_completed = db.Column(db.Boolean, default = False)
     student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
-    termination_request = db.Column(db.Boolean, default = False)
 
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -150,6 +149,23 @@ def handle_new_message(message,username,history_id):
 @app.route('/welcome')
 def welcome():
     return render_template('welcome.html')
+
+@app.route('/delete_notification', methods=['POST'])
+@login_required
+def delete_notification():
+    data = request.get_json()
+    notification = data.get('notif')
+    if notification in current_user.notifaction_data['deleted']:
+        current_user.notifaction_data['deleted'].remove(notification)
+        flag_modified(current_user, "notifaction_data")
+        db.session.commit()
+        return jsonify({"success": True})
+    return jsonify({"success": False})
+
+# to prevent needing to change all the html file templates
+@app.route('/index.html')
+def reroute_user():
+    return redirect(url_for('index'))
 
 @login_manager.user_loader
 def load_user(user):
@@ -276,6 +292,11 @@ def register():
 @app.route('/complete_session/<id>')
 def complete_session(id):
     session = Session.query.get(id)
+    ##############################################################################################################################
+
+                                        # add for final product #
+
+    ##############################################################################################################################
     # date = session.date
     # today = datetime.now().date()
     # if date >= today:
@@ -287,7 +308,7 @@ def complete_session(id):
         return redirect(f"/completion_form?type={1}&id={session.id}")
     return redirect(url_for('index'))
 
-@app.route('/completion_form', methods = ['GET','POST'])
+@app.route('/completion_form/', methods = ['GET','POST'])
 def completion_form():
     type = request.args.get('type')
     id = request.args.get('id')
@@ -319,6 +340,13 @@ def completion_form():
         db.session.add(feedback)
         db.session.commit()
         if session.tutor_form_completed and session.student_form_completed:
+            tutor = User.query.get(session.tutor)
+            datetime1 = datetime.combine(datetime.today(), session.end_time)
+            datetime2 = datetime.combine(datetime.today(), session.start_time)
+            difference =  datetime1 - datetime2
+            difference = difference.total_seconds()/3600
+            tutor.hours_of_service += float(difference)
+            db.session.commit()
             return redirect(f'/delete_session/{session.id}/1')
         return redirect(url_for('index'))
     return render_template('completion_form.html', type = type, id = id)
