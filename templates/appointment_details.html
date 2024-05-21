@@ -14,7 +14,6 @@
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
             <h1 class="h3 mb-0 text-gray-800">Ticket Number {{session.id}}</h1>
         </div>
-
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
             <button class="btn btn-primary" onclick="do_open('overview')">
                 Overview
@@ -173,7 +172,7 @@
                                     {%if message['mine']%}
                                     <div class="d-flex justify-content-end mb-2 align-items-end">
                                         <div class="justify-content-end" style="max-width: 70%;">
-                                            <small class="d-flex justify-content-end text-end mx-2" width="100%">{{thiss.username}}</small>
+                                            <small class="d-flex justify-content-end text-end mx-2" width="100%">{{message['sender']}}</small>
                                             <div class="rounded bg-primary text-white p-2 mx-2" style="max-width: 100%;">
                                                 <!-- Message Content -->
                                                 {{ message['message'] }}
@@ -189,7 +188,7 @@
                                         <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
 
                                         <div class="justify-content-end" style="max-width: 70%;">
-                                            <small class="d-flex justify-content-start text-end mx-2" width="100%">{{thiss.username}}</small>
+                                            <small class="d-flex justify-content-start text-end mx-2" width="100%">{{message['sender']}}</small>
                                             <div class="rounded bg-secondary text-white p-2 mx-2" style="max-width: 100%;">
                                                 <!-- Message Content -->
                                                 {{ message['message'] }}
@@ -296,7 +295,8 @@
 
         // Append the main container to a target element (e.g., the body)
         document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
-
+        
+        socket.emit("recieved_message", "{{ thiss.id }}","{{session.message_history_id}}");
     });
 </script>
 
