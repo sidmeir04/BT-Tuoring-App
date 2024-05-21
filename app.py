@@ -1,14 +1,8 @@
 #import all of the imports in a seperate document
 from all_imports import *
 
-#imports all of the lengthy functions for json file loading
+#imports all of the functions and some variabels for running the app
 from json_file_loading import *
-
-
-user_type_key = {0:'student',
-                 1:'teacher',
-                 2:'administrator',
-                 3:'developer'}
 
 socketio = SocketIO()
 
@@ -354,34 +348,13 @@ def show_feedback():
     reviews = Feedback.query.filter_by(review_for = current_user.id)
     return render_template('show_feedback.html', reviews = reviews)
 
-def time_to_min(time):
-    return sum(i*j for i, j in zip(map(int, time.split(':')), (60, 1, 1/60)))
-
 days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-def date_to_day(date):
-    year, month, day = (int(i) for i in date.split('-'))
-    dayNumber = weekday(year, month, day)
-    day = days[dayNumber].lower()
-    return day
-
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
-def find_next_day_of_week(day_of_week):
-    day_index = lower_days.index(day_of_week.lower())
-    today = datetime.now().weekday()
-    days_ahead = (day_index - today) % 7
-    if days_ahead == 0:
-        days_ahead = 7
-    next_day = datetime.now() + timedelta(days=days_ahead)
-    # returns the date of the next time a day of the week would occur
-    return next_day.strftime("%Y-%m-%d")
-
 @app.route('/find_session',methods=['GET','POST'])
 def find_session():
-    users = []
-    day = None
-    date = None
+    users,user_names = []
+    day, date = None
     tutor_name = ''
-    users = []
 
     if request.method == 'POST':
         date = request.form.get('modal_date')
@@ -391,8 +364,7 @@ def find_session():
         subject = request.form.get('subject')
         if not tutor_name:
             tutor_name = ''
-        users = []
-        user_names = []
+
         if period != '-1':
             # if the period is not specified
             data = Periods.query.get(int(period))
@@ -486,12 +458,9 @@ def delete_session(session_id,type):
         date = date_to_day(session.date.strftime('%Y-%m-%d'))
         user.schedule_data[date][str(session.period)]['times'] = user.schedule_data[date][str(session.period)]['times'].replace(session.date.strftime('%Y-%m-%d'), "")
         if type != "1":
-            if session.tutor == current_user.id:
-                other_user = User.query.get(session.student)
-            else:
-                other_user = User.query.get(session.tutor)
-            temp = other_user.notifaction_data['deleted']
-            other_user.notifaction_data['deleted'] = temp + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
+            if session.tutor == current_user.id: other_user = User.query.get(session.student)
+            else: other_user = User.query.get(session.tutor)
+            other_user.notifaction_data['deleted'] = other_user.notifaction_data['deleted'] + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
             flag_modified(other_user, "notifaction_data")
         db.session.delete(session)
         flag_modified(user,'schedule_data')
@@ -505,8 +474,7 @@ def delete_session(session_id,type):
 def session_manager():
     #use a 2d list that maps from a dictionary for each day and period, and then access
     users = []
-    day = None
-    date = None
+    day,date = None
     period = ''
     if request.method == 'POST':
         type = request.form.get('type')
@@ -523,7 +491,6 @@ def session_manager():
             #Check that the times are correct
             period_start = 450 + int(period)*45
             period_end = period_start + 41
-            # time_to_min(end_time) > time_to_min(start_time)
             if not (period_start <= time_to_min(start_time) or time_to_min(start_time) <= period_end or period_start <= time_to_min(end_time) or time_to_min(end_time) <= period_end):
                 flash('invalid times', 'warning')
                 return redirect(url_for('session_manager'))
@@ -537,16 +504,9 @@ def session_manager():
             data = getattr(period_data, day, '')
             user_ids = data.split(' ')
             for id in user_ids:
-                user = User.query.get(id)
-                users.append(user)
+                users.append(User.query.get(id))
         
     return render_template('session_manager.html', users = users[1:], day = day, date = date, period = str(period))
-
-def string_to_time(time_str):
-    hour, minute = map(int, time_str.split(':'))
-    # Create a time object with the provided hour and minute
-    result_time = time(hour=hour, minute=minute)
-    return result_time
     
 @app.route('/book_session/<id>/<date>/<period>')
 def book_session(id, date, period):
@@ -555,10 +515,9 @@ def book_session(id, date, period):
     day = date_to_day(date)
     data = user.schedule_data[day][period]
     current_user_id = current_user.get_id()
-    people = {id:'',current_user_id:''}
-    conversation = MessageHistory(
-        people=people
-    )
+    
+    conversation = MessageHistory(people={id:'',current_user_id:''})
+    
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
@@ -608,41 +567,9 @@ def profile():
 
     return render_template('profile.html',user = current_user)
 
-@app.route('/charts')
-def charts():
-    return render_template('template_pages/charts.html')
-
 @app.route('/forgot_password')
 def forgot_password():
     return render_template('user_handling/forgot_password.html')
-
-@app.route('/buttons')
-def buttons():
-    return render_template('template_pages/buttons.html') 
-
-@app.route('/cards')
-def cards():
-    return render_template('template_pages/cards.html')
-
-@app.route('/tables')
-def tables():
-    return render_template('template_pages/tables.html') 
-
-@app.route('/utilities-animation')
-def utilities_animation():
-    return render_template('template_pages/utilities-animation.html') 
-
-@app.route('/utilities-border')
-def utilities_border():
-    return render_template('template_pages/utilities-border.html') 
-
-@app.route('/utilities-color')
-def utilities_color():
-    return render_template('template_pages/utilities-color.html') 
-
-@app.route('/utilities-other')
-def utilities_other():
-    return render_template('template_pages/utilities-other.html') 
 
 @app.errorhandler(404)
 def not_found(e):
