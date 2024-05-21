@@ -56,7 +56,7 @@ class MessageHistory(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     people = db.Column(JSON, default=load_basic_json_file)
     messages = db.Column(JSON, default=load_non_basic_json_file)
-    # missed = db.Column(db.Integer, default=0)
+    missed = db.Column(JSON, default=load_basic_json_file)
     session = db.relationship('Session', backref='message_history', lazy = True)
 
 class Session(db.Model):
@@ -109,8 +109,10 @@ def details():
 
     #gets the message history associated with the session
     message_history = MessageHistory.query.get(open_sesssion.message_history_id)
+
+    missed = message_history.missed['total'] - message_history.missed[str(current_user.id)]
     messages = message_history.messages['list']
-    messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message']}  for i in messages]
+    messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message'],'sender':i['sender']}  for i in messages]
 
     return render_template('appointment_details.html',
                            session=open_sesssion,
@@ -142,9 +144,22 @@ def handle_new_message(message,sending_user_id,history_id):
     other = choose[0] if choose[0] != str(sending_user.id) else choose[1]
     #saves all messages to the database
     history.messages['list'].append({'message':message,'sender':sending_user.username})
+
+    #updates the total amount of messages and the ones a person has recieved
+    history.missed[sending_user_id] += 1
+    history.missed['total'] += 1
+
+    flag_modified(history,'missed')
     flag_modified(history,'messages')
     db.session.commit()
     emit("chat", {"message": message, "username": sending_user.username}, room=history.people[other])
+
+@socketio.on('recieved_message')
+def verify_message_actively_recieved(user_id,history_id):
+    history = MessageHistory.query.get(history_id)
+    history.missed[user_id] += 1
+    flag_modified(history,'missed')
+    db.session.commit()
 
 
 @app.route('/welcome')
@@ -191,11 +206,20 @@ def createDB():
 def index():
     #redirects if not logged 
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
+    session_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
+
+    sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
+    all_sessions = sessions_where_learn+session_where_teach
+    for i in all_sessions:print(i.message_history_id,2)
+    missed = [MessageHistory.query.get(session.message_history_id).missed for session in all_sessions]
+    print(missed)
+    missed = list(map(lambda x: x['total'] - x[str(current_user.id)],missed))
 
     return render_template('index0.html',username=current_user.username,
-                           sessions = Session.query.filter_by(tutor=current_user.id, 
-                            tutor_form_completed = False).all(), 
-                            student_sessions = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
+                           number=number,color=color, 
+                           sessions = session_where_teach, 
+                            student_sessions = sessions_where_learn,
+                            missed = missed
                             )
 
 @app.route('/login',methods=['GET','POST'])
@@ -515,9 +539,11 @@ def book_session(id, date, period):
     day = date_to_day(date)
     data = user.schedule_data[day][period]
     current_user_id = current_user.get_id()
-    
-    conversation = MessageHistory(people={id:'',current_user_id:''})
-    
+    conversation = MessageHistory(
+        people = {id:'',current_user_id:''},
+        missed = {'total':0,id:0,current_user_id:0}
+
+    )
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
