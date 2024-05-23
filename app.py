@@ -4,7 +4,8 @@ from all_imports import *
 #imports all of the functions and some variabels for running the app
 from json_file_loading import *
 
-socketio = SocketIO()
+# socketio = SocketIO()
+socketio = 1
 
 def create_app():
     #setup the basics of the app
@@ -204,19 +205,21 @@ def createDB():
 
 @app.route("/")
 def index():
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/dashboard')
+def dashboard():
     #redirects if not logged 
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
     session_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
 
     sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
     all_sessions = sessions_where_learn+session_where_teach
-    for i in all_sessions:print(i.message_history_id,2)
     missed = [MessageHistory.query.get(session.message_history_id).missed for session in all_sessions]
-    print(missed)
     missed = list(map(lambda x: x['total'] - x[str(current_user.id)],missed))
 
     return render_template('index0.html',username=current_user.username,
-                           number=number,color=color, 
                            sessions = session_where_teach, 
                             student_sessions = sessions_where_learn,
                             missed = missed
@@ -315,7 +318,7 @@ def complete_session(id):
         return redirect(f"/completion_form?type={1}&id={session.id}")
     return redirect(url_for('index'))
 
-@app.route('/completion_form/', methods = ['GET','POST'])
+@app.route('/completion_form', methods = ['GET','POST'])
 def completion_form():
     type = request.args.get('type')
     id = request.args.get('id')
@@ -376,8 +379,8 @@ days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/find_session',methods=['GET','POST'])
 def find_session():
-    users,user_names = []
-    day, date = None
+    users,user_names = [],[]
+    day, date = None, None
     tutor_name = ''
 
     if request.method == 'POST':
@@ -424,7 +427,7 @@ def scheduler():
         day = int(day)
         period_data = Periods.query.get(period)
         data = getattr(period_data, lower_days[day], 'default')
-
+        print([i for i in request.form.items()])
         if ('delete', '') not in request.form.items():
             start_time = request.form.get('start_time')
             end_time = request.form.get('end_time')
@@ -449,7 +452,7 @@ def scheduler():
             current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
             current_user.schedule_data[lower_days[day]][str(period)]['subject'] = ''
             data = data.split(' ')
-            data.remove(str(current_user.id))
+            data.remove(' ' + str(current_user.id) + ' ')
             setattr(period_data, lower_days[day], ' '.join(data))
         
         flag_modified(current_user,'schedule_data')
@@ -494,44 +497,6 @@ def delete_session(session_id,type):
         flash('Tutor and Student Forms not Complete', 'warning')
     return redirect(url_for('index'))
 
-@app.route('/session_manager', methods = ['POST','GET'])
-def session_manager():
-    #use a 2d list that maps from a dictionary for each day and period, and then access
-    users = []
-    day,date = None
-    period = ''
-    if request.method == 'POST':
-        type = request.form.get('type')
-        period = request.form.get('period')
-        date = request.form.get('date')
-        subject = request.form.get('subject')
-        start_time = request.form.get('start_time')
-        end_time = request.form.get('end_time')
-        day = date_to_day(date)
-        period_data = Periods.query.get(period)
-        if type == '1': # if user is creating a new session
-            user = current_user
-            data = getattr(period_data, day, 'default')
-            #Check that the times are correct
-            period_start = 450 + int(period)*45
-            period_end = period_start + 41
-            if not (period_start <= time_to_min(start_time) or time_to_min(start_time) <= period_end or period_start <= time_to_min(end_time) or time_to_min(end_time) <= period_end):
-                flash('invalid times', 'warning')
-                return redirect(url_for('session_manager'))
-            setattr(period_data, day, data + ' ' + str(user.id))
-            user.schedule_data[day][str(period)]['start_time'] = str(start_time)
-            user.schedule_data[day][str(period)]['end_time'] = str(end_time)
-            user.schedule_data[day][str(period)]['subject'] = str(subject)
-            flag_modified(user, 'schedule_data')
-            db.session.commit()
-        elif type == '0': # if user is looking up a session
-            data = getattr(period_data, day, '')
-            user_ids = data.split(' ')
-            for id in user_ids:
-                users.append(User.query.get(id))
-        
-    return render_template('session_manager.html', users = users[1:], day = day, date = date, period = str(period))
-    
 @app.route('/book_session/<id>/<date>/<period>')
 def book_session(id, date, period):
     user = User.query.get(id)
@@ -547,7 +512,7 @@ def book_session(id, date, period):
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
-        end_time = string_to_time(data['end_time']),
+        end_time = string_to_time(data['end_timed']),
         student = current_user_id,
         period = period,
         # subject = data['subject'],

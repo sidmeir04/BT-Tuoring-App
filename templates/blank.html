@@ -18,6 +18,7 @@
         rel="stylesheet">
 
     <!-- Custom styles for this template-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
     <link href="static/assets/css/sb-admin-2.min.css" rel="stylesheet">
 </head>
 
@@ -58,32 +59,39 @@
                 </div>
     
                 <!-- The active and show tags are what makes this work -->
+                {% if not current_user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="true"
-                        aria-controls="collapsePages">
-                        <i class="fas fa-fw fa-folder"></i>
-                        <span>Pages</span>
-                    </a>
-                    <div id="collapsePages" class="collapse" aria-labelledby="headingPages"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            {% if not current_user.is_authenticated %}
-                            <h6 class="collapse-header">Login Screens:</h6>
-                            <a class="collapse-item" href="/login">Login</a>
-                            <a class="collapse-item" href="/register">Register</a>
-                            <a class="collapse-item" href="/forgot-password">Forgot Password</a>
-                            {% endif %}
-                            <a class="collapse-item" href="/welcome">Welcome Page (NF)</a>
-                            <!-- <a class="collapse-item" href="/session_manager">Session Manager</a> -->
-                            <a class="collapse-item" href="/find_session">Find Session</a>
-                            <a class="collapse-item" href="/scheduler">Schedule</a>
-                            <div class="collapse-divider"></div>
-                            <h6 class="collapse-header">Other Pages:</h6>
-                            <a class="collapse-item" href="404">404 Page</a>
-                            <a class="collapse-item" href="/blank">Blank Page</a>
-                        </div>
-                    </div>
+                    <a class="nav-link" href="/login">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Login</span></a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/register">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Register</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/forgot_password">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>forgot_password</span></a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/welcome">
+                        <i class="bi bi-question-circle-fill"></i>
+                        <span>About Page</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/find_session">
+                        <i class="bi bi-search"></i>
+                        <span>Find Tutors</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/scheduler">
+                        <i class="bi bi-calendar-fill"></i>
+                        <span>Scheduler</span></a>
+                </li>
+                {% endif %}
 
                 <!-- Nav Item - Tables -->
                 <li class="nav-item">
@@ -203,8 +211,8 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                {%if current_user.notifaction_data['deleted'][::-1]|length != 0%}
-                                <span class="badge badge-danger badge-counter">{{current_user.notifaction_data['deleted'][::-1]|length}}</span>
+                                {%if current_user.notifaction_data['deleted']|length != 0%}
+                                <span class="badge badge-danger badge-counter">{{current_user.notifaction_data['deleted']|length}}</span>
                                 {%endif%}
                             </a>
                             <!-- Dropdown - Alerts -->
