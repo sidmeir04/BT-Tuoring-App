@@ -107,12 +107,14 @@ def details():
     #gets the session currently being viewed
     ID = request.args.get('identification')
     open_sesssion = Session.query.get(ID)
-
     #gets the message history associated with the session
     message_history = MessageHistory.query.get(open_sesssion.message_history_id)
+    message_history.missed[str(current_user.id)] = message_history.missed['total']
+    flag_modified(message_history,'missed')
+    db.session.commit()
 
-    missed = message_history.missed['total'] - message_history.missed[str(current_user.id)]
     messages = message_history.messages['list']
+
     messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message'],'sender':i['sender']}  for i in messages]
 
     return render_template('appointment_details.html',
@@ -123,9 +125,18 @@ def details():
 
 @socketio.on("connect")
 def handle_connect():
+    print(request.sid)
     #here, there should be a code segment that clears the notifications of missed messages
     #socketio connecting indicates that the user has viewed their messages
     pass
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on("leave")
+def l(number):
+    print(number,'sldigfadsfgdsjfgdajhfagfadgfkflsahjdsfgjks')
 
 @socketio.on("user_join")
 def handle_user_join(user_id,history_id):
@@ -145,7 +156,7 @@ def handle_new_message(message,sending_user_id,history_id):
     other = choose[0] if choose[0] != str(sending_user.id) else choose[1]
     #saves all messages to the database
     history.messages['list'].append({'message':message,'sender':sending_user.username})
-
+    print()
     #updates the total amount of messages and the ones a person has recieved
     history.missed[sending_user_id] += 1
     history.missed['total'] += 1
@@ -153,7 +164,8 @@ def handle_new_message(message,sending_user_id,history_id):
     flag_modified(history,'missed')
     flag_modified(history,'messages')
     db.session.commit()
-    emit("chat", {"message": message, "username": sending_user.username}, room=history.people[other])
+    if history.people[other]:
+        emit("chat", {"message": message, "username": sending_user.username}, room=history.people[other])
 
 @socketio.on('recieved_message')
 def verify_message_actively_recieved(user_id,history_id):
@@ -312,10 +324,16 @@ def complete_session(id):
     # if date >= today:
     #     flash('Tutoring Session has not Happened yet', 'warning')
     #     return redirect(url_for('index'))
+    params = {
+        'type': 0,
+        'id': session.id
+    }
     if current_user.id == session.tutor:
-        return redirect(f"/completion_form?type={2}&id={session.id}")
+        params['type'] = 2
+        return redirect(url_for('completion_form',**params))
     if current_user.id == session.student:
-        return redirect(f"/completion_form?type={1}&id={session.id}")
+        params['type'] = 1
+        return redirect(url_for('completion_form',**params))
     return redirect(url_for('index'))
 
 @app.route('/completion_form', methods = ['GET','POST'])
@@ -509,6 +527,9 @@ def book_session(id, date, period):
         missed = {'total':0,id:0,current_user_id:0}
 
     )
+
+    db.session.add(conversation)
+    db.session.commit()
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
@@ -517,10 +538,9 @@ def book_session(id, date, period):
         period = period,
         # subject = data['subject'],
         date = datetime.strptime(date, '%Y-%m-%d').date(),
-        message_history_id = 1
+        message_history_id = conversation.id
     )
     
-    db.session.add(conversation)
     db.session.add(new_session)
     db.session.commit()
     
