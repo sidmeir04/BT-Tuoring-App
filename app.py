@@ -4,8 +4,7 @@ from all_imports import *
 #imports all of the functions and some variabels for running the app
 from json_file_loading import *
 
-# socketio = SocketIO()
-socketio = 1
+socketio = SocketIO()
 
 def create_app():
     #setup the basics of the app
@@ -46,6 +45,7 @@ class User(db.Model, UserMixin):
     sessions = db.relationship('Session', backref='user', lazy = True)
     feedbacks = db.relationship('Feedback', backref='user', lazy = True)
     hours_of_service = db.Column(db.Float, default = 0.0)
+    image_data = (db.Column(db.LargeBinary))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -136,7 +136,7 @@ def handle_disconnect():
 
 @socketio.on("leave")
 def l(number):
-    print(number,'sldigfadsfgdsjfgdajhfagfadgfkflsahjdsfgjks')
+    return 0
 
 @socketio.on("user_join")
 def handle_user_join(user_id,history_id):
@@ -200,16 +200,17 @@ def reroute_user():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@login_required
 @app.route('/createDB')
 def createDB():
     for _ in range(1,10):
         newThing = Periods()
         db.session.add(newThing)
         db.session.commit()
-    new_user = User(name='name', last_name='last_name', email='oscjep25@bergen.org', username='username', role=int(0))
+    new_user = User(name='name', last_name='last_name', email='oscjep25@bergen.org', username='username', role=0)
     new_user.set_password('pass')
     db.session.add(new_user)
-    new_user = User(name='Student', last_name='Student2', email='student@gmail.com', username='Student', role=int(0))
+    new_user = User(name='Student', last_name='Student2', email='student@gmail.com', username='Student', role=0)
     new_user.set_password('pass')
     db.session.add(new_user)
     db.session.commit()
@@ -222,7 +223,7 @@ def index():
 
 @app.route('/dashboard')
 def dashboard():
-    #redirects if not logged 
+    #redirects if not logged
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
     session_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
 
@@ -231,11 +232,7 @@ def dashboard():
     missed = [MessageHistory.query.get(session.message_history_id).missed for session in all_sessions]
     missed = list(map(lambda x: x['total'] - x[str(current_user.id)],missed))
 
-    return render_template('index0.html',username=current_user.username,
-                           sessions = session_where_teach, 
-                            student_sessions = sessions_where_learn,
-                            missed = missed
-                            )
+    return render_template('index0.html', sessions = session_where_teach, student_sessions = sessions_where_learn,missed = missed)
 
 @app.route('/login',methods=['GET','POST'])
 def login():
@@ -248,8 +245,7 @@ def login():
             login_user(user)
             flash("Logged in successfully!", "success")
             return redirect(url_for('index'))
-        else:
-            flash("Invalid credentials!","danger")
+        else: flash("Invalid credentials!","danger")
     return render_template("user_handling/login.html")
 
 @app.route('/logout',methods=['POST'])
@@ -269,6 +265,7 @@ def register():
         confirm_password = request.form.get("confirm_password")
         username = request.form.get("username")
         role = request.form.get('role')
+        image_file = request.files.get("image")
         # Validate form data (add your own validation logic)
         if not (
             name
@@ -278,6 +275,7 @@ def register():
             and confirm_password
             and username
             and role
+            and image_file
         ):
         # Handle invalid input
             flash("Please fill in all fields.", "danger")
@@ -293,13 +291,14 @@ def register():
             flash("Passwords do not match.", "danger")
             return render_template("user_handling/register.html")
 
-        # Create a new user instance
+        image_data = image_file.read()
         new_user = User(
             name=name,
             last_name=last_name,
             email=email,
             username=username,
-            role=int(role)
+            role=int(role),
+            image_data=image_data,
         )
         new_user.set_password(password)
 
@@ -533,7 +532,7 @@ def book_session(id, date, period):
     new_session = Session(
         tutor = id,
         start_time = string_to_time(data['start_time']),
-        end_time = string_to_time(data['end_timed']),
+        end_time = string_to_time(data['end_time']),
         student = current_user_id,
         period = period,
         # subject = data['subject'],
@@ -556,27 +555,34 @@ def book_session(id, date, period):
     flash('Booked Session', 'success')
     return redirect(url_for('index'))
 
-@app.route('/profile',methods=['POST','GET'])
+@app.route('/profile', methods = ['POST','GET'])
 def profile():
     if request.method == 'POST':
-        #gets the values
-        name = request.form.get("name")
-        last_name = request.form.get("last_name")
-        email = request.form.get("email")
-        password = request.form.get("password")
-        username = request.form.get("username")
-
-        #sets the values
-        current_user.name=name,
-        current_user.last_name=last_name,
-        current_user.email=email,
-        current_user.username=username,
-        current_user.set_password(password)
-
-        # Save the new user to the database
+        user = User.query.get(current_user.id)
+        if 'submit1' in request.form:
+            email = request.form.get('email')
+            name = request.form.get('name')
+            last_name = request.form.get('last_name')
+            user.email = email
+            user.name = name
+            user.last_name = last_name
+        elif 'submit2' in request.form:
+            password = request.form.get('old_pass')
+            if user.check_password(password):
+                new_pass = request.form.get('new_pass')
+                user.set_password(new_pass)
+            else:
+                flash('current password not correct', 'warning')
+        else:
+            data = request.files.get('image')
+            image = data.read()
+            user.image_data = image
         db.session.commit()
+    if current_user.image_data:
+        image_data_b64 = base64.b64encode(current_user.image_data).decode('utf-8')
+        return render_template('profile.html', image_data = image_data_b64)
+    return render_template('profile.html')
 
-    return render_template('profile.html',user = current_user)
 
 @app.route('/forgot_password')
 def forgot_password():
