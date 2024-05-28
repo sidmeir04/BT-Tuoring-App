@@ -408,6 +408,16 @@
         socket.on("connect", function() {
             console.log('dfi')
         });
+
+        socket.on("chat", function(data) {
+            if ("{{active_page}}" == "messages"){
+                recieve_message()
+            }
+            else{
+                console.log('iufhkas')
+                //add function to change the missed notifications and to have the option of displaying it
+            }
+    });
     </script>
     {%block javascriptsSocket%}
 

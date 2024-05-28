@@ -45,6 +45,7 @@ class User(db.Model, UserMixin):
     sessions = db.relationship('Session', backref='user', lazy = True)
     feedbacks = db.relationship('Feedback', backref='user', lazy = True)
     hours_of_service = db.Column(db.Float, default = 0.0)
+    status = db.Column(db.String, default='')
     image_data = (db.Column(db.LargeBinary))
 
     def set_password(self, password):
@@ -96,7 +97,6 @@ class Periods(db.Model):
 with app.app_context():
     db.create_all()
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -125,9 +125,8 @@ def details():
 
 @socketio.on("connect")
 def handle_connect():
-    #here, there should be a code segment that clears the notifications of missed messages
-    #socketio connecting indicates that the user has viewed their messages
-    pass
+    current_user.status = request.sid
+    db.session.commit()
 
 @socketio.on("disconnect")
 def handle_disconnect():
@@ -145,32 +144,40 @@ def handle_user_join(user_id,history_id):
     flag_modified(history,'people')
     db.session.commit()
 
-@socketio.on("new_message")
+
+@socketio.on("notify_update")
+def handle_notify_update():
+    pass
+
+@socketio.on("new_chat_message")
 def handle_new_message(message,sending_user_id,history_id):
     sending_user = User.query.get(sending_user_id)
     history = MessageHistory.query.get(history_id)
     people = history.people
     choose = [i for i in people.keys()]
     other = choose[0] if choose[0] != str(sending_user.id) else choose[1]
+    other = User.query.get(other)
+
     #saves all messages to the database
     history.messages['list'].append({'message':message,'sender':sending_user.username})
+
     #updates the total amount of messages and the ones a person has recieved
     history.missed[sending_user_id] += 1
     history.missed['total'] += 1
-
     flag_modified(history,'missed')
     flag_modified(history,'messages')
     db.session.commit()
-    if history.people[other]:
-        emit("chat", {"message": message, "username": sending_user.username}, room=history.people[other])
 
-@socketio.on('recieved_message')
-def verify_message_actively_recieved(user_id,history_id):
+    if other.status:
+        emit("chat", {"message": message, "username": sending_user.username}, room=other.status)
+    else:pass
+
+@socketio.on('recieved_chat_message')
+def handle_recieved_chat_message(other_id,history_id):
     history = MessageHistory.query.get(history_id)
-    history.missed[user_id] += 1
+    history.missed[other_id] += 1
     flag_modified(history,'missed')
     db.session.commit()
-
 
 @app.route('/welcome')
 def welcome():
@@ -222,14 +229,30 @@ def index():
 def dashboard():
     #redirects if not logged
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
-    session_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
+
+
+    sessions_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
+    sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
+    sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1]),sessions_where_teach_MH))
+    
 
     sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
-    all_sessions = sessions_where_learn+session_where_teach
+    sessions_where_learn_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
+    sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1]),sessions_where_learn_MH))
+
+    print(sessions_where_learn_MH,sessions_where_teach_MH)
+    all_sessions = sessions_where_learn+sessions_where_teach
+
     missed = [MessageHistory.query.get(session.message_history_id).missed for session in all_sessions]
     missed = list(map(lambda x: x['total'] - x[str(current_user.id)],missed))
 
-    return render_template('index0.html', sessions = session_where_teach, student_sessions = sessions_where_learn,missed = missed)
+    return render_template('index0.html',
+                            sessions_where_teach = sessions_where_teach,
+                            sessions_where_teach_MH = sessions_where_teach_MH,
+                            sessions_where_learn = sessions_where_learn,
+                            sessions_where_learn_MH = sessions_where_learn_MH,
+                            missed = missed
+                            )
 
 @app.route('/login',methods=['GET','POST'])
 def login():

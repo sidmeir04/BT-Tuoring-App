@@ -1,4 +1,5 @@
 {%extends "blank.html"%}
+{%set active_page = "messages"%}
 {%set active_material = 0%}
 {%block content%}
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -223,8 +224,6 @@
 
 <script>
     function do_open(choice){
-        console.log(choice)
-        console.log(choice)
         overview = document.getElementById('overview')
         message = document.getElementById('messaging')
         material = document.getElementById('materials')
@@ -239,13 +238,6 @@
 </script>
 
 <script>
-    //connects the socket
-    // const socket = io({autoConnect: true});
-
-    // Event listener for socket connection
-    socket.on("connect", function() {
-        socket.emit("user_join", "{{ thiss.id }}", "{{ session.message_history_id }}");
-    });
 
     // Event listener for send button click
     document.getElementById("send-button").addEventListener("click", function () {
@@ -256,7 +248,7 @@
     function send_message(){
         let message = document.getElementById("message").value;
         if (message.trim() !== ""){
-            socket.emit("new_message", message, "{{ thiss.id }}","{{session.message_history_id}}");
+            socket.emit("new_chat_message", message, "{{ thiss.id }}","{{session.message_history_id}}");
 
             //resets the message
             document.getElementById("message").value = "";
@@ -275,27 +267,26 @@
         }
     }
 
-    // Event listener for receiving chat messages
-    //recieves from the "new_messages" route
-    socket.on("chat", function(data) {
-        // Append the message container to the main container
+    function recieve_message(){
         thing = `<div class="d-flex justify-content-start mb-2 align-items-end">
-                                            <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+                                                    <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
 
-                                            <div class="justify-content-end" style="max-width: 70%;">
-                                                <small class="d-flex justify-content-start text-end mx-2" width="100%">${data['username']}</small>
-                                                <div class="rounded bg-secondary text-white p-2 mx-2" style="max-width: 100%;">
-                                                    <!-- Message Content -->
-                                                    ${data['message']}
-                                                </div>
-                                            </div>
-                                        </div>`
+                                                    <div class="justify-content-end" style="max-width: 70%;">
+                                                        <small class="d-flex justify-content-start text-end mx-2" width="100%">${data['username']}</small>
+                                                        <div class="rounded bg-secondary text-white p-2 mx-2" style="max-width: 100%;">
+                                                            <!-- Message Content -->
+                                                            ${data['message']}
+                                                        </div>
+                                                    </div>
+                                                </div>`
 
         // Append the main container to a target element (e.g., the body)
         document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
-        
-        socket.emit("recieved_message", "{{ thiss.id }}","{{session.message_history_id}}");
-    });
+        socket.emit("recieved_chat_message", message, "{{ thiss.id }}","{{session.message_history_id}}");
+    }
+
+    // Event listener for receiving chat messages
+    //recieves from the "new_messages" route
 </script>
 
 <!-- Footer -->
