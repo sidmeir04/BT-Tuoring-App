@@ -1,123 +1,169 @@
-{% extends 'blank.html' %}
+{%extends "blank.html"%}
+{%block title%}REGISTER{%endblock%}
+{%block content%}
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<style type="text/css">
+    body{
+        margin-top:20px;
+        color: #1a202c;
+        text-align: left;
+        background-color: #e2e8f0;    
+    }
+    .main-body {
+        padding: 15px;
+    }
+    .card {
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,.1), 0 1px 2px 0 rgba(0,0,0,.06);
+    }
 
-{% block content %}
-<style>
-/* Define keyframes for continuous rotation */
-@keyframes rotateImage {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+    .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        word-wrap: break-word;
+        background-color: #fff;
+        background-clip: border-box;
+        border: 0 solid rgba(0,0,0,.125);
+        border-radius: .25rem;
+    }
 
-/* Apply animation to the image */
-.rotating {
-  animation: rotateImage 5s linear infinite; /* Adjust duration (5s) and timing function as needed */
-}
+    .card-body {
+        flex: 1 1 auto;
+        min-height: 1px;
+        padding: 1rem;
+    }
 
-/* Dropdown Button */
-.dropbtn {
-  background-color: #04AA6D;
-  color: white;
-  padding: 16px;
-  font-size: 16px;
-  border: none;
-}
+    .gutters-sm {
+        margin-right: -8px;
+        margin-left: -8px;
+    }
 
-/* The container <div> - needed to position the dropdown content */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
+    .gutters-sm>.col, .gutters-sm>[class*=col-] {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+    .mb-3, .my-3 {
+        margin-bottom: 1rem!important;
+    }
 
-/* Dropdown Content (Hidden by Default) */
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 3;
-  right: 0; /* Position the dropdown to the left */
-  left: auto; /* Reset the right property */
-}
+    .bg-gray-300 {
+        background-color: #e2e8f0;
+    }
+    .h-100 {
+        height: 100%!important;
+    }
+    .shadow-none {
+        box-shadow: none!important;
+    }
 
-/* Links inside the dropdown */
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-/* Change color of dropdown links on hover */
-.dropdown-content a:hover {background-color: #ddd;}
-
-/* Show the dropdown menu on hover */
-.dropdown:hover .dropdown-content {display: block;}
-
-/* Change the background color of the dropdown button when the dropdown content is shown */
-.dropdown:hover .dropbtn {background-color: #3e8e41;}
 </style>
-<!-- Begin Page Content -->
-<div class="container-fluid mr-0 pr-0">
-
-    <!-- Page Heading -->
-    <!-- the "custom-progress-bar" class can be added to make this into a custom progress bar -->
-
-
-    <!-- Content Row -->
-    <div class="row px-0">
-        <div class="col-xl-12 col-lg-12 d-block p-3" style="min-height:70vh;">
-
-            <!-- Area Chart -->
-            <div class="card shadow mb-4 d-block" style="height:100%">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-6 p-5">
-                            <img class="img-profile rounded-circle"
-                                    src="static/assets/img/undraw_profile.svg">
-                            <input type="file" id="img-upload" accept="image/*">
-
-                        </div>
-                        <div class="col-6">
-                            <a href="" class="">Reset Password</a>
-                            <div class="d-flex h-100 justify-content-center align-items-center">
-                                <form action = '/profile' method = 'POST'>
-                                    <div class="form-group row">
-                                        <div class="col-sm-12 mb-3 mb-sm-0">
-                                            <input type="text" class="form-control form-control-user" name="username"
-                                                placeholder="Username" value="{{user.username}}">
+</head>
+<body>
+    <div class="container">
+        <div class="main-body">
+            <div class="row gutters-sm">
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex flex-column align-items-center text-center">
+                                <img src="data:image/jpeg;base64,{{ image_data }}" alt="Admin" class="rounded-circle" width="150">
+                                <div class="mt-3">
+                                    <h4>{{current_user.name}} {{current_user.last_name}}</h4>
+                                </div>
+                                <br>
+                                <div class="mt-3">
+                                    <form action="/profile", method = 'POST' enctype="multipart/form-data">
+                                        <div class="input-group mb-3">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text" id="basic-addon1">Profile picture</span>
+                                            </div>
+                                            <input type="file" class="form-control" name="image" accept=".jpg, .png" aria-describedby="basic-addon1" required>
                                         </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <input type="text" class="form-control form-control-user" name="name"
-                                                placeholder="First Name" value="{{user.name}}">
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <input type="text" class="form-control form-control-user" name="last_name"
-                                                placeholder="Last Name" value="{{user.last_name}}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <input type="email" class="form-control form-control-user" name="email"
-                                            placeholder="example@email.com" value="{{user.email}}">
-                                    </div>
-                                    <div class="d-flex justify-content-center mx-4 mt-3 mb-3 mb-lg-4">
-                                        <button type="submit" class="btn btn-primary btn-lg">Confirm Changes</button>
-                                    </div>
-                                </form>
+                                        <button type="submit" class="btn btn-primary btn-lg" name = 'submit3'>change profile image</button>
+                                    </form>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <form action="/profile" method = 'POST'>
+                                <div class="row">
+                                    <div class="col-sm-3  mx-2">
+                                        <h6 class="mb-0">Username</h6>
+                                    </div>
+                                    <div class="input-group mb-3 mx-2">
+                                        <input type="text" class='form-control' value="{{ current_user.username }} " name = 'username' id='username'>
+                                    </div>
+
+                                    <div class="col-sm-3  mx-2">
+                                        <h6 class="mb-0">First Name</h6>
+                                    </div>
+                                    <div class="input-group mb-3 mx-2">
+                                        <input type="text" class='form-control' value="{{ current_user.name }} " name = 'name' id='name'>
+                                    </div>
+
+                                    <div class="col-sm-3  mx-2">
+                                        <h6 class="mb-0">Last Name</h6>
+                                    </div>
+                                    <div class="input-group mb-3  mx-2">
+                                        <input type="text" class='form-control' value="{{ current_user.last_name }}" name = 'last_name' id="last_name">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-3  mx-2">
+                                        <h6 class="mb-0">Email</h6>
+                                    </div>
+                                    <div class="input-group mb-3  mx-2">
+                                        <input type="email" class='form-control' value="{{ current_user.email }}" name = 'email' id="email">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+                                    <button type="submit" class="btn btn-primary btn-lg" name = 'submit1'>update profile</button>
+                                </div>
+                            </form>
+
+                            <form action = '/profile', method = 'POST'>
+                            <div class="row">
+                                <div class="col-sm-3  mx-2">
+                                    <h6 class="mb-0">password</h6>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <input type="password" class='form-control  mx-2' name = 'old_pass' required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-3  mx-2">
+                                    <h6 class="mb-0">new password</h6>
+                                </div>
+                                <div class="input-group mb-3  mx-2">
+                                    <input type="password" class='form-control' name = 'new_pass' required>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+                                <button type="submit" class="btn btn-primary btn-lg" name = 'submit2'>reset password</button>
+                            </div>
+
+                            </form> 
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>    
 
-<!-- /.container-fluid -->
-{% endblock %}
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript"></script>
+</body>
+{%endblock%}
