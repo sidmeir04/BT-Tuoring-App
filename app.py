@@ -48,6 +48,7 @@ class User(db.Model, UserMixin):
     status = db.Column(db.String, default='')
     image_data = (db.Column(db.LargeBinary))
 
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -150,7 +151,7 @@ def handle_notify_update():
     pass
 
 @socketio.on("new_chat_message")
-def handle_new_message(message,sending_user_id,history_id):
+def handle_new_message(message,sending_user_id,history_id,session_id):
     sending_user = User.query.get(sending_user_id)
     history = MessageHistory.query.get(history_id)
     people = history.people
@@ -167,9 +168,11 @@ def handle_new_message(message,sending_user_id,history_id):
     flag_modified(history,'missed')
     flag_modified(history,'messages')
     db.session.commit()
-
     if other.status:
-        emit("chat", {"message": message, "username": sending_user.username}, room=other.status)
+        emit("chat", {"message": message, 
+                      "username": sending_user.username, 
+                      "image_data": base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
+                      "session_id":session_id}, room=other.status)
     else:pass
 
 @socketio.on('recieved_chat_message')
@@ -232,26 +235,28 @@ def dashboard():
 
 
     sessions_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
-    sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
-    sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1]),sessions_where_teach_MH))
-    
+    if sessions_where_teach:
+        sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
+        sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
+        sessions_where_teach_MH = [i if i != (0,None) else None for i in sessions_where_teach_MH]
+        sessions_where_teach_PP = [base64.b64encode(User.query.filter_by(username = i[1]['sender']).first().image_data).decode('utf-8') if i[1] and User.query.filter_by(username = i[1]['sender']).first().image_data else None for i in sessions_where_teach_MH]    
 
     sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
-    sessions_where_learn_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
-    sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1]),sessions_where_learn_MH))
-
-    print(sessions_where_learn_MH,sessions_where_teach_MH)
-    all_sessions = sessions_where_learn+sessions_where_teach
-
-    missed = [MessageHistory.query.get(session.message_history_id).missed for session in all_sessions]
-    missed = list(map(lambda x: x['total'] - x[str(current_user.id)],missed))
+    if sessions_where_learn:
+        sessions_where_learn_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
+        sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
+        sessions_where_learn_MH = [i if i != (0,None) else None for i in sessions_where_learn_MH]
+        sessions_where_learn_PP = [base64.b64encode(User.query.filter_by(username = i[1]['sender']).first().image_data).decode('utf-8') if i and User.query.filter_by(username = i[1]['sender']).first().image_data else None for i in sessions_where_learn_MH]
 
     return render_template('index0.html',
+                            enum = enumerate,
+                            username = current_user.username,
                             sessions_where_teach = sessions_where_teach,
-                            sessions_where_teach_MH = sessions_where_teach_MH,
+                            sessions_where_teach_MH = sessions_where_teach_MH if sessions_where_teach else None,
+                            sessions_where_teach_PP = sessions_where_teach_PP if sessions_where_teach else None,
                             sessions_where_learn = sessions_where_learn,
-                            sessions_where_learn_MH = sessions_where_learn_MH,
-                            missed = missed
+                            sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
+                            sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
                             )
 
 @app.route('/login',methods=['GET','POST'])
@@ -597,7 +602,7 @@ def profile():
             else:
                 flash('current password not correct', 'warning')
         else:
-            data = request.files.get('image')
+            data = request.files.get('image')   
             image = data.read()
             user.image_data = image
         db.session.commit()

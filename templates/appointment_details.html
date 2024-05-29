@@ -248,7 +248,8 @@
     function send_message(){
         let message = document.getElementById("message").value;
         if (message.trim() !== ""){
-            socket.emit("new_chat_message", message, "{{ thiss.id }}","{{session.message_history_id}}");
+            console.log("{{session.id}}")
+            socket.emit("new_chat_message", message, "{{ thiss.id }}","{{session.message_history_id}}","{{session.id}}");
 
             //resets the message
             document.getElementById("message").value = "";
@@ -267,7 +268,7 @@
         }
     }
 
-    function recieve_message(){
+    function recieve_message(data){
         thing = `<div class="d-flex justify-content-start mb-2 align-items-end">
                                                     <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
 
