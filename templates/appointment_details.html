@@ -16,11 +16,8 @@
             <h1 class="h3 mb-0 text-gray-800">Ticket Number {{session.id}}</h1>
         </div>
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <button class="btn btn-primary" onclick="do_open('overview')">
-                Overview
-            </button>
             <button class="btn btn-primary" onclick="do_open('messaging')">
-                Messages
+                Overview
             </button>
             <button class="btn btn-primary" onclick="do_open('materials')">
                 Materials
@@ -28,83 +25,6 @@
         </div>
 
         <div class="row py-2 mb-4 bg-gradient-secondary px-0">
-        </div>
-
-        <div class="d-none" id="overview">
-            <div class="row">
-
-                <!-- Earnings (Monthly) Card Example -->
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-primary shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        Date</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.date}}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Earnings (Annual) Card Example -->
-                <div class="col-xl-2 col-md-6 mb-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        Period</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">10</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tasks Card Example -->
-                <div class="col-xl-4 col-md-6 mb-4">
-                    <div class="card border-left-info shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                        Subject</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.subject}}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pending Requests Card Example -->
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-warning shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Recipient</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">TBD</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="d-none" id="materials">
@@ -143,7 +63,88 @@
         <div class="d-block" id="messaging">
             <div class="row">
                 <div class="col-3">
-                    People
+                    <div class="row mb-3">
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-12">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Date</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ session.date.strftime("%B") }} {{ session.date.strftime("%d") }}, {{ session.date.strftime("%Y") }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- Earnings (Annual) Card Example -->
+                        <div class="col-12">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Period</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.period}}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- Tasks Card Example -->
+                        <div class="col-12">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Subject</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.subject}}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- Pending Requests Card Example -->
+                        <div class="col-12">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                People</div>
+                                            <div class="h5 mb-2 font-weight-bold text-gray-800">
+                                                - {{thiss.username}}
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                - {{recipient}}
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-9">
                     <div class="card shadow mb-4">
@@ -157,11 +158,9 @@
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
                                     aria-labelledby="dropdownMenuLink">
-                                    <div class="dropdown-header">Dropdown Header:</div>
-                                    <a class="dropdown-item" href="#">Action</a>
-                                    <a class="dropdown-item" href="#">Another action</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#">Something else here</a>
+                                    <a class="dropdown-item" href="#">
+                                        Report
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -224,11 +223,9 @@
 
 <script>
     function do_open(choice){
-        overview = document.getElementById('overview')
         message = document.getElementById('messaging')
         material = document.getElementById('materials')
 
-        overview.classList = ['d-none']
         message.classList = ['d-none']
         material.classList = ['d-none']
 

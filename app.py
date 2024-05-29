@@ -107,19 +107,22 @@ def load_user(user_id):
 def details():
     #gets the session currently being viewed
     ID = request.args.get('identification')
-    open_sesssion = Session.query.get(ID)
+    open_session = Session.query.get(ID)
     #gets the message history associated with the session
-    message_history = MessageHistory.query.get(open_sesssion.message_history_id)
+    message_history = MessageHistory.query.get(open_session.message_history_id)
     message_history.missed[str(current_user.id)] = message_history.missed['total']
     flag_modified(message_history,'missed')
     db.session.commit()
 
-    messages = message_history.messages['list']
+    other = open_session.tutor if open_session.tutor != current_user.id else open_session.student
+    other = User.query.get(other).username
 
+    messages = message_history.messages['list']
     messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message'],'sender':i['sender']}  for i in messages]
 
     return render_template('appointment_details.html',
-                           session=open_sesssion,
+                           recipient = other,
+                           session=open_session,
                            thiss=current_user,
                            messages=messages)
 
@@ -533,7 +536,7 @@ def delete_session(session_id,type):
             other_user.notifaction_data['deleted'] = other_user.notifaction_data['deleted'] + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
             flag_modified(other_user, "notifaction_data")
         db.session.delete(session)
-        
+
         #this deletes the message history. If you want to save it for later, we can do that
         message_history = MessageHistory.query.get(session.message_history_id)
         db.session.delete(message_history)
