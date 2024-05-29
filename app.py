@@ -239,7 +239,7 @@ def dashboard():
         sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
         sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
         sessions_where_teach_MH = [i if i != (0,None) else None for i in sessions_where_teach_MH]
-        sessions_where_teach_PP = [base64.b64encode(User.query.filter_by(username = i[1]['sender']).first().image_data).decode('utf-8') if i[1] and User.query.filter_by(username = i[1]['sender']).first().image_data else None for i in sessions_where_teach_MH]    
+        sessions_where_teach_PP = [base64.b64encode(User.query.filter_by(username = i[1]['sender']).first().image_data).decode('utf-8') if i and User.query.filter_by(username = i[1]['sender']).first().image_data else None for i in sessions_where_teach_MH]    
 
     sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
     if sessions_where_learn:
@@ -257,6 +257,7 @@ def dashboard():
                             sessions_where_learn = sessions_where_learn,
                             sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
                             sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
+                            get_period = get_period_from_time,
                             )
 
 @app.route('/login',methods=['GET','POST'])
