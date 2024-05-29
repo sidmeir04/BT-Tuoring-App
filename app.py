@@ -239,7 +239,7 @@ def dashboard():
         sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
         sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
         sessions_where_teach_MH = [i if i != (0,None) else None for i in sessions_where_teach_MH]
-        sessions_where_teach_PP = [base64.b64encode(User.query.filter_by(username = i[1]['sender']).first().image_data).decode('utf-8') if i[1] and User.query.filter_by(username = i[1]['sender']).first().image_data else None for i in sessions_where_teach_MH]    
+        sessions_where_teach_PP = [base64.b64encode(User.query.filter_by(username = i[1]['sender']).first().image_data).decode('utf-8') if i and User.query.filter_by(username = i[1]['sender']).first().image_data else None for i in sessions_where_teach_MH]    
 
     sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
     if sessions_where_learn:
@@ -533,6 +533,11 @@ def delete_session(session_id,type):
             other_user.notifaction_data['deleted'] = other_user.notifaction_data['deleted'] + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
             flag_modified(other_user, "notifaction_data")
         db.session.delete(session)
+        
+        #this deletes the message history. If you want to save it for later, we can do that
+        message_history = MessageHistory.query.get(session.message_history_id)
+        db.session.delete(message_history)
+
         flag_modified(user,'schedule_data')
         db.session.commit()
         flash('Session Deleted', 'success')
