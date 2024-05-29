@@ -131,7 +131,7 @@ def handle_connect():
 
 @socketio.on("disconnect")
 def handle_disconnect():
-    print('Client disconnected')
+    pass
 
 @socketio.on("leave")
 def l(number):
@@ -348,10 +348,7 @@ def complete_session(id):
     # if date >= today:
     #     flash('Tutoring Session has not Happened yet', 'warning')
     #     return redirect(url_for('index'))
-    params = {
-        'type': 0,
-        'id': session.id
-    }
+    params = {'type': 0,'id': session.id}
     if current_user.id == session.tutor:
         params['type'] = 2
         return redirect(url_for('completion_form',**params))
@@ -412,6 +409,10 @@ def completion_form():
         return redirect(url_for('index'))
     return render_template('completion_form.html', type = type, id = id)
 
+@app.route('/one_pager')
+def one_pager():
+    return render_template('one_pager.html')
+
 @app.route('/show_feedback')
 def show_feedback():
     reviews = Feedback.query.filter_by(review_for = current_user.id)
@@ -469,10 +470,10 @@ def scheduler():
         day = int(day)
         period_data = Periods.query.get(period)
         data = getattr(period_data, lower_days[day], 'default')
-        print([i for i in request.form.items()])
         if ('delete', '') not in request.form.items():
             start_time = request.form.get('start_time')
             end_time = request.form.get('end_time')
+            subject = request.form.get('subject')
             period_start = 450 + int(period)*45
             period_end = period_start + 41
             start_min = time_to_min(start_time)
@@ -484,7 +485,7 @@ def scheduler():
             current_user.schedule_data[lower_days[day]][str(period)]['start_time'] = start_time
             current_user.schedule_data[lower_days[day]][str(period)]['end_time'] = end_time
             current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
-            current_user.schedule_data[lower_days[day]][str(period)]['subject'] = 'random'
+            current_user.schedule_data[lower_days[day]][str(period)]['subject'] = subject
             if str(current_user.id) not in getattr(period_data, lower_days[day], 'default').split(' '):
                 setattr(period_data, lower_days[day], data + ' ' + str(current_user.id))
 
@@ -587,8 +588,10 @@ def profile():
         if 'submit1' in request.form:
             email = request.form.get('email')
             name = request.form.get('name')
+            username = request.form.get('username')
             last_name = request.form.get('last_name')
             user.email = email
+            user.username = username
             user.name = name
             user.last_name = last_name
         elif 'submit2' in request.form:
