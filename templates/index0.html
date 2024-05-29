@@ -2,206 +2,13 @@
 {%set user_name = username%}
 {%set active_page='dashboard'%}
 {% block content %}
-<!-- 
-<div class="carousel">
-    <div class="carousel-inner">
-      <div class="item active">
-        <div class="container">
-          <blockquote>Most people are other people. Their thoughts are someone else's opinions, their lives a mimicry, their passions a quotation.</blockquote>
-          <p class="author">Oscar Wilde</p>
-        </div>
-      </div>
-      <div class="item">
-        <div class="container">
-          <blockquote>Do something every day that you don't want to do. This is the golden rule for acquiring the habit of doing your duty without pain.</blockquote>
-          <p class="author">Mark Twain</p>
-        </div>
-      </div>
-      <div class="item">
-        <div class="container">
-          <blockquote>The worst sin towards our fellow creatures is not to hate them, but to be indifferent to them. That's the essence of inhumanity.</blockquote>
-          <p class="author">George Bernard Shaw</p>
-        </div>
-      </div>
-    </div>
-    <div class="carousel-control left">
-      <div class="arrow left"></div>
-    </div>
-    <div class="carousel-control right">
-      <div class="arrow right"></div>
-    </div>
-    <ol class="carousel-indicators">
-      <li class="active"></li>
-      <li></li>
-      <li></li>
-    </ol>
-</div> -->
+
+<style>
+  .border-bottom{
+    vertical-align: middle;
+  }
   
-<!-- <style>
-    body {
-  font-family: 'Montserrat', sans-serif;
-  color: #FFFFFF;
-  background-color: #1E88E5;
-}
-
-.carousel {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  padding: 90px 0;
-  text-align: center;
-  background-color: #1E88E5;
-  transform: translate(-50%, -50%);
-}
-
-.carousel-inner {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-.carousel-inner > .item {
-  position: relative;
-  display: none;
-  animation: 0.5s ease-in-out;
-}
-
-.carousel-inner > .active,
-.carousel-inner > .next {
-  display: block;
-}
-
-.carousel-inner > .next {
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-
-.carousel-inner > .to-left {
-  animation-name: left;
-}
-
-.carousel-inner > .from-right {
-  animation-name: right;
-}
-
-.carousel-inner > .to-right {
-  animation-name: right;
-  animation-direction: reverse;
-}
-
-.carousel-inner > .from-left {
-  animation-name: left;
-  animation-direction: reverse;
-}
-
-.container {
-  margin: 0 auto;
-}
-
-blockquote {
-  padding: 10px 20px;
-  margin: 30px 90px;
-  font-size: 32px;
-}
-
-.author {
-  margin: 0;
-  opacity: 0.5;
-}
-
-.carousel-control {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 15%;
-  cursor: pointer;
-}
-
-.carousel-control.right {
-  right: 0;
-  left: auto;
-}
-
-.carousel-control > .arrow {
-  position: absolute;
-  top: 50%;
-  display: inline-block;
-  width: 30px;
-  height: 30px;
-  background: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjYiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNiAyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+QXJyb3c8L3RpdGxlPjxwYXRoIGQ9Ik0yNS42IDEwLjk3NGwtOC41MyA4LjYyYTEuMzYgMS4zNiAwIDAgMS0xLjkzNS4wMDMgMS4zODcgMS4zODcgMCAwIDEtLjAwMi0xLjk1bDYuMjAxLTYuMjY4SDEuMzY4QTEuMzc0IDEuMzc0IDAgMCAxIDAgMTBjMC0uNzYyLjYxMy0xLjM4IDEuMzY4LTEuMzhoMTkuOTY2bC02LjItNi4yNjdhMS4zODcgMS4zODcgMCAwIDEgLjAwMS0xLjk1IDEuMzYgMS4zNiAwIDAgMSAxLjkzNi4wMDJsOC41MyA4LjYyMWMuNTMyLjUzOC41MzIgMS40MSAwIDEuOTQ4IiBmaWxsPSIjRkZGRkZGIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiLz48L3N2Zz4=") center center no-repeat;
-  background-size: 26px 20px;
-  opacity: 0.6;
-  transform: translateY(-50%);
-}
-
-.carousel-control > .arrow:hover {
-  opacity: 0.8;
-}
-
-.carousel-control > .arrow.left {
-  transform: translateY(-50%) rotate(180deg);
-}
-
-.carousel-control > .arrow.right {
-  right: 50%;
-}
-
-.carousel-indicators {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  padding-left: 0;
-  margin: 0;
-  list-style: none;
-  transform: translateX(-50%);
-}
-
-.carousel-indicators li {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  cursor: pointer;
-  border: 1px solid #FFFFFF;
-  border-radius: 10px;
-}
-
-.carousel-indicators li.active {
-  background-color: #FFFFFF;
-}
-
-@media (min-width: 992px) {
-  .container {
-    width: 970px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .container {
-    width: 1170px;
-  }
-}
-
-@keyframes left {
-  from {
-    left: 0;
-  }
-  to {
-    left: -100%;
-  }
-}
-
-@keyframes right {
-  from {
-    left: 100%;
-  }
-  to {
-    left: 0;
-  }
-}
-</style> -->
+</style>
 <!-- Begin Page Content -->
 <div class="container-fluid mr-0 pr-0">
 
@@ -215,7 +22,6 @@ blockquote {
             
         </div>
     </div>
-    {{missed}}
     <div class="row py-2 mb-4 bg-gradient-secondary px-0">
     </div>
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -253,7 +59,7 @@ blockquote {
                 <div class="card-body d-flex">
                     
                     {% if sessions_where_teach %}
-                    <div id="teacher-sessions-table" class="w-100"></div>
+                    <div id="teacher-sessions-table" class="w-100">
                         <div class="table-responsive w-100">
                             <table class="table" id="dataTable" width="100%" cellspacing="0">
                                 <thead>
@@ -262,24 +68,67 @@ blockquote {
                                         <th>End</th>
                                         <th>Period</th>
                                         <th>Date</th>
+                                        <th>Messaging</th>
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for session in sessions_where_teach %}
+                                    {% for i, session in enum(sessions_where_teach) %}
                                     <tr>
-                                        <td>{{ session.start_time.strftime("%H:%M") }}</td>
-                                        <td>{{ session.end_time.strftime("%H:%M") }}</td>
-                                        <td>to be added</td>
-                                        <td>{{ session.date.strftime("%B") }} {{ session.date.strftime("%d") }}</td>
-                                        <td>
+                                        <td class="border-bottom align-middle text-center" style="width: 10%;">{{ session.start_time.strftime("%H:%M") }}</td>
+                                        <td class="border-bottom align-middle" style="width: 10%;">{{ session.end_time.strftime("%H:%M") }}</td>
+                                        <td class="border-bottom align-middle" style="width: 15%;">to be added</td>
+                                        <td class="border-bottom border-right align-middle" style="width: 15%;">{{ session.date.strftime("%B") }} {{ session.date.strftime("%d") }}</td>
+                                        <td class="border-bottom align-middle border-right" style="width: 30%;">
+                                            <a href="{{ url_for('details', identification=session.id) }}" class="text-decoration-none text-reset">
+                                                <div class="row align-items-center">
+                                                    <div class="col-2 d-flex justify-content-center">
+                                                        <img class="img-profile rounded-circle"
+                                                            src="
+                                                            {% if sessions_where_teach_PP[i] %}
+                                                            data:image/jpeg;base64,{{ sessions_where_teach_PP[i] }}
+                                                            {% else %}
+                                                            static/assets/img/undraw_profile.svg
+                                                            {% endif %}
+                                                            " 
+                                                            style="width: 100%; height:auto;"
+                                                            id="{{i}},{{session.id}}">
+                                                    </div>
+                                                    <div class="col-10">
+                                                        {% if sessions_where_teach_MH[i] %}
+                                                        <div class="row d-flex justify-content-between align-items-center">
+                                                            <span class="mr-2 d-none d-lg-inline text-gray-900">
+                                                                {% if sessions_where_teach_MH[i][1]['sender'] == username %}
+                                                                You
+                                                                {% else %}
+                                                                {{ sessions_where_teach_MH[i][1]['sender'] }}
+                                                                {% endif %}
+                                                            </span>
+                                                            {% if sessions_where_teach_MH[i][0] %}
+                                                            <div class="rounded-circle bg-danger py-0 px-2 mr-2">
+                                                                <span class="text-white">{{ sessions_where_teach_MH[i][0] }}</span>
+                                                            </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="row align-items-center">
+                                                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ sessions_where_teach_MH[i][1]['message'] }}</span>
+                                                        </div>
+                                                        {% else %}
+                                                        <div class="row justify-content-center align-items-center h-100">
+                                                            <span class="mr-2 d-none d-lg-inline text-gray-900">Click here to go to messages and start planning!</span>
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </td>
+                                        <td class="border-bottom align-middle" style="width: 20%;">
                                             <div class="dropdown">
                                                 <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                                 style="width: 2vw; height: 2vw; border-radius: 20px; background-color: #007bff; border: none; color: white; font-size: 1.2em; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                                                     <i class="fa fa-ellipsis-v"></i>
                                                 </button>
                                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                    <a class="dropdown-item" href="{{ url_for('details', identification=session.id) }}">Messages</a>
                                                     <a class="dropdown-item" href="/complete_session/{{ session.id }}">Mark as Done</a>
                                                     <a class="dropdown-item" href="/delete_session/{{ session.id }}/2">Remove Session</a>
                                                 </div>
@@ -298,6 +147,7 @@ blockquote {
                         </div>
                     </div>
                     {% endif %}
+                  
                     {%if sessions_where_learn%}
                     <div id="student-sessions-table" class="w-100 d-none">
                         <div class="table-responsive w-100">
@@ -308,17 +158,61 @@ blockquote {
                                         <th>End</th>
                                         <th>Period</th>
                                         <th>Date</th>
+                                        <th>Messaging</th>
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for session in sessions_where_learn%}
+                                    {% for i,session in enum(sessions_where_learn)%}
                                         <tr>
-                                            <td>{{session.start_time.strftime("%H:%M")}}</td>
-                                            <td>{{session.end_time.strftime("%H:%M")}}</td>
-                                            <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td>to be added</td>
-                                            <td>{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
-                                            <td>
+                                            <td class="border-bottom align-middle">{{session.start_time.strftime("%H:%M")}}</td>
+                                            <td class="border-bottom align-middle">{{session.end_time.strftime("%H:%M")}}</td>
+                                            <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td class="border-bottom align-middle">to be added</td>
+                                            <td class="border-bottom border-right align-middle">{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
+                                            <td class="border-bottom border-right align-middle">
+                                              <a href="{{ url_for('details', identification=session.id) }}" class="text-decoration-none text-reset">
+                                                  <div class="row">
+                                                      <div class="col-2 d-flex align-items-center justify-content-center">
+                                                          <img class="img-profile rounded-circle"
+                                                              src="
+                                                              {%if sessions_where_learn_PP[i]%}
+                                                              data:image/jpeg;base64,{{ sessions_where_learn_PP[i] }}
+                                                              {%else%}
+                                                              static/assets/img/undraw_profile.svg
+                                                              {%endif%}
+                                                              " 
+                                                              style="width: 100%; height:auto;"
+                                                              id="{{session.id}},image">
+                                                      </div>
+                                                      <div class="col-10">
+                                                        {%if sessions_where_learn_MH[i]%}
+                                                          <div class="row d-flex justify-content-between" id="secondary_notification">
+                                                              <span class="mr-2 d-none d-lg-inline text-gray-900" id="{{session.id}},sender">
+                                                                {%if sessions_where_learn_MH[i][1]['sender'] == username %}
+                                                                You
+                                                                {%else%}
+                                                                {{sessions_where_learn_MH[i][1]['sender']}}
+                                                                {%endif%}
+                                                              </span>
+                                                              {%if sessions_where_learn_MH[i][0]%}
+                                                                <div class="rounded-circle bg-danger py-0 px-2 mr-2">
+                                                                    <span class="text-white" id="{{session.id}},notification">{{sessions_where_learn_MH[i][0]}}</span>
+                                                                </div>
+                                                              {%endif%}
+                                                          </div>
+                                                          <div class="row">
+                                                              <span class="mr-2 d-none d-lg-inline text-gray-600 small" id="{{session.id}},message">{{sessions_where_learn_MH[i][1]['message']}}</span>
+                                                          </div>
+                                                        {%else%}
+                                                          <div class="row justify-content-center align-items-center h-100">
+                                                              <span class="mr-2 d-none d-lg-inline text-gray-900">Click here to go to messages and start planning!</span>
+                                                          </div>
+                                                        {%endif%}
+                                                      </div>
+                                                  </div>
+                                              </a>
+                                            </td>  
+                                            <td class="border-bottom align-middle">
                                                 <div class="dropdown">
                                                     <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                                     style = "width: 2vw;
@@ -335,7 +229,6 @@ blockquote {
                                                         <i class="fa fa-ellipsis-v"></i>
                                                     </button>
                                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                        <a class="dropdown-item" href="{{ url_for('details', identification=session.id) }}">Messages</a>
                                                         <a class="dropdown-item" href="/complete_session/{{ session.id }}">Mark as Done</a>
                                                         <a class="dropdown-item" href="/delete_session/{{ session.id }}/2">Remove Session</a>
                                                     </div>
@@ -349,7 +242,7 @@ blockquote {
 
                         </div>
                         {%else%}
-                        <div class="w-100 justify-content-center align-self-center" id="student-sessions-table">
+                        <div class="w-100 justify-content-center align-self-center d-none" id="student-sessions-table">
 
                             <div class="text-center text-primary h4 justify-self-center align-self-center">
                                 No current appointments
@@ -401,7 +294,6 @@ blockquote {
 <script>
     function changeTable(change){
         if (change == 'learn'){
-            console.log('sdf')
             document.getElementById('toggleTableMode').innerText = 'Learning'
             document.getElementById('student-sessions-table').classList.remove('d-none')
             document.getElementById('teacher-sessions-table').classList.add('d-none')
@@ -413,80 +305,33 @@ blockquote {
         }
     }
 </script>
+<script>
+    function update_dashboard(data){
+      session_id = data['session_id']
+      console.log(session_id)
+      image = document.getElementById(`${session_id},image`)
+      if (data['image_data']) {
+        image.src = `data:image/jpeg;base64,${data['image_data']}`
+      }
+      else{
+        image.src = "static/assets/img/undraw_profile.svg"
+      }
+      notification = document.getElementById(`${session_id},notification`)
+      if (notification == null){
+        element = `<div class="rounded-circle bg-danger py-0 px-2 mr-2">
+                      <span class="text-white" id="${session_id},notification">0</span>
+                  </div>`
+        document.getElementById('secondary_notification').insertAdjacentHTML('beforeend',element)
+      }
+      else{
+        console.log(String(parseInt(notification.innerText)))
+        notification.innerText = String(parseInt(notification.innerText) + 1)
+      }
 
-<!-- <script>
-    var items = document.querySelectorAll('.carousel .item');
-var dots = document.querySelectorAll('.carousel-indicators li');
-var currentItem = 0;
-var isEnabled = true;
-
-function changeCurrentItem(n) {
-	currentItem = (n + items.length) % items.length;
-}
-
-function nextItem(n) {
-	hideItem('to-left');
-	changeCurrentItem(n + 1);
-	showItem('from-right');
-}
-
-function previousItem(n) {
-	hideItem('to-right');
-	changeCurrentItem(n - 1);
-	showItem('from-left');
-}
-
-function goToItem(n) {
-	if (n < currentItem) {
-		hideItem('to-right');
-		currentItem = n;
-		showItem('from-left');
-	} else {
-		hideItem('to-left');
-		currentItem = n;
-		showItem('from-right');
-	}
-}
-
-function hideItem(direction) {
-	isEnabled = false;
-	items[currentItem].classList.add(direction);
-	dots[currentItem].classList.remove('active');
-	items[currentItem].addEventListener('animationend', function() {
-		this.classList.remove('active', direction);
-	});
-}
-
-function showItem(direction) {
-	items[currentItem].classList.add('next', direction);
-	dots[currentItem].classList.add('active');
-	items[currentItem].addEventListener('animationend', function() {
-		this.classList.remove('next', direction);
-		this.classList.add('active');
-		isEnabled = true;
-	});
-}
-
-document.querySelector('.carousel-control.left').addEventListener('click', function() {
-	if (isEnabled) {
-		previousItem(currentItem);
-	}
-});
-
-document.querySelector('.carousel-control.right').addEventListener('click', function() {
-	if (isEnabled) {
-		nextItem(currentItem);
-	}
-});
-
-document.querySelector('.carousel-indicators').addEventListener('click', function(e) {
-	var target = [].slice.call(e.target.parentNode.children).indexOf(e.target);
-	if (target !== currentItem && target < dots.length) {
-		goToItem(target);
-	}
-});
-</script> -->
-  
+      document.getElementById(`${session_id},sender`).innerText = data['username']
+      document.getElementById(`${session_id},message`).innerText = data['message']
+    }
+</script>
 
 
 {% endblock %}
