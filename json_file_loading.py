@@ -4,6 +4,11 @@ from calendar import weekday
 
 user_type_key = {0:'student', 1:'teacher', 2:'administrator', 3:'developer'}
 
+def load_volunteer_hour_json_file():
+    with open('static/assets/volunteer_hours.json', 'r') as file:
+        form = json.load(file)
+    return form
+
 def load_basic_json_file():
     with open('static/assets/basic_json_file.json', 'r') as file:
         basic = json.load(file)
