@@ -234,6 +234,10 @@ def createDB():
     new_user = User(name='Student', last_name='Student2', email='student@gmail.com', username='Student', role=0)
     new_user.set_password('pass')
     db.session.add(new_user)
+    new_user = User(name='admin', last_name='Admin_Last', email='admin@gmail.com', username='Admin', role=2)
+    new_user.set_password('pass')
+    db.session.add(new_user)
+
     db.session.commit()
     return redirect(url_for('index'))
 
