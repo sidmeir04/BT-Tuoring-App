@@ -108,7 +108,7 @@ def inject_profile_image():
     return dict(profile_image=profile_image)
 
 @app.route('/appointment_details')
-def details():
+def user_messages():
     #gets the session currently being viewed
     ID = request.args.get('identification')
     open_session = Session.query.get(ID)
