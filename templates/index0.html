@@ -80,7 +80,7 @@
                                                 <td class="border-bottom align-middle">{{ session.period }}</td>
                                                 <td class="border-bottom border-right align-middle">{{ session.date.strftime("%B") }} {{ session.date.strftime("%d") }}</td>
                                                 <td class="border-bottom border-right align-middle">
-                                                    <a href="{{ url_for('details', identification=session.id) }}" class="text-decoration-none text-reset">
+                                                    <a href="{{ url_for('user_messages', identification=session.id) }}" class="text-decoration-none text-reset">
                                                         <div class="row">
                                                             <div class="col-2 d-flex align-items-center justify-content-center">
                                                                 <img class="img-profile rounded-circle"
@@ -181,7 +181,7 @@
                                             <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td class="border-bottom align-middle">{{ session.period}}</td>
                                             <td class="border-bottom border-right align-middle">{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                             <td class="border-bottom border-right align-middle">
-                                              <a href="{{ url_for('details', identification=session.id) }}" class="text-decoration-none text-reset">
+                                              <a href="{{ url_for('user_messages', identification=session.id) }}" class="text-decoration-none text-reset">
                                                   <div class="row">
                                                       <div class="col-2 d-flex align-items-center justify-content-center">
                                                           <img class="img-profile rounded-circle"

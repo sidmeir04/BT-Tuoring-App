@@ -104,7 +104,7 @@ def load_user(user_id):
 
 @app.context_processor
 def inject_profile_image():
-    excluded_endpoints = ['login']
+    excluded_endpoints = ['login','details']
     
     # Get the current endpoint
     current_endpoint = request.endpoint
@@ -250,11 +250,6 @@ def createDB():
 
 @app.route("/")
 def index():
-    return redirect(url_for('dashboard'))
-
-
-@app.route('/dashboard')
-def dashboard():
     #redirects if not logged
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
 
