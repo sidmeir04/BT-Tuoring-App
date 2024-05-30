@@ -104,8 +104,9 @@ def load_user(user_id):
 
 @app.context_processor
 def inject_profile_image():
-    profile_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
-    return dict(profile_image=profile_image)
+    if current_user:
+        profile_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
+        return dict(profile_image=profile_image)
 
 @app.route('/appointment_details')
 def user_messages():

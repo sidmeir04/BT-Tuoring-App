@@ -34,8 +34,27 @@
                         <!-- Card Body -->
                         <div class="card-body">
                             {% if current_user.id = session.tutor %}
-                            <form action="/user_messaging/{{session.id}}" method = 'post'></form>
+                            <form action="/user_messaging/{{session.id}}" method = 'post' enctype="multipart/form-data">
+                                <input type="file" class="form-control-file d-none" id="imageUpload" name="image" accept=".jpg, .png .pdf" required>
+                                <button type="submit" class="btn btn-primary btn-lg mt-3" name="submit3">Confirm Change</button>
+                            </form>
+                            <script>
+                                document.getElementById('imageUpload').addEventListener('change', function(event) {
+                                    var reader = new FileReader();
+
+                                    reader.onload = function(e)
+                                    {
+                                        document.getElementById('image').src = e.target.result
+                                    };
+                                    var file = document.getElementById('imageUpload').files[0];
+                                    if (file) {
+                                        reader.readAsDataURL(file);
+                                    }
+                                    console.log(reader)
+                                });
+                            </script>
                             {% else %}
+                            
                             {% endif %}
                             <img class="img-fluid" src="https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg" alt="">
                         </div>
