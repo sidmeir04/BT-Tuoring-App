@@ -33,7 +33,7 @@
                     <div class="card shadow mb-4">
                         <!-- Card Body -->
                         <div class="card-body">
-                            {% if current_user.id = session.tutor %}
+                            {% if current_user.id == session.tutor %}
                             <form action="/user_messaging/{{session.id}}" method = 'post' enctype="multipart/form-data">
                                 <input type="file" class="form-control-file d-none" id="imageUpload" name="image" accept=".jpg, .png .pdf" required>
                                 <button type="submit" class="btn btn-primary btn-lg mt-3" name="submit3">Confirm Change</button>
