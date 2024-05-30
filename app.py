@@ -120,7 +120,7 @@ def details():
     messages = message_history.messages['list']
     messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message'],'sender':i['sender']}  for i in messages]
 
-    return render_template('appointment_details.html',
+    return render_template('user_messages.html',
                            recipient = other,
                            session=open_session,
                            thiss=current_user,
@@ -260,7 +260,6 @@ def dashboard():
                             sessions_where_learn = sessions_where_learn,
                             sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
                             sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
-                            get_period = get_period_from_time,
                             )
 
 @app.route('/login',methods=['GET','POST'])

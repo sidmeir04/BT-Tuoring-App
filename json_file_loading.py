@@ -51,13 +51,3 @@ def date_to_day(date):
     dayNumber = weekday(year, month, day)
     day = days[dayNumber].lower()
     return day
-
-def get_period_from_time(time):
-    time_in_min = time_to_min(time)
-    period = 0
-    for i in [450 + 41*per for per in range(1,10)]:
-        if i > time_in_min:
-            break
-        period += 1
-
-    return period
