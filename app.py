@@ -634,9 +634,19 @@ def profile():
             else:
                 flash('current password not correct', 'warning')
         else:
-            data = request.files.get('image')   
-            image = data.read()
-            user.image_data = image
+            data = request.files.get('image')
+            img = Image.open(data)  # Open the image from the uploaded file
+
+            # Convert the image to RGB mode if it's not already in RGB
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+
+            img.thumbnail((300, 300))
+
+            buffered = BytesIO()
+            img.save(buffered, format="JPEG")  # Save the image in JPEG format
+            image_data = buffered.getvalue()
+            user.image_data = image_data
         db.session.commit()
     if current_user.image_data:
         image_data_b64 = base64.b64encode(current_user.image_data).decode('utf-8')
