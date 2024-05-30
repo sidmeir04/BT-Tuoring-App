@@ -33,7 +33,7 @@
                     <div class="card shadow mb-4">
                         <!-- Card Body -->
                         <div class="card-body">
-                            {% if current_user.id = session.tutor %}
+                            {% if current_user.id == session.tutor %}
                             <form action="/user_messaging/{{session.id}}" method = 'post'></form>
                             {% else %}
                             {% endif %}

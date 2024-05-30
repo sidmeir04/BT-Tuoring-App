@@ -104,18 +104,18 @@ def load_user(user_id):
 
 @app.context_processor
 def inject_profile_image():
-    excluded_endpoints = ['login']
+    included_endpoints = ['dashboard','find_session','appointment_details','scheduler','profile']
     
     # Get the current endpoint
     current_endpoint = request.endpoint
     
     # Check if the current endpoint is in the excluded list
-    if current_endpoint in excluded_endpoints:
+    if current_endpoint not in included_endpoints:
         return {}
     
     # If not excluded, inject the profile image
     profile_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
-    return dict(profile_image=profile_image)
+    return {'profile_image':profile_image,'role':current_user.role}
 
 @app.route('/appointment_details')
 def user_messages():
@@ -258,8 +258,8 @@ def dashboard():
     #redirects if not logged
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
 
-    if current_user.role == 2:
-        return render_template('index2.html')
+    # if current_user.role == 2:
+    #     return render_template('index2.html')
 
     sessions_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
     if sessions_where_teach:
