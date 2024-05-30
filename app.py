@@ -104,6 +104,16 @@ def load_user(user_id):
 
 @app.context_processor
 def inject_profile_image():
+    excluded_endpoints = ['login']
+    
+    # Get the current endpoint
+    current_endpoint = request.endpoint
+    
+    # Check if the current endpoint is in the excluded list
+    if current_endpoint in excluded_endpoints:
+        return {}
+    
+    # If not excluded, inject the profile image
     profile_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
     return dict(profile_image=profile_image)
 
