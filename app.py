@@ -108,7 +108,7 @@ def inject_profile_image():
     return dict(profile_image=profile_image)
 
 @app.route('/appointment_details')
-def details():
+def user_messages():
     #gets the session currently being viewed
     ID = request.args.get('identification')
     open_session = Session.query.get(ID)
@@ -129,7 +129,7 @@ def details():
     messages = message_history.messages['list']
     messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message'],'sender':i['sender']}  for i in messages]
 
-    return render_template('appointment_details.html',
+    return render_template('user_messages.html',
                            recipient = other,
                            my_image=my_image,
                            other_image = other_image,

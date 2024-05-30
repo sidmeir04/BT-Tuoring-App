@@ -10,4 +10,5 @@ def find_next_day_of_week(day_of_week):
 
     return next_day.strftime("%Y-%m-%d")
 
+
 print(find_next_day_of_week('wednesday'))

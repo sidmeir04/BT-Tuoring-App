@@ -77,7 +77,7 @@
                                             <tr>
                                                 <td class="border-bottom align-middle">{{ session.start_time.strftime("%H:%M") }}</td>
                                                 <td class="border-bottom align-middle">{{ session.end_time.strftime("%H:%M") }}</td>
-                                                <td class="border-bottom align-middle">to be added</td>
+                                                <td class="border-bottom align-middle">{{ session.period }}</td>
                                                 <td class="border-bottom border-right align-middle">{{ session.date.strftime("%B") }} {{ session.date.strftime("%d") }}</td>
                                                 <td class="border-bottom border-right align-middle">
                                                     <a href="{{ url_for('details', identification=session.id) }}" class="text-decoration-none text-reset">
@@ -178,7 +178,7 @@
                                         <tr>
                                             <td class="border-bottom align-middle">{{session.start_time.strftime("%H:%M")}}</td>
                                             <td class="border-bottom align-middle">{{session.end_time.strftime("%H:%M")}}</td>
-                                            <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td class="border-bottom align-middle">to be added</td>
+                                            <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td class="border-bottom align-middle">{{ session.period}}</td>
                                             <td class="border-bottom border-right align-middle">{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
                                             <td class="border-bottom border-right align-middle">
                                               <a href="{{ url_for('details', identification=session.id) }}" class="text-decoration-none text-reset">
@@ -299,6 +299,21 @@
                 </div>
             </div>
         </a>
+
+        <a class="col-xl-3 col-md-6 mb-4" href = "/profile">
+          <div class="card border-left-primary shadow h-100 py-2">
+              <div class="card-body">
+                  <div class="row no-gutters align-items-center h-100">
+                      <div class="col mr-2">
+                          <div class="h5 mb-0 font-weight-bold text-gray-800">Edit Your Profile</div>
+                      </div>
+                      <div class="col-auto">
+                          <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </a>
     </div>
 </div>
 
