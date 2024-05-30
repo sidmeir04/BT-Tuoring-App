@@ -102,6 +102,10 @@ with app.app_context():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.context_processor
+def inject_profile_image():
+    profile_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
+    return dict(profile_image=profile_image)
 
 @app.route('/appointment_details')
 def details():
@@ -115,13 +119,20 @@ def details():
     db.session.commit()
 
     other = open_session.tutor if open_session.tutor != current_user.id else open_session.student
-    other = User.query.get(other).username
+    other = User.query.get(other)
+
+    my_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
+    other_image = base64.b64encode(other.image_data).decode('utf-8') if other.image_data else None
+
+    other = other.username
 
     messages = message_history.messages['list']
     messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message'],'sender':i['sender']}  for i in messages]
 
     return render_template('user_messages.html',
                            recipient = other,
+                           my_image=my_image,
+                           other_image = other_image,
                            session=open_session,
                            thiss=current_user,
                            messages=messages)
@@ -462,8 +473,8 @@ def find_session():
                     [user_names.append((User.query.get(int(id)).username,id,period+1,date)) for id in period_data.split(' ')[1:]]
                     [users.append(User.query.get(int(id)).schedule_data[day][str(period+1)]) for id in period_data.split(' ')[1:]]
 
-        return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower())
-    return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower())
+        return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
+    return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
 
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():

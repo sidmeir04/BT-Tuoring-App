@@ -121,17 +121,11 @@
 
 
                     <!-- Topbar Search -->
-                    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-0 my-2 my-md-0 mw-100 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                                aria-label="Search" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <div class="d-none d-sm-inline-block form-inline mr-auto my-2 my-md-0 mw-100">
+                        <span class="h2 text-primary font-weight-bold">
+                            BT Tutoring
+                        </span> 
+                    </div>
                 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -168,76 +162,38 @@
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
                                 {%if current_user.notifaction_data['deleted']|length != 0%}
-                                <span class="badge badge-danger badge-counter">{{current_user.notifaction_data['deleted']|length}}</span>
+                                <span class="badge badge-danger badge-counter" id="notification_counter">{{current_user.notifaction_data['deleted']|length}}</span>
                                 {%endif%}
                             </a>
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="alertsDropdown">
                                 <h6 class="dropdown-header">Alerts Center</h6>
-                            {% for notifaction in current_user.notifaction_data['deleted'][::-1] %}
-                            <div>
-                                <div class="dropdown-item d-flex align-items-center">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
+                                {%if current_user.notifaction_data['deleted']%}
+                                    {% for notifaction in current_user.notifaction_data['deleted'][::-1] %}
+                                    <div class="dropdown-item d-flex align-items-center">
+                                        <div class="mr-3">
+                                            <div class="icon-circle bg-primary">
+                                                <i class="fas fa-file-alt text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="small text-gray-500">December 12, 2019</div>
+                                            <span class="font-weight-bold">{{notifaction}}</span>
+                                        </div>
+                                        <div>
+                                            <button value="{{notifaction}}" class="remove_notifaction">X</button>
                                         </div>
                                     </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">{{notifaction}}</span>
+                                    {% endfor %}
+                                {%else%}
+                                    <div class="dropdown-item d-flex align-items-center justify-content-center py-4">
+                                        Your notifications will show up here
                                     </div>
-                                    <div>
-                                        <button value="{{notifaction}}" class="remove_notifaction">X</button>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                            </div>
-                        </li>
-
-                        <!-- Nav Item - Messages -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="bi bi-envelope-fill"></i>
-                                <!-- Counter - Alerts -->
-
-                                <!------------------------------------change to message notifactions------------------------------------>
-                                {%if current_user.notifaction_data['deleted']|length != 0%}
-                                <span class="badge badge-danger badge-counter">{{current_user.notifaction_data['deleted']|length}}</span>
                                 {%endif%}
-
-
-                            </a>
-                            <!-- Dropdown - Alerts -->
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">Alerts Center</h6>
-
-                                <!--------------------------------------change to message notifactions------------------------------------>
-                            {% for notifaction in current_user.notifaction_data['deleted'][::-1] %}
-                            <div>
-                                <a class="dropdown-item d-flex align-items-center" href="#">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-primary">
-                                            <i class="fas fa-file-alt text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500">December 12, 2019</div>
-                                        <span class="font-weight-bold">{{notifaction}}</span>
-                                    </div>
-                                    <div>
-                                        <button value="{{notifaction}}">X</button>
-                                    </div>
-                                </a>
-                            </div>
-                            {% endfor %}
-
-
                             </div>
                         </li>
+
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
@@ -247,7 +203,13 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{current_user.username}}</span>
                                 <img class="img-profile rounded-circle"
-                                    src="static/assets/img/undraw_profile.svg">
+                                    src="
+                                    {%if profile_image%}
+                                    data:image/jpeg;base64,{{ profile_image }}
+                                    {%else%}
+                                    static/assets/img/undraw_profile.svg
+                                    {%endif%}
+                                    " width="10vw" height="10vw">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -381,6 +343,15 @@
             $('.remove_notifaction').on('click', function() {
                 const notif = $(this).val();
                 const button = $(this);
+                
+                num_notifications = document.getElementById('notification_counter')
+                int_notifications = parseInt(num_notifications.innerText) - 1
+                if(int_notifications == 0){
+                    num_notifications.classList.add('d-none')
+                }
+                else{
+                    num_notifications.innerText = String(int_notifications)
+                }
 
                 $.ajax({
                     type: 'POST',
@@ -401,9 +372,6 @@
 
     <script>
         const socket = io({autoConnect: true});
-        socket.on("connect", function() {
-            console.log('dfi')
-        });
 
         socket.on("chat", function(data) {
             if ("{{active_page}}" == "messages"){
@@ -414,7 +382,7 @@
                 update_dashboard(data)
             }
             else{
-                console.log('iufhkas')
+
             }
     });
     </script>

@@ -13,13 +13,13 @@
             <a href="/"><i class="fa fa-arrow-left"></i></a>    
         </div>
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <h1 class="h3 mb-0 text-gray-800">Ticket Number {{session.id}}</h1>
+            <h1 class="h3 mb-0 text-gray-800">Your Message Conversation With {{recipient}}</h1>
         </div>
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <button class="btn btn-primary" onclick="do_open('messaging')">
+            <button class="btn mr-2 btn-primary" id="messaging_btn" onclick="do_open('messaging')">
                 Overview
             </button>
-            <button class="btn btn-primary" onclick="do_open('materials')">
+            <button class="selector btn ml-2 btn-secondary" id="materials_btn" onclick="do_open('materials')">
                 Materials
             </button>
         </div>
@@ -29,7 +29,7 @@
 
         <div class="d-none" id="materials">
             <div class="row">
-                <div class="col-8 pl-0">
+                <div class="col-12">
                     <div class="card shadow mb-4">
                         <!-- Card Header - Dropdown -->
                         <div
@@ -43,7 +43,7 @@
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
                                     aria-labelledby="dropdownMenuLink">
-                                    <div class="dropdown-header">Dropdown Header</div>
+                                    <!-- <div class="dropdown-header">Dropdown Header</div> -->
                                     <a class="dropdown-item" href="#">Action</a>
                                     <a class="dropdown-item" href="#">Another action</a>
                                     <div class="dropdown-divider"></div>
@@ -121,30 +121,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <!-- Pending Requests Card Example -->
-                        <div class="col-12">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                People</div>
-                                            <div class="h5 mb-2 font-weight-bold text-gray-800">
-                                                - {{thiss.username}}
-                                            </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                                - {{recipient}}
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="col-9">
                     <div class="card shadow mb-4">
@@ -179,13 +155,25 @@
                                             </div>
                                         </div>
                                         <!-- Profile Icon -->
-                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+                                        <img src="
+                                        {%if my_image%}
+                                            data:image/jpeg;base64,{{ my_image }}
+                                        {%else%}
+                                            static/assets/img/undraw_profile.svg
+                                        {%endif%}
+                                        " class="rounded-circle" alt="Profile Image" width="40" height="40">
                                     </div>
                                     
                                     {%else%}
                                     
                                     <div class="d-flex justify-content-start mb-2 align-items-end">
-                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+                                        <img src="
+                                        {%if other_image%}
+                                            data:image/jpeg;base64,{{ other_image }}
+                                        {%else%}
+                                            static/assets/img/undraw_profile.svg
+                                        {%endif%}
+                                        " class="rounded-circle" alt="Profile Image" width="40" height="40">
 
                                         <div class="justify-content-end" style="max-width: 70%;">
                                             <small class="d-flex justify-content-start text-end mx-2" width="100%">{{message['sender']}}</small>
@@ -202,13 +190,21 @@
                         <div class="card-footer px-0">
                             <div class="col-12">
                                 <div class="input-group">
-                                    <textarea class="form-control" id="message" rows="1" placeholder="Type your message here..." style="resize: none;"></textarea>
-                                    <button class="btn btn-primary" type="button" id="send-button">
+                                    <textarea class="form-control mr-2" id="message" rows="1" placeholder="Type your message here..." style="resize: none;"></textarea>
+                                    <div class="btn d-flex btn-primary py-0 align-items-center" type="button" id="send-button">
                                         <i class="material-icons">&#xe163;</i>
-                                    </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        
+                        <script>
+                        document.getElementById('message').addEventListener('input', function() {
+                            this.style.height = 'auto';
+                            this.style.height = (this.scrollHeight) + 'px';
+                        });
+                        </script>
+                        
                     </div>
                 </div>
             </div>
@@ -222,6 +218,7 @@
 <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
 
 <script>
+
     function do_open(choice){
         message = document.getElementById('messaging')
         material = document.getElementById('materials')
@@ -230,11 +227,32 @@
         material.classList = ['d-none']
 
         document.getElementById(choice).classList = ['d-block']
+
+        possible = {'messaging':'materials','materials':'messaging'}
+
+
+        document.getElementById(`${choice}_btn`).classList.replace('btn-secondary','btn-primary')
+        document.getElementById(`${possible[choice]}_btn`).classList.replace('btn-primary','btn-secondary')
     }
 
 </script>
 
 <script>
+    window.onload = scrollToBottom;
+    function scrollToBottom() {
+        var chatMessages = document.getElementById('chat-messages');
+        chatMessages.scrollTo({
+            top: chatMessages.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+
+    document.getElementById('message').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevents newline from being added in the textarea
+            send_message();
+        }
+    });
 
     // Event listener for send button click
     document.getElementById("send-button").addEventListener("click", function () {
@@ -245,7 +263,6 @@
     function send_message(){
         let message = document.getElementById("message").value;
         if (message.trim() !== ""){
-            console.log("{{session.id}}")
             socket.emit("new_chat_message", message, "{{ thiss.id }}","{{session.message_history_id}}","{{session.id}}");
 
             //resets the message
@@ -259,15 +276,29 @@
                                                 ${message}
                                             </div>
                                         </div>
-                                        <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+                                        <img src="
+                                        {%if my_image%}
+                                            data:image/jpeg;base64,{{ my_image }}
+                                        {%else%}
+                                            static/assets/img/undraw_profile.svg
+                                        {%endif%}
+                                        " class="rounded-circle" alt="Profile Image" width="40" height="40">
                                     </div>`  
+
             document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
+            scrollToBottom();
         }
     }
 
     function recieve_message(data){
         thing = `<div class="d-flex justify-content-start mb-2 align-items-end">
-                                                    <img src="https://via.placeholder.com/40" class="rounded-circle" alt="Profile Image" width="40" height="40">
+                                                    <img src="
+                                                    {%if other_image%}
+                                                        data:image/jpeg;base64,{{ other_image }}
+                                                    {%else%}
+                                                        static/assets/img/undraw_profile.svg
+                                                    {%endif%}
+                                                    " class="rounded-circle" alt="Profile Image" width="40" height="40">
 
                                                     <div class="justify-content-end" style="max-width: 70%;">
                                                         <small class="d-flex justify-content-start text-end mx-2" width="100%">${data['username']}</small>
@@ -280,6 +311,7 @@
 
         // Append the main container to a target element (e.g., the body)
         document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
+        scrollToBottom();
         socket.emit("recieved_chat_message", message, "{{ thiss.id }}","{{session.message_history_id}}");
     }
 
