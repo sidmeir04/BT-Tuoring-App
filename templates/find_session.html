@@ -71,7 +71,7 @@
                 {%if type == "POST"%}
                     {% for num,user in enumerate(users) %}
                     {% if user_names[num][0].lower() == tutor_name or tutor_name == ''%}
-                    {% if user_names[num][3] not in user['times'].split(' ') %}
+                    {% if user_names[num][3] not in user['times'].split(' ') and user.id != current_user.id %}
                     <tbody>
                         <tr>
                             <td>{{user['start_time']}}</td>

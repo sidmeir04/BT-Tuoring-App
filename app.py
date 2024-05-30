@@ -250,11 +250,6 @@ def createDB():
 
 @app.route("/")
 def index():
-    return redirect(url_for('dashboard'))
-
-
-@app.route('/dashboard')
-def dashboard():
     #redirects if not logged
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
 
