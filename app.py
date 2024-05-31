@@ -125,7 +125,7 @@ def send_verification_email_to(user):
 
 @app.context_processor
 def inject_profile_image():
-    included_endpoints = ['index','find_session','appointment_details','scheduler','profile']
+    included_endpoints = ['index','find_session','user_messages','scheduler','profile']
     
     # Get the current endpoint
     current_endpoint = request.endpoint    
