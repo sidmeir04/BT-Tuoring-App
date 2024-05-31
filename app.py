@@ -30,6 +30,16 @@ app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.config['SESSION_PERMANENT'] = False
 
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = "emregemici@gmail.com"
+app.config['MAIL_PASSWORD'] = "cxke ztxi bhac vqim"
+app.config['MAIL_DEFAULT_SENDER'] = "emregemici@gmail.com"
+mail = Mail(app)
+
 db = SQLAlchemy(app)
 
 class User(db.Model, UserMixin):
@@ -39,7 +49,6 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(255))
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Integer,nullable=False)
     schedule_data = db.Column(JSON, default=load_default_schedule)
     notifaction_data = db.Column(JSON, default=load_default_notifactions)
     sessions = db.relationship('Session', backref='user', lazy = True)
@@ -47,7 +56,7 @@ class User(db.Model, UserMixin):
     hours_of_service = db.Column(db.Float, default = 0.0)
     status = db.Column(db.String, default='')
     image_data = (db.Column(db.LargeBinary))
-
+    email_verification_token = db.Column(db.String(255))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -102,21 +111,71 @@ with app.app_context():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def generate_verification_token():
+    return secrets.token_urlsafe(16)
+
+def send_verification_email_to(user):
+    token = generate_verification_token()
+    user.email_verification_token = token
+    db.session.commit()
+    verification_link = url_for('verify_email', token=token, _external=True)
+    msg = Message("Verify Your Email!", recipients=[user.email])
+    msg.body = f"Click the following link to verify your email: {verification_link}"
+    mail.send(msg)
+
 @app.context_processor
 def inject_profile_image():
-    included_endpoints = ['dashboard','find_session','appointment_details','scheduler','profile']
+    included_endpoints = ['index','find_session','appointment_details','scheduler','profile']
     
     # Get the current endpoint
-    current_endpoint = request.endpoint
-    
+    current_endpoint = request.endpoint    
     # Check if the current endpoint is in the excluded list
     if current_endpoint not in included_endpoints:
         return {}
     
     # If not excluded, inject the profile image
     profile_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
-    return {'profile_image':profile_image,'role':current_user.role}
+    return {'profile_image':profile_image}
 
+
+def email_verified_required(f):
+    print('dsfk')
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        print('sfs')
+        if not current_user.email_verification_token:
+            return f(*args, **kwargs)
+        else:
+            flash("You need to verify your email to access this page.", "warning")
+            return redirect(url_for('profile'))
+    return decorated_function
+
+@app.route('/verify_email/<token>')
+def verify_email(token):
+    user = User.query.filter_by(email_verification_token=token).first()
+    if user:
+        user.email_verification_token = None  # Clear the token once it's used
+        db.session.commit()
+        flash("Your email has been verified!", "success")
+        return redirect(url_for('login'))
+
+    else:
+        flash("Verification link is invalid or has expired.", "danger")
+        return redirect(url_for('profile'))  
+
+@app.route('/send_verification_email',methods=['POST'])
+@login_required
+def send_verification_email():
+    if current_user.email_verification_token:
+        send_verification_email_to(current_user)
+        flash("A new verification email has been sent.", "info")
+        return redirect(url_for('profile'))
+    else:
+        flash("Your email is already verified.", "info")
+    return redirect(url_for('index'))
+
+@login_required
+@email_verified_required
 @app.route('/appointment_details')
 def user_messages():
     #gets the session currently being viewed
@@ -228,31 +287,30 @@ def reroute_user():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@login_required
 @app.route('/createDB')
 def createDB():
     for _ in range(1,10):
         newThing = Periods()
         db.session.add(newThing)
         db.session.commit()
-    new_user = User(name='name', last_name='last_name', email='oscjep25@bergen.org', username='username', role=0)
+    new_user = User(name='name', last_name='last_name', email='oscjep25@bergen.org', username='username')
     new_user.set_password('pass')
     db.session.add(new_user)
-    new_user = User(name='Student', last_name='Student2', email='student@gmail.com', username='Student', role=0)
+    new_user = User(name='Student', last_name='Student2', email='student@gmail.com', username='Student')
     new_user.set_password('pass')
     db.session.add(new_user)
-    new_user = User(name='admin', last_name='Admin_Last', email='admin@gmail.com', username='Admin', role=2)
+    new_user = User(name='admin', last_name='Admin_Last', email='admin@gmail.com', username='Admin')
     new_user.set_password('pass')
     db.session.add(new_user)
 
     db.session.commit()
     return redirect(url_for('index'))
 
+@login_required
+@email_verified_required
 @app.route("/")
 def index():
     #redirects if not logged
-    if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
-
     # if current_user.role == 2:
     #     return render_template('index2.html')
 
@@ -290,8 +348,11 @@ def login():
         
         if user and user.check_password(password):
             login_user(user)
-            flash("Logged in successfully!", "success")
-            return redirect(url_for('index'))
+            if not current_user.email_verification_token:
+                flash("Logged in successfully!", "success")
+                return redirect(url_for('index'))
+
+            return redirect(url_for('profile'))
         else: flash("Invalid credentials!","danger")
     return render_template("user_handling/login.html")
 
@@ -311,8 +372,6 @@ def register():
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
         username = request.form.get("username")
-        role = request.form.get('role')
-        image_file = request.files.get("image")
         # Validate form data (add your own validation logic)
         if not (
             name
@@ -321,8 +380,6 @@ def register():
             and password
             and confirm_password
             and username
-            and role
-            and image_file
         ):
         # Handle invalid input
             flash("Please fill in all fields.", "danger")
@@ -333,19 +390,22 @@ def register():
             # Handle email overlap
             flash("User already exist! Try a different email", "danger")
             return render_template("register.html")
+        user = User.query.filter_by(username=username).first()
+        if user is not None and email == user.email:
+            # Handle email overlap
+            flash("User already exist! Try a different username", "danger")
+            return render_template("register.html")
         if password != confirm_password:
             # Handle password mismatch
             flash("Passwords do not match.", "danger")
             return render_template("user_handling/register.html")
 
-        image_data = image_file.read()
         new_user = User(
             name=name,
             last_name=last_name,
             email=email,
             username=username,
-            role=int(role),
-            image_data=image_data,
+            email_verification_token=1
         )
         new_user.set_password(password)
 
@@ -353,10 +413,12 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
-        flash("Account created successfully! Please check your email to verify.", "success")
+        flash("Account created successfully!", "success")
         return redirect(url_for('login'))
     return render_template("user_handling/register.html")
 
+@login_required
+@email_verified_required
 @app.route('/complete_session/<id>')
 def complete_session(id):
     session = Session.query.get(id)
@@ -379,6 +441,8 @@ def complete_session(id):
         return redirect(url_for('completion_form',**params))
     return redirect(url_for('index'))
 
+@login_required
+@email_verified_required
 @app.route('/completion_form', methods = ['GET','POST'])
 def completion_form():
     type = request.args.get('type')
@@ -435,6 +499,8 @@ def completion_form():
 def one_pager():
     return render_template('one_pager.html')
 
+@login_required
+@email_verified_required
 @app.route('/show_feedback')
 def show_feedback():
     reviews = Feedback.query.filter_by(review_for = current_user.id)
@@ -442,6 +508,8 @@ def show_feedback():
 
 days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
+@login_required
+@email_verified_required
 @app.route('/find_session',methods=['GET','POST'])
 def find_session():
     users,user_names = [],[]
@@ -484,8 +552,13 @@ def find_session():
         return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
     return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
 
+@login_required
+@email_verified_required
 @app.route('/scheduler',methods=['POST','GET'])
 def scheduler():
+    if  current_user.email_verification_token:
+        flash("You need to verify your email to access this page.", "warning")
+        return redirect(url_for('profile'))
     if request.method == 'POST':
         thing = request.form.get('modalPass').split(',')
         period,day = int(thing[0])+1,thing[1]
@@ -608,6 +681,7 @@ def book_session(id, date, period):
     flash('Booked Session', 'success')
     return redirect(url_for('index'))
 
+@login_required
 @app.route('/profile', methods = ['POST','GET'])
 def profile():
     if request.method == 'POST':
@@ -629,14 +703,26 @@ def profile():
             else:
                 flash('current password not correct', 'warning')
         else:
-            data = request.files.get('image')   
-            image = data.read()
-            user.image_data = image
+            data = request.files.get('image')
+            img = Image.open(data)  # Open the image from the uploaded file
+
+            # Convert the image to RGB mode if it's not already in RGB
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+
+            img.thumbnail((300, 300))
+
+            buffered = BytesIO()
+            img.save(buffered, format="JPEG")  # Save the image in JPEG format
+            image_data = buffered.getvalue()
+            user.image_data = image_data
         db.session.commit()
     if current_user.image_data:
         image_data_b64 = base64.b64encode(current_user.image_data).decode('utf-8')
-        return render_template('profile.html', image_data = image_data_b64)
-    return render_template('profile.html')
+    return render_template('profile.html',
+                           image_data=image_data_b64 if current_user.image_data else None,
+                           is_verified=current_user.email_verification_token != None
+                           )
 
 
 @app.route('/forgot_password')

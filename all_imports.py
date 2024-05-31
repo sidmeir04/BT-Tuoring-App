@@ -10,3 +10,10 @@ from sqlalchemy.orm.attributes import flag_modified
 from flask_socketio import emit,  SocketIO
 from sqlalchemy import func
 import base64
+from PIL import Image
+from io import BytesIO
+
+
+from flask_mail import Mail, Message
+import secrets
+from functools import wraps
