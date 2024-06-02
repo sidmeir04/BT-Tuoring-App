@@ -71,6 +71,11 @@
                 opacity: 0;
             }
         }
+        .top-left {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+        }
     </style>
 
     <div class="container">
@@ -79,9 +84,11 @@
             <div class="card-body p-0">
                 <!-- Nested Row within Card Body -->
                 <div class="row">
-                    <div class="col-lg-5 d-none d-lg-block">
-                        <img class="img-fluid" 
-                        src="https://www.bergen.org/cms/lib/NJ02213295/Centricity/Domain/612/Teterboro.png" alt="Sign In">
+                    <div class="col-lg-5 d-none d-lg-flex" style="position:relative;display:inline-block;overflow:hidden;">
+                        <img class="top-left my-1 ml-3"
+                        src="https://www.bergen.org/cms/lib/NJ02213295/Centricity/Domain/612/Teterboro.png" height="25%" width="auto">
+                        <img class="main-image" 
+                        src="https://rinaldinyc.com/wp-content/uploads/2014/02/Bergen-County-Vocational-School-0003-1030x686.jpg" alt="Sign In" width="140%">
                     </div>
                     <div class="col-lg-7">
                         <div class="p-5">
