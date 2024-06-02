@@ -23,6 +23,55 @@
 </head>
 
 <body class="bg-gradient-primary">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-notification-container py-1">
+            {% for category, message in messages %}
+            <div class="alert pr-2 alert-{{ category }} alert-dismissible fade show slide-in-flash-messages" role="alert">
+                <div class="d-flex align-items-center">
+                    <strong class="flex-grow-1 mr-3">{{ message }}</strong>
+                    <button type="button" class="btn btn-close m-0" data-dismiss="alert" aria-label="Close">
+                        <div class="text-danger">
+                            X
+                        </div>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+    <style>
+        .flash-notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    
+        .slide-in-flash-messages {
+            transform: translateX(100%);
+            animation: flash-slide-in 0.5s forwards, flash-fade-out 0.5s 3.5s forwards;
+        }
+    
+        @keyframes flash-slide-in {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+    
+        @keyframes flash-fade-out {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
 
     <div class="container">
 
@@ -35,11 +84,14 @@
                     <div class="card-body p-0">
                         <!-- Nested Row within Card Body -->
                         <div class="row">
-                            <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                            <div class="col-lg-6 d-none d-lg-block">
+                                <img class="img-fluid" 
+                                src="https://www.bergen.org/cms/lib/NJ02213295/Centricity/Domain/612/Teterboro.png" alt="Sign In">
+                            </div>
                             <div class="col-lg-6">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                        <h1 class="h4 text-gray-900 mb-4">Hello There!</h1>
                                     </div>
                                     <form class="user" action = '/login' method = 'POST'>
                                         <div class="form-group">
@@ -51,21 +103,23 @@
                                             <input type="password" class="form-control form-control-user"
                                                 name="password" placeholder="Password" required>
                                         </div>
-                                        <div class="form-group">
+
+                                        <!-- will become implemented at a later date -->
+                                        <!-- <div class="form-group">
                                             <div class="custom-control custom-checkbox small">
                                                 <input type="checkbox" class="custom-control-input" id="customCheck">
                                                 <label class="custom-control-label" for="customCheck">Remember
                                                     Me</label>
                                             </div>
-                                        </div>
+                                        </div> -->
+
                                         <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
                                             <button type="submit" class="btn btn-primary btn-lg">Login</button>
                                         </div>
-                                        <hr>
                                     </form>
                                     <hr>
                                     <div class="text-center">
-                                        <a class="small" href="/forgot-password">Forgot Password?</a>
+                                        <a class="small" href="/forgot_password">Forgot Password?</a>
                                     </div>
                                     <div class="text-center">
                                         <a class="small" href="/register">Create an Account!</a>

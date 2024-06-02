@@ -56,3 +56,19 @@ def date_to_day(date):
     dayNumber = weekday(year, month, day)
     day = days[dayNumber].lower()
     return day
+
+def load_available_classes():
+    with open('static/assets/store_classlist.json', 'r') as file:
+        form = json.load(file)
+    return form
+
+def write_available_classes(classList):
+    with open('static/assets/store_classlist.json', 'r') as file:
+        classList = json.dumps(classList,indent=2)
+        file.write(classList)
+    return
+
+UNIVERSAL_CLASSLIST = load_available_classes()
+
+def current_classlist():
+    return {i:0 for i in UNIVERSAL_CLASSLIST['class_list']}

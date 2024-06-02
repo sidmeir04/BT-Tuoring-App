@@ -23,6 +23,55 @@
 </head>
 
 <body class="bg-gradient-primary">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-notification-container py-1">
+            {% for category, message in messages %}
+            <div class="alert pr-2 alert-{{ category }} alert-dismissible fade show slide-in-flash-messages" role="alert">
+                <div class="d-flex align-items-center">
+                    <strong class="flex-grow-1 mr-3">{{ message }}</strong>
+                    <button type="button" class="btn btn-close m-0" data-dismiss="alert" aria-label="Close">
+                        <div class="text-danger">
+                            X
+                        </div>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+    <style>
+        .flash-notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    
+        .slide-in-flash-messages {
+            transform: translateX(100%);
+            animation: flash-slide-in 0.5s forwards, flash-fade-out 0.5s 3.5s forwards;
+        }
+    
+        @keyframes flash-slide-in {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+    
+        @keyframes flash-fade-out {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
 
     <div class="container">
 
@@ -30,7 +79,10 @@
             <div class="card-body p-0">
                 <!-- Nested Row within Card Body -->
                 <div class="row">
-                    <div class="col-lg-5 d-none d-lg-block bg-register-image"></div>
+                    <div class="col-lg-5 d-none d-lg-block">
+                        <img class="img-fluid" 
+                        src="https://www.bergen.org/cms/lib/NJ02213295/Centricity/Domain/612/Teterboro.png" alt="Sign In">
+                    </div>
                     <div class="col-lg-7">
                         <div class="p-5">
                             <div class="text-center">
@@ -73,10 +125,10 @@
                             </form>
                             <hr>
                             <div class="text-center">
-                                <a class="small" href="forgot-password.html">Forgot Password?</a>
+                                <a class="small" href="/forgot_password">Forgot Password?</a>
                             </div>
                             <div class="text-center">
-                                <a class="small" href="login.html">Already have an account? Login!</a>
+                                <a class="small" href="/login">Already have an account? Login!</a>
                             </div>
                         </div>
                     </div>

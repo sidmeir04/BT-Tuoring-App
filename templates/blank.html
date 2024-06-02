@@ -21,10 +21,59 @@
     <!-- Custom styles for this template-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
     <link href="static/assets/css/sb-admin-2.min.css" rel="stylesheet">
+    <style>
+        .flash-notification-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    
+        .slide-in-flash-messages {
+            transform: translateX(100%);
+            animation: flash-slide-in 0.5s forwards, flash-fade-out 0.5s 3.5s forwards;
+        }
+    
+        @keyframes flash-slide-in {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+    
+        @keyframes flash-fade-out {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 
 <body id="page-top" class="shifting-gradient">
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-notification-container py-1">
+            {% for category, message in messages %}
+            <div class="alert pr-2 alert-{{ category }} alert-dismissible fade show slide-in-flash-messages" role="alert">
+                <div class="d-flex align-items-center">
+                    <strong class="flex-grow-1 mr-3">{{ message }}</strong>
+                    <button type="button" class="btn btn-close m-0" data-dismiss="alert" aria-label="Close">
+                        <div class="text-danger">
+                            X
+                        </div>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+   
     <!-- Page Wrapper -->
     <div id="wrapper">
 

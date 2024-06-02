@@ -69,22 +69,32 @@
                     </tr>
                 </thead>
                 {%if type == "POST"%}
-                    {% for num,user in enumerate(users) %}
-                    {% if user_names[num][0].lower() == tutor_name or tutor_name == ''%}
-                    {% if user_names[num][3] not in user['times'].split(' ') and user.id != current_user.id %}
-                    <tbody>
-                        <tr>
-                            <td>{{user['start_time']}}</td>
-                            <td>{{user['end_time']}}</td>
-                            <td>{{user_names[num][0]}}</td>
-                            <td>{{user['subject']}}</td>
-                            <td>{{user_names[num][3]}}</td>
-                            <td><a href="/book_session/{{user_names[num][1]}}/{{user_names[num][3]}}/{{user_names[num][2]}}">Book Session</a></td>
-                        </tr>
-                    </tbody>
-                    {% endif %}
-                    {% endif %}
-                    {% endfor %}
+                    {%if users%}
+                        {% for num,user in enumerate(users) %}
+                        {% if user_names[num][0].lower() == tutor_name or tutor_name == ''%}
+                        {% if user_names[num][3] not in user['times'].split(' ') and user.id != current_user.id %}
+                        <tbody>
+                            <tr>
+                                <td>{{user['start_time']}}</td>
+                                <td>{{user['end_time']}}</td>
+                                <td>{{user_names[num][0]}}</td>
+                                <td>{{user['subject']}}</td>
+                                <td>{{user_names[num][3]}}</td>
+                                <td><a href="/book_session/{{user_names[num][1]}}/{{user_names[num][3]}}/{{user_names[num][2]}}">Book Session</a></td>
+                            </tr>
+                        </tbody>
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                    {%else%}
+                        <tbody style="height:60vh;">
+                            <tr style="height: 100%;">
+                                <td colspan="6" class="text-center align-middle h1">
+                                    <div>Sorry, no results for that</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    {%endif%}
                 {%else%}
                     <tbody style="height:60vh;">
                         <tr style="height: 100%;">
