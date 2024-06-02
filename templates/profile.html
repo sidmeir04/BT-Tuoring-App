@@ -97,15 +97,31 @@
                         </div>                        
                         <div class="card-body">
                             <div class="d-flex flex-wrap justify-content-center">
-                                <!-- Insert your badge items here -->
-                                {%for i in range(20)%}
-                                <span class="badge badge-primary m-1">Badge {{i}}</span>
-                                {%endfor%}
-                                <!-- Add more badges as needed -->
+                                {% for badge in badges %}
+                                    {% if badge %}
+                                        <span class="badge badge-primary m-1 d-flex align-items-center py-1" id="{{badge}}">
+                                            <span class="badge-text">{{ badge }}</span>
+                                            <button class="btn btn-sm btn-danger remove-badge ml-2 py-0 px-1">&times;</button>
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', (event) => {
+                        document.querySelectorAll('.remove-badge').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const badge = this.parentElement
+                                const id = badge.id
+                                badge.remove()
+
+                                socket.emit("delete_badge",id)
+                            });
+                        });
+                    })
+                </script>
                 {%endif%}
             </div>
             <div class="col-md-8">

@@ -107,8 +107,17 @@ class Periods(db.Model):
     thursday = db.Column(db.String(256), default = '')
     friday = db.Column(db.String(256), default = '')
 
+def initialize_period_data():
+    if not Periods.query.first():
+        for _ in range(1,10):
+            newThing = Periods()
+            db.session.add(newThing)
+            db.session.commit()
+
 with app.app_context():
     db.create_all()
+    initialize_period_data()
+
 
 def generate_verification_token():
     return secrets.token_urlsafe(16)
@@ -284,27 +293,6 @@ def delete_notification():
 @app.route('/index.html')
 def reroute_user():
     return redirect(url_for('index'))
-
-
-@app.route('/createDB')
-def createDB():
-    for _ in range(1,10):
-        newThing = Periods()
-        db.session.add(newThing)
-        db.session.commit()
-    new_user = User(name='name', last_name='last_name', email='oscjep25@bergen.org', username='username')
-    new_user.set_password('pass')
-    db.session.add(new_user)
-    new_user = User(name='Student', last_name='Student2', email='student@gmail.com', username='Student')
-    new_user.set_password('pass')
-    db.session.add(new_user)
-    new_user = User(name='admin', last_name='Admin_Last', email='admin@gmail.com', username='Admin')
-    new_user.set_password('pass')
-    db.session.add(new_user)
-
-    db.session.commit()
-    return redirect(url_for('index'))
-
 
 @app.route("/")
 @login_required
@@ -706,25 +694,33 @@ def profile():
             user.username = username
             user.name = name
             user.last_name = last_name
+            flash('Account information updated','success')
         elif 'submit2' in request.form:
             password = request.form.get('old_pass')
             if user.check_password(password):
                 new_pass = request.form.get('new_pass')
                 user.set_password(new_pass)
+                flash('Your password has been updated!','success')
             else:
-                flash('current password not correct', 'warning')
+                flash('Current password is not correct', 'warning')
         else:
             data = request.files.get('image')
             image = data.read()
             user.image_data = image
+            flash('Profile image changed!','success')
         db.session.commit()
-    if current_user.image_data:
-        image_data_b64 = base64.b64encode(current_user.image_data).decode('utf-8')
-        return render_template('profile.html', image_data = image_data_b64)
+    badges = [i if current_user.qualification_data[i] else None for i in current_user.qualification_data]
     return render_template('profile.html',
-                           image_data=image_data_b64 if current_user.image_data else None,
-                           is_verified=current_user.email_verification_token != None
+                           image_data=base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
+                           is_verified=current_user.email_verification_token != None,
+                           badges=badges
                            )
+
+@socketio.on("delete_badge")
+def handle_user_join(badge_id):
+    current_user.qualification_data[badge_id] = 0
+    flag_modified(current_user,'qualification_data')
+    db.session.commit()
 
 @app.route('/choose_classes',methods=['GET','POST'])
 @login_required
@@ -735,6 +731,7 @@ def choose_classes():
             current_user.qualification_data[a_class] = int(request.form.get(a_class) != None)
         flag_modified(current_user,'qualification_data')
         db.session.commit()
+        flash("Qualifications changed successfully",'success')
     
     checked = ['''checked="yes"''' if current_user.qualification_data[i] else "" for i in current_user.qualification_data]
     return render_template('choose_classes.html',
