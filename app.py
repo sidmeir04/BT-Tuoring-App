@@ -747,6 +747,6 @@ def forgot_password():
 def not_found(e):
     return render_template('404.html'), 404
 
-if __name__ == '__main__':
-    app.secret_key = 'ben_does_not_suck'
-    socketio.run(app)
+# if __name__ == '__main__':
+#     app.secret_key = 'ben_does_not_suck'
+#     socketio.run(app)
