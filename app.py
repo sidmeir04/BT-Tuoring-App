@@ -506,29 +506,25 @@ def find_session():
     users,user_names = [],[]
     day, date = None, None
     tutor_name = ''
-
     if request.method == 'POST':
         date = request.form.get('modal_date')
         period = request.form.get('period')
         tutor_name = request.form.get('specific_tutor')
-        # send to the front end, use jinja if to only show the session if that tutor is assigned
         subject = request.form.get('subject')
-        if not tutor_name:
-            tutor_name = ''
-
+        # send to the front end, use jinja if to only show the session if that tutor is assigned
         if period != '-1':
             # if the period is not specified
             data = Periods.query.get(int(period))
             if date:
                 day = date_to_day(date)
                 data = getattr(data, day, 'defualt')
-                user_names = [(User.query.get(int(id)).username,id,period,date) for id in data.split(' ')[1:]]
+                user_names = [(User.query.get(int(id)).username,int(id),period,date,User.query.get(int(id)).qualification_data) for id in data.split(' ')[1:]]
                 users = [User.query.get(int(id)).schedule_data[day][period] for id in data.split(' ')[1:]]
             else:
                 for day in lower_days:
                     day_data = getattr(data, day, 'defualt')
                     # adding data to existing lists, could probably be done with map
-                    [user_names.append((User.query.get(int(id)).username,id,period,find_next_day_of_week(day))) for id in day_data.split(' ')[1:]]
+                    [user_names.append((User.query.get(int(id)).username,int(id),period,find_next_day_of_week(day),User.query.get(int(id)).qualification_data)) for id in day_data.split(' ')[1:]]
                     [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
 
         elif date:
@@ -537,16 +533,21 @@ def find_session():
             for period,period_data in enumerate(day_data):
                 if period_data:
                     # adding data to existing lists, could probably be done with map
-                    [user_names.append((User.query.get(int(id)).username,id,period+1,date)) for id in period_data.split(' ')[1:]]
+                    [user_names.append((User.query.get(int(id)).username,int(id),period+1,date,User.query.get(int(id)).qualification_data)) for id in period_data.split(' ')[1:]]
                     [users.append(User.query.get(int(id)).schedule_data[day][str(period+1)]) for id in period_data.split(' ')[1:]]
-        elif subject:
-            #search for all users with the 
-            [user_names.append((User.query.get(int(id)).username,id,period+1,date)) for id in period_data.split(' ')[1:]]
-            [users.append(User.query.get(int(id)).schedule_data[day][str(period+1)]) for id in period_data.split(' ')[1:]]
+        elif subject or tutor_name:
+            for period in range(1,10):
+                for temp in [(getattr(Periods.query.get(period), day, 'default'),day) for day in lower_days]:
+                    for id in temp[0].split(' ')[1:]:
+                        user = User.query.get(int(id))
+                        [user_names.append((user.username,int(id),period,find_next_day_of_week(temp[1]),user.qualification_data))]
+                        [users.append(user.schedule_data[temp[1]][str(period)])]
         else:
             pass
-
-        return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
+        print(users)
+        print(user_names)
+        print(subject)
+        return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,subject=subject)
     return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
 
 
