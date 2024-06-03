@@ -48,7 +48,17 @@
                 </div>
             </div>
             <div class="form-group mx-2 px-0 ml-auto">
-                <input type="text" class="form-control form-control-user" name="subject" placeholder="Enter session subject">
+                <select class="form-control" id="other_id" name="subject">
+                    <option value="0">Subject</option>
+                    <option value="Math">Math</option>
+                    <option value="Algebra">Algebra</option>
+                    <option value="Science">Science</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Gym">Gym</option>
+                    <option value="Geometry">Geometry</option>
+                    <option value="Biomolecular Quatum Physics">Biomolecular Quatum Physics</option>
+                    <option value="English">English</option>
+                </select>
             </div>
             <div class="form-group">
                 <button type="submit" class="btn btn-primary btn-lg py-1 px-2">Search</button>
@@ -63,7 +73,6 @@
                         <th>Start Time</th>
                         <th>End Time</th>
                         <th>Tutor Name</th>
-                        <th>Subject</th>
                         <th>Date</th>
                         <th>Schedule Session</th>
                     </tr>
@@ -71,18 +80,21 @@
                 {%if type == "POST"%}
                     {%if users%}
                         {% for num,user in enumerate(users) %}
-                        {% if user_names[num][0].lower() == tutor_name or tutor_name == ''%}
-                        {% if user_names[num][3] not in user['times'].split(' ') and user.id != current_user.id %}
+                        {% if (not tutor_name)  or user_names[num][0].lower() == tutor_name%}
+                        {% if subject == '0' or user_names[num][4][subject] == 1%}
+                        {% if user_names[num][3] not in user['times'].split(' ') %}
+                        {% if user_names[num][1] != current_user.id %}
                         <tbody>
                             <tr>
                                 <td>{{user['start_time']}}</td>
                                 <td>{{user['end_time']}}</td>
                                 <td>{{user_names[num][0]}}</td>
-                                <td>{{user['subject']}}</td>
                                 <td>{{user_names[num][3]}}</td>
                                 <td><a href="/book_session/{{user_names[num][1]}}/{{user_names[num][3]}}/{{user_names[num][2]}}">Book Session</a></td>
                             </tr>
                         </tbody>
+                        {% endif %}
+                        {% endif %}
                         {% endif %}
                         {% endif %}
                         {% endfor %}
