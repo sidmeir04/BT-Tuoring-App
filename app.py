@@ -298,12 +298,6 @@ def reroute_user():
 @login_required
 @email_verified_required
 def index():
-    #redirects if not logged
-    if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
-
-    # if current_user.role == 2:
-    #     return render_template('index2.html')
-
     sessions_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
     if sessions_where_teach:
         sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
@@ -444,10 +438,8 @@ def completion_form():
         review = request.form.get('message')
         session = Session.query.get(id)
 
-        if int(type) == 1:
-            review_for = session.tutor
-        else:
-            review_for = session.student
+        if int(type) == 1:review_for = session.tutor
+        else:review_for = session.student
 
         feedback = Feedback(
             on_time = on_time,
