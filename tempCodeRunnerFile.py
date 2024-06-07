@@ -1,4 +1,1 @@
-    for _ in range(1,10):
-            newThing = Periods()
-            db.session.add(newThing)
-            db.session.commit()
+    # history.missed[str(current_user.id)] = history.missed['total']
