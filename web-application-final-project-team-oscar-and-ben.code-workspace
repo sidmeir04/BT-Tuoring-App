@@ -1,11 +1,11 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../../../Downloads/FlexStart/FlexStart"
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../../../Downloads/FlexStart/FlexStart"
+        }
+    ],
+    "settings": {}
 }

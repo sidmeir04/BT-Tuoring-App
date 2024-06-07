@@ -487,10 +487,8 @@ def completion_form():
         review = request.form.get('message')
         session = Session.query.get(id)
 
-        if int(type) == 1:
-            review_for = session.tutor
-        else:
-            review_for = session.student
+        if int(type) == 1:review_for = session.tutor
+        else:review_for = session.student
 
         feedback = Feedback(
             on_time = on_time,
@@ -805,6 +803,6 @@ def forgot_password():
 def not_found(e):
     return render_template('404.html'), 404
 
-if __name__ == '__main__':
-    app.secret_key = 'ben_does_not_suck'
-    socketio.run(app)
+# if __name__ == '__main__':
+#     app.secret_key = 'ben_does_not_suck'
+#     socketio.run(app)
