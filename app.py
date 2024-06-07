@@ -536,9 +536,7 @@ def find_session():
                         [users.append(user.schedule_data[temp[1]][str(period)])]
         else:
             pass
-        print(users)
-        print(user_names)
-        print(subject)
+
         return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,subject=subject)
     return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
 
