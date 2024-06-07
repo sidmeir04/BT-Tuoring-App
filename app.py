@@ -36,6 +36,8 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USE_TLS'] = False
+
+#this needs to change to a bergen.org email
 app.config['MAIL_USERNAME'] = "oscarjepsen2007@gmail.com"
 app.config['MAIL_PASSWORD'] = "agda kzab akxo blpa"
 app.config['MAIL_DEFAULT_SENDER'] = "oscarjepsen2007@gmail.com"
@@ -59,7 +61,7 @@ class User(db.Model, UserMixin):
     status = db.Column(db.String, default='')
     image_data = (db.Column(db.LargeBinary))
     qualification_data = db.Column(JSON,default=current_classlist)
-
+    volunteer_hours = db.Column(JSON,default=load_volunteer_hour_json_file)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -79,6 +81,7 @@ class Session(db.Model):
     start_time = db.Column(db.Time)
     end_time = db.Column(db.Time)
     date = db.Column(db.Date)
+    start_date = db.Column(db.Date)
     subject = db.Column(db.String(255))
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
@@ -218,7 +221,6 @@ def user_messages():
     open_session = Session.query.get(ID)
     #gets the message history associated with the session
     message_history = MessageHistory.query.get(open_session.message_history_id)
-    print(message_history.missed)
 
     message_history.missed[str(current_user.id)] = message_history.missed['total']
     flag_modified(message_history,'missed')
@@ -233,7 +235,8 @@ def user_messages():
     other = other.username
 
     messages = message_history.messages['list']
-    messages = [{'mine': True if i['sender'] == current_user.username else False,'message':i['message'],'sender':i['sender']}  for i in messages]
+    #the next line is a horribly inefficient bit of code, pls fix it
+    messages = [{'mine': True if i['sender'] == current_user.id else False,'message':i['message'],'sender':User.query.get(i['sender']).username}  for i in messages]
 
     return render_template('user_messages.html',
                            recipient = other,
@@ -277,7 +280,7 @@ def handle_new_message(message,sending_user_id,history_id,session_id):
     other = User.query.get(other)
 
     #saves all messages to the database
-    history.messages['list'].append({'message':message,'sender':sending_user.username})
+    history.messages['list'].append({'message':message,'sender':int(sending_user_id)})
 
     #updates the total amount of messages and the ones a person has recieved
     history.missed[sending_user_id] += 1
@@ -332,20 +335,31 @@ def index():
 
     # if current_user.role == 2:
     #     return render_template('index2.html')
-
+    def replace_with_username(thing):
+            if thing == None:return thing
+            username = User.query.get(thing[1]["sender"]).username
+            thing[1]["sender"] = username
+            return thing
+    
     sessions_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
     if sessions_where_teach:
         sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
         sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
         sessions_where_teach_MH = [i if i != (0,None) else None for i in sessions_where_teach_MH]
-        sessions_where_teach_PP = [base64.b64encode(User.query.filter_by(username = i[1]['sender']).first().image_data).decode('utf-8') if i and User.query.filter_by(username = i[1]['sender']).first().image_data else None for i in sessions_where_teach_MH]
+        sessions_where_teach_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_teach_MH]
+        sessions_where_teach_MH = list(map(lambda x: replace_with_username(x),sessions_where_teach_MH))
+
 
     sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
     if sessions_where_learn:
         sessions_where_learn_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
         sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
+        print(sessions_where_learn_MH)
         sessions_where_learn_MH = [i if i != (0,None) else None for i in sessions_where_learn_MH]
-        sessions_where_learn_PP = [base64.b64encode(User.query.filter_by(username = i[1]['sender']).first().image_data).decode('utf-8') if i and User.query.filter_by(username = i[1]['sender']).first().image_data else None for i in sessions_where_learn_MH]
+        print(sessions_where_learn_MH)
+        sessions_where_learn_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_learn_MH]
+        sessions_where_learn_MH = list(map(lambda x: replace_with_username(x),sessions_where_learn_MH))
+        print(sessions_where_learn_MH)
 
     return render_template('index0.html',
                             enum = enumerate,
@@ -504,12 +518,21 @@ def completion_form():
 
         if session.tutor_form_completed and session.student_form_completed:
             # delete the session and add community service hours to the user
+
+########################################################################################################################
+            
+            #the code bellow is incomplete. it needs a system in which it takes the session's start time, end time and then do the math for the numebr of weeks
+
+##########################################################################################
             tutor = User.query.get(session.tutor)
             datetime1 = datetime.combine(datetime.today(), session.end_time)
             datetime2 = datetime.combine(datetime.today(), session.start_time)
             difference =  datetime1 - datetime2
             difference = difference.total_seconds()/3600
-            tutor.hours_of_service += float(difference)
+            tutor.hours_of_service += round(float(difference),2)
+            tutor.volunteer_hours["approved_index"].append(0)
+            tutor.volunteer_hours["breakdown"].append({"start_date":session.date, "end_date":datetime.today(),"hours":round(float(difference),2)})
+            flag_modified(tutor,"volunteer_hours")
             db.session.commit()
             return redirect(f'/delete_session/{session.id}/1')
         return redirect(url_for('index'))
@@ -573,9 +596,6 @@ def find_session():
                         [users.append(user.schedule_data[temp[1]][str(period)])]
         else:
             pass
-        print(users)
-        print(user_names)
-        print(subject)
         return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,subject=subject)
     return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
 
@@ -721,6 +741,9 @@ def profile():
             username = request.form.get('username')
             last_name = request.form.get('last_name')
             user.email = email
+            if username != user.username:
+                pass
+
             user.username = username
             user.name = name
             user.last_name = last_name
@@ -735,8 +758,14 @@ def profile():
                 flash('Current password is not correct', 'warning')
         else:
             data = request.files.get('image')
-            image = data.read()
-            user.image_data = image
+            img = Image.open(data.stream)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            img_square = make_square(img, size=300)
+            buffered = BytesIO()
+            img_square.save(buffered, format="JPEG")
+            image_data = buffered.getvalue()
+            user.image_data = image_data
             flash('Profile image changed!','success')
         db.session.commit()
     badges = [i if current_user.qualification_data[i] else None for i in current_user.qualification_data]

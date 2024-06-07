@@ -1,6 +1,8 @@
 import json
 from datetime import time, datetime, timedelta
 from calendar import weekday
+from PIL import Image
+
 
 user_type_key = {0:'student', 1:'teacher', 2:'administrator', 3:'developer'}
 
@@ -72,3 +74,17 @@ UNIVERSAL_CLASSLIST = load_available_classes()
 
 def current_classlist():
     return {i:0 for i in UNIVERSAL_CLASSLIST['class_list']}
+
+def make_square(image, size):
+    width, height = image.size
+    new_dim = min(width, height)
+
+    left = (width - new_dim) / 2
+    top = (height - new_dim) / 2
+    right = (width + new_dim) / 2
+    bottom = (height + new_dim) / 2
+
+    img_cropped = image.crop((left, top, right, bottom))
+    img_resized = img_cropped.resize((size, size), Image.Resampling.LANCZOS)
+
+    return img_resized
