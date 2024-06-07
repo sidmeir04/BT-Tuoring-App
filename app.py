@@ -403,18 +403,18 @@ def register():
         ):
         # Handle invalid input
             flash("Please fill in all fields.", "danger")
-            return render_template("register.html")
+            return render_template("user_handling/register.html")
         #handle if existing user
         user = User.query.filter_by(username=username).first()
         if user is not None:
             # Handle email overlap
             flash("User already exist! Try a different username", "danger")
-            return render_template("register.html")
+            return render_template("user_handling/register.html")
         user = User.query.filter_by(email=email).first()
         if user is not None:
             # Handle email overlap
             flash("User already exist! Try a different email", "danger")
-            return render_template("register.html")
+            return render_template("user_handling/register.html")
         if password != confirm_password:
             # Handle password mismatch
             flash("Passwords do not match.", "danger")
