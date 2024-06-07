@@ -314,7 +314,7 @@
         // Append the main container to a target element (e.g., the body)
         document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
         scrollToBottom();
-        socket.emit("recieved_chat_message", message, "{{ thiss.id }}","{{session.message_history_id}}");
+        socket.emit("recieved_chat_message", "{{ thiss.id }}","{{session.message_history_id}}");
     }
 
     // Event listener for receiving chat messages

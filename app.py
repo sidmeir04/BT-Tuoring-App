@@ -114,9 +114,34 @@ def initialize_period_data():
             db.session.add(newThing)
             db.session.commit()
 
+def temp_function_for_default_user_loading():
+    if not User.query.first():
+        user1 = User(
+            username = "Student1",
+            name = "Ben",
+            last_name = "Lozzano",
+            email = "benlozzano@gmail.com",
+            email_verification_token=None
+        )
+        user1.set_password("s")
+
+        user2 = User(
+            username = "Student2",
+            name = "Ben2",
+            last_name = "Lozzano2",
+            email = "benloz25@bergen.org",
+            email_verification_token=None
+        )
+        user2.set_password("s")
+
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.commit()
+
 with app.app_context():
     db.create_all()
     initialize_period_data()
+    temp_function_for_default_user_loading()
 
 
 def generate_verification_token():
@@ -193,6 +218,8 @@ def user_messages():
     open_session = Session.query.get(ID)
     #gets the message history associated with the session
     message_history = MessageHistory.query.get(open_session.message_history_id)
+    print(message_history.missed)
+
     message_history.missed[str(current_user.id)] = message_history.missed['total']
     flag_modified(message_history,'missed')
     db.session.commit()
@@ -268,7 +295,9 @@ def handle_new_message(message,sending_user_id,history_id,session_id):
 @socketio.on('recieved_chat_message')
 def handle_recieved_chat_message(other_id,history_id):
     history = MessageHistory.query.get(history_id)
+    print(history.missed)
     history.missed[other_id] += 1
+    # history.missed[str(current_user.id)] = history.missed['total']
     flag_modified(history,'missed')
     db.session.commit()
 
