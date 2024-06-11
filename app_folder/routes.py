@@ -1,197 +1,20 @@
-#import all of the imports in a seperate document
-from all_imports import *
-
-#imports all of the functions and some variabels for running the app
-from json_file_loading import *
-
-socketio = SocketIO()
-
-def create_app():
-    #setup the basics of the app
-    main = Blueprint("main", __name__)
-    app = Flask(__name__)
-    app.config["DEBUG"] = True
-    app.register_blueprint(main)
-    socketio.init_app(app)
-
-    #returning the app
-    return app
-
-app = create_app()
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-
-# Database configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
-app.config['SESSION_COOKIE_NAME'] = 'Session_Cookie'
-app.config['SESSION_COOKIE_PATH'] = '/'
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
-app.config['SESSION_PERMANENT'] = False
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS '] = True
-app.secret_key = "ben_sucks"  # Change this to a random, secure key
-
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USE_TLS'] = False
-
-#this needs to change to a bergen.org email
-app.config['MAIL_USERNAME'] = "oscarjepsen2007@gmail.com"
-app.config['MAIL_PASSWORD'] = "agda kzab akxo blpa"
-app.config['MAIL_DEFAULT_SENDER'] = "oscarjepsen2007@gmail.com"
-mail = Mail(app)
-
-db = SQLAlchemy(app)
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255),unique=True)
-    name = db.Column(db.String(255))
-    last_name = db.Column(db.String(255))
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    email_verification_token = db.Column(db.String(255))
-    schedule_data = db.Column(JSON, default=load_default_schedule)
-    notifaction_data = db.Column(JSON, default=load_default_notifactions)
-    sessions = db.relationship('Session', backref='user', lazy = True)
-    feedbacks = db.relationship('Feedback', backref='user', lazy = True)
-    hours_of_service = db.Column(db.Float, default = 0.0)
-    status = db.Column(db.String, default='')
-    image_data = (db.Column(db.LargeBinary))
-    qualification_data = db.Column(JSON,default=current_classlist)
-    volunteer_hours = db.Column(JSON,default=load_volunteer_hour_json_file)
+from flask import Blueprint, render_template
+from .extensions import db
+from flask_login import login_required, current_user, login_user, logout_user
+from flask import flash, redirect, url_for, render_template, request, jsonify
+from sqlalchemy.orm.attributes import flag_modified
+from .models import *
+from .email import send_verification_email_to
+from .wrappers import email_verified_required
+import base64
+from io import BytesIO
 
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-    
-
-class MessageHistory(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    people = db.Column(JSON, default=load_basic_json_file)
-    messages = db.Column(JSON, default=load_non_basic_json_file)
-    missed = db.Column(JSON, default=load_basic_json_file)
-    session = db.relationship('Session', backref='message_history', lazy = True)
-
-class Session(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    start_time = db.Column(db.Time)
-    end_time = db.Column(db.Time)
-    day_of_the_week = db.Column(db.Integer)
-    date = db.Column(db.Date)
-    start_date = db.Column(db.Date)
-    subject = db.Column(db.String(255))
-    tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
-    student = db.Column(db.Integer, nullable = False)
-    period = db.Column(db.Integer)
-    tutor_form_completed = db.Column(db.Boolean, default = False)
-    student_form_completed = db.Column(db.Boolean, default = False)
-    message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
-
-class Feedback(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    on_time = db.Column(db.Integer)
-    understanding = db.Column(db.Integer)
-    date = db.Column(db.String(255))
-    review_text = db.Column(db.String(255))
-    subject = db.Column(db.String(255))
-    tutoring = db.Column(db.Boolean)
-    review_for = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
-    review_from = db.Column(db.String(255), nullable = False)
+bp = Blueprint('main', __name__)
 
 
-class Periods(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    monday = db.Column(db.String(256), default = '')
-    tuesday = db.Column(db.String(256), default = '')
-    wednesday = db.Column(db.String(256), default = '')
-    thursday = db.Column(db.String(256), default = '')
-    friday = db.Column(db.String(256), default = '')
 
-def initialize_period_data():
-    if not Periods.query.first():
-        for _ in range(1,10):
-            newThing = Periods()
-            db.session.add(newThing)
-            db.session.commit()
-
-def temp_function_for_default_user_loading():
-    if not User.query.first():
-        user1 = User(
-            username = "Student1",
-            name = "Ben",
-            last_name = "Lozzano",
-            email = "benlozzano@gmail.com",
-            email_verification_token=None
-        )
-        user1.set_password("s")
-
-        user2 = User(
-            username = "Student2",
-            name = "Ben2",
-            last_name = "Lozzano2",
-            email = "benloz25@bergen.org",
-            email_verification_token=None
-        )
-        user2.set_password("s")
-
-        db.session.add(user1)
-        db.session.add(user2)
-        db.session.commit()
-
-with app.app_context():
-    db.create_all()
-    initialize_period_data()
-    temp_function_for_default_user_loading()
-
-
-def generate_verification_token():
-    return secrets.token_urlsafe(16)
-
-def send_verification_email_to(user):
-    token = generate_verification_token()
-    user.email_verification_token = token
-    db.session.commit()
-    verification_link = request.url_root + f"/verify_email/{token}"
-    msg = Message("Verify Your Email!", recipients=[user.email])
-    msg.body = f"Click the following link to verify your email: {verification_link}"
-    mail.send(msg)
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-@app.context_processor
-def inject_profile_image():
-    included_endpoints = ['index','find_session','user_messages','scheduler','profile']
-
-    # Get the current endpoint
-    current_endpoint = request.endpoint
-
-    # Check if the current endpoint is in the excluded list
-    if current_endpoint not in included_endpoints:
-        return {}
-
-    # If not excluded, inject the profile image
-    profile_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
-    return {'profile_image':profile_image}
-
-def email_verified_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.email_verification_token:
-            return f(*args, **kwargs)
-        else:
-            flash("You need to verify your email to access this page.", "warning")
-            return redirect(url_for('profile'))
-    return decorated_function
-
-@app.route('/verify_email/<token>')
+@bp.route('/verify_email/<token>')
 def verify_email(token):
     user = User.query.filter_by(email_verification_token=token).first()
     if user:
@@ -204,7 +27,7 @@ def verify_email(token):
         flash("Verification link is invalid or has expired.", "danger")
         return redirect(url_for('profile'))
 
-@app.route('/send_verification_email',methods=['POST'])
+@bp.route('/send_verification_email',methods=['POST'])
 @login_required
 def send_verification_email():
     if current_user.email_verification_token:
@@ -215,7 +38,7 @@ def send_verification_email():
         flash("Your email is already verified.", "info")
     return redirect(url_for('index'))
 
-@app.route('/appointment_details')
+@bp.route('/appointment_details')
 @login_required
 @email_verified_required
 def user_messages():
@@ -250,68 +73,13 @@ def user_messages():
                            messages=messages)
 
 
-@socketio.on("connect")
-def handle_connect():
-    current_user.status = request.sid
-    db.session.commit()
-
-@socketio.on("disconnect")
-def handle_disconnect():
-    pass
 
 
-@socketio.on("user_join")
-def handle_user_join(user_id,history_id):
-    #gets the message history associated and updates the room id
-    history = MessageHistory.query.get(history_id)
-    history.people[user_id] = request.sid
-    flag_modified(history,'people')
-    db.session.commit()
-
-
-@socketio.on("notify_update")
-def handle_notify_update():
-    pass
-
-@socketio.on("new_chat_message")
-def handle_new_message(message,sending_user_id,history_id,session_id):
-    sending_user = User.query.get(sending_user_id)
-    history = MessageHistory.query.get(history_id)
-    people = history.people
-    choose = [i for i in people.keys()]
-    other = choose[0] if choose[0] != str(sending_user.id) else choose[1]
-    other = User.query.get(other)
-
-    #saves all messages to the database
-    history.messages['list'].append({'message':message,'sender':int(sending_user_id)})
-
-    #updates the total amount of messages and the ones a person has recieved
-    history.missed[sending_user_id] += 1
-    history.missed['total'] += 1
-    flag_modified(history,'missed')
-    flag_modified(history,'messages')
-    db.session.commit()
-    if other.status:
-        emit("chat", {"message": message,
-                      "username": sending_user.username,
-                      "image_data": base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
-                      "session_id":session_id}, room=other.status)
-    else:pass
-
-@socketio.on('recieved_chat_message')
-def handle_recieved_chat_message(other_id,history_id):
-    history = MessageHistory.query.get(history_id)
-    print(history.missed)
-    history.missed[other_id] += 1
-    # history.missed[str(current_user.id)] = history.missed['total']
-    flag_modified(history,'missed')
-    db.session.commit()
-
-@app.route('/welcome')
+@bp.route('/welcome')
 def welcome():
     return render_template('welcome.html')
 
-@app.route('/delete_notification', methods=['POST'])
+@bp.route('/delete_notification', methods=['POST'])
 @login_required
 @email_verified_required
 def delete_notification():
@@ -325,11 +93,11 @@ def delete_notification():
     return jsonify({"success": False})
 
 # to prevent needing to change all the html file templates
-@app.route('/index.html')
+@bp.route('/index.html')
 def reroute_user():
     return redirect(url_for('index'))
 
-@app.route("/")
+@bp.route("/")
 @login_required
 @email_verified_required
 def index():
@@ -375,7 +143,7 @@ def index():
                             sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
                             )
 
-@app.route('/login',methods=['GET','POST'])
+@bp.route('/login',methods=['GET','POST'])
 def login():
     if request.method == "POST":
         email = request.form.get("email")
@@ -392,14 +160,14 @@ def login():
         else: flash("Invalid credentials!","danger")
     return render_template("user_handling/login.html")
 
-@app.route('/logout',methods=['POST'])
+@bp.route('/logout',methods=['POST'])
 @login_required
 def logout():
     logout_user()
     flash('Logged out!','success')
     return redirect(url_for('login'))
 
-@app.route('/register', methods = ['POST','GET'])
+@bp.route('/register', methods = ['POST','GET'])
 def register():
     if request.method == "POST":
         # Get form data
@@ -454,7 +222,7 @@ def register():
         return redirect(url_for('login'))
     return render_template("user_handling/register.html")
 
-@app.route('/complete_session/<id>')
+@bp.route('/complete_session/<id>')
 @login_required
 @email_verified_required
 def complete_session(id):
@@ -478,7 +246,7 @@ def complete_session(id):
         return redirect(url_for('completion_form',**params))
     return redirect(url_for('index'))
 
-@app.route('/completion_form', methods = ['GET','POST'])
+@bp.route('/completion_form', methods = ['GET','POST'])
 @login_required
 @email_verified_required
 def completion_form():
@@ -530,23 +298,20 @@ def completion_form():
             datetime2 = datetime.combine(datetime.today(), session.start_time)
             difference =  datetime1 - datetime2
             difference = difference.total_seconds()/3600
-
-            total_days = count_weekdays_between(session.start_date,datetime.today(),session.day_of_the_week)
-            if total_days > 0:
-                tutor.hours_of_service += round(float(difference),2)
-                tutor.volunteer_hours["approved_index"].append(0)
-                tutor.volunteer_hours["breakdown"].append({"start_date":session.start_date.strftime("%B %d, %Y"), "end_date":datetime.today().strftime("%B %d, %Y"),"hours":round(float(difference) * total_days,2)})
-                flag_modified(tutor,"volunteer_hours")
-                db.session.commit()
+            tutor.hours_of_service += round(float(difference),2)
+            tutor.volunteer_hours["approved_index"].append(0)
+            tutor.volunteer_hours["breakdown"].append({"start_date":session.date, "end_date":datetime.today(),"hours":round(float(difference),2)})
+            flag_modified(tutor,"volunteer_hours")
+            db.session.commit()
             return redirect(f'/delete_session/{session.id}/1')
         return redirect(url_for('index'))
     return render_template('completion_form.html', type = type, id = id)
 
-@app.route('/one_pager')
+@bp.route('/one_pager')
 def one_pager():
     return render_template('one_pager.html')
 
-@app.route('/show_feedback')
+@bp.route('/show_feedback')
 @login_required
 @email_verified_required
 def show_feedback():
@@ -555,7 +320,7 @@ def show_feedback():
 
 days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
-@app.route('/find_session',methods=['GET','POST'])
+@bp.route('/find_session',methods=['GET','POST'])
 @login_required
 @email_verified_required
 def find_session():
@@ -604,7 +369,7 @@ def find_session():
     return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
 
 
-@app.route('/scheduler',methods=['POST','GET'])
+@bp.route('/scheduler',methods=['POST','GET'])
 @login_required
 @email_verified_required
 def scheduler():
@@ -664,7 +429,7 @@ def scheduler():
 
     return render_template('scheduler.html',booked_periods=periods)
 
-@app.route('/delete_session/<session_id>/<type>')
+@bp.route('/delete_session/<session_id>/<type>')
 @login_required
 @email_verified_required
 def delete_session(session_id,type):
@@ -691,16 +456,13 @@ def delete_session(session_id,type):
         flash('Tutor and Student Forms not Complete', 'warning')
     return redirect(url_for('index'))
 
-@app.route('/book_session/<id>/<date>/<period>')
+@bp.route('/book_session/<id>/<date>/<period>')
 @login_required
 @email_verified_required
 def book_session(id, date, period):
     user = User.query.get(id)
 
     day = date_to_day(date)
-    year, month, temp_day = (int(i) for i in date.split('-'))
-    dayNumber = weekday(year, month, temp_day)
-
     data = user.schedule_data[day][period]
     current_user_id = current_user.get_id()
     conversation = MessageHistory(
@@ -717,8 +479,7 @@ def book_session(id, date, period):
         end_time = string_to_time(data['end_time']),
         student = current_user_id,
         period = period,
-        start_date = datetime.today(),
-        day_of_the_week = dayNumber,
+        # subject = data['subject'],
         date = datetime.strptime(date, '%Y-%m-%d').date(),
         message_history_id = conversation.id
     )
@@ -738,7 +499,7 @@ def book_session(id, date, period):
     flash('Booked Session', 'success')
     return redirect(url_for('index'))
 
-@app.route('/profile', methods = ['POST','GET'])
+@bp.route('/profile', methods = ['POST','GET'])
 @login_required
 def profile():
     if request.method == 'POST':
@@ -783,13 +544,7 @@ def profile():
                            badges=badges
                            )
 
-@socketio.on("delete_badge")
-def handle_user_join(badge_id):
-    current_user.qualification_data[badge_id] = 0
-    flag_modified(current_user,'qualification_data')
-    db.session.commit()
-
-@app.route('/choose_classes',methods=['GET','POST'])
+@bp.route('/choose_classes',methods=['GET','POST'])
 @login_required
 @email_verified_required
 def choose_classes():
@@ -805,14 +560,10 @@ def choose_classes():
                            available_classes=UNIVERSAL_CLASSLIST['class_list'],
                            checked=checked)
 
-@app.route('/forgot_password')
+@bp.route('/forgot_password')
 def forgot_password():
     return render_template('user_handling/forgot_password.html')
 
-@app.errorhandler(404)
+@bp.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
-
-if __name__ == '__main__':
-    app.secret_key = 'ben_does_not_suck'
-    socketio.run(app)

@@ -3,3 +3,9 @@
     "new_messages" : [],
     "new_session" : []
 }
+
+{
+    "wishlist":[]
+}
+
+current_user.wishlist["wishlist"]

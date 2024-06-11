@@ -7,27 +7,27 @@ from PIL import Image
 user_type_key = {0:'student', 1:'teacher', 2:'administrator', 3:'developer'}
 
 def load_volunteer_hour_json_file():
-    with open('static/assets/volunteer_hours.json', 'r') as file:
+    with open('app_folder/static/assets/volunteer_hours.json', 'r') as file:
         form = json.load(file)
     return form
 
 def load_basic_json_file():
-    with open('static/assets/basic_json_file.json', 'r') as file:
+    with open('app_folder/static/assets/basic_json_file.json', 'r') as file:
         basic = json.load(file)
     return basic
 
 def load_default_schedule():
-    with open('static/assets/default_schedule.json', 'r') as file:
+    with open('app_folder/static/assets/default_schedule.json', 'r') as file:
         default_schedule = json.load(file)
     return default_schedule
 
 def load_default_notifactions():
-    with open('static/assets/default_notifactions.json', 'r') as file:
+    with open('app_folder/static/assets/default_notifactions.json', 'r') as file:
         default_notifactions = json.load(file)
     return default_notifactions
 
 def load_non_basic_json_file():
-    with open('static/assets/messages.json', 'r') as file:
+    with open('app_folder/static/assets/messages.json', 'r') as file:
         default_schedule = json.load(file)
     return default_schedule
 
@@ -60,12 +60,12 @@ def date_to_day(date):
     return day
 
 def load_available_classes():
-    with open('static/assets/store_classlist.json', 'r') as file:
+    with open('app_folder/static/assets/store_classlist.json', 'r') as file:
         form = json.load(file)
     return form
 
 def write_available_classes(classList):
-    with open('static/assets/store_classlist.json', 'r') as file:
+    with open('app_folder/static/assets/store_classlist.json', 'r') as file:
         classList = json.dumps(classList,indent=2)
         file.write(classList)
     return
@@ -88,18 +88,3 @@ def make_square(image, size):
     img_resized = img_cropped.resize((size, size), Image.Resampling.LANCZOS)
 
     return img_resized
-
-def count_weekdays_between(start_date: datetime, end_date: datetime, weekday: int) -> int:
-
-    # start_date = start_date.date()
-    end_date = end_date.date()
-
-    current_date = start_date
-    weekday_count = 0
-    
-    while current_date <= end_date:
-        if current_date.weekday() == weekday:
-            weekday_count += 1
-        current_date += timedelta(days=1)
-    
-    return weekday_count
