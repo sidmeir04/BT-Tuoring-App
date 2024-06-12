@@ -62,6 +62,7 @@ class User(db.Model, UserMixin):
     image_data = (db.Column(db.LargeBinary))
     qualification_data = db.Column(JSON,default=current_classlist)
     volunteer_hours = db.Column(JSON,default=load_volunteer_hour_json_file)
+    role = db.Column(db.Integer, default = 0)
 
 
     def set_password(self, password):
@@ -127,21 +128,46 @@ def temp_function_for_default_user_loading():
             name = "Ben",
             last_name = "Lozzano",
             email = "benlozzano@gmail.com",
-            email_verification_token=None
+            email_verification_token=None,
+            role = 0
         )
         user1.set_password("s")
+        db.session.add(user1)
+        db.session.commit()
 
         user2 = User(
             username = "Student2",
             name = "Ben2",
             last_name = "Lozzano2",
             email = "benloz25@bergen.org",
-            email_verification_token=None
+            email_verification_token=None,
+            role = 3
         )
         user2.set_password("s")
 
-        db.session.add(user1)
+        user3 = User(
+            username = "Teacher",
+            name = "Bean",
+            last_name = "Lasanga",
+            email = "bean_lasanga@gmail.com",
+            email_verification_token=None,
+            role = 2
+        )
+        user3.set_password("s")
+
+        user4 = User(
+            username = "NHS Student",
+            name = "Bacon",
+            last_name = "Burrido",
+            email = "america@gmail.com",
+            email_verification_token=None,
+            role = 1
+        )
+        user4.set_password("s")
+
         db.session.add(user2)
+        db.session.add(user3)
+        db.session.add(user4)
         db.session.commit()
 
 with app.app_context():
@@ -328,6 +354,26 @@ def delete_notification():
 @app.route('/index.html')
 def reroute_user():
     return redirect(url_for('index'))
+
+@app.route('/user_managing', methods = ['POST','GET'])
+@login_required
+@email_verified_required
+def user_managing():
+    if current_user.role < 2:
+        return redirect(url_for('404'))
+    
+    if request.method == 'POST':
+        promoted_user = request.form.get('promoted_user')
+        rank = request.form.get('role')
+        user = User.query.get(int(promoted_user))
+        user.role = int(rank)
+        print(promoted_user,rank)
+        db.session.commit()
+
+    students = User.query.filter_by(role = 0).all()
+    NHS_students = User.query.filter_by(role=1).all()
+    teachers = User.query.filter_by(role=2).all()
+    return render_template('user_handling/user_managing.html', students = students, NHS=NHS_students,teachers=teachers)
 
 @app.route("/")
 @login_required
@@ -608,6 +654,7 @@ def find_session():
 @login_required
 @email_verified_required
 def scheduler():
+    if current_user.role < 1: return redirect(url_for('404'))
     if request.method == 'POST':
         thing = request.form.get('modalPass').split(',')
         period,day = int(thing[0])+1,thing[1]
