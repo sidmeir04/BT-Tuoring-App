@@ -1,6 +1,6 @@
 {% extends 'blank.html' %}
 {%set user_name = username%}
-{%set active_page='dashboard'%}
+{%set active_page='user_managing'%}
 {% block content %}
 
 <table class = 'col-12'>
@@ -24,7 +24,7 @@
            {{ student.username}}
         </td>
         <td>
-            {{student.role}}
+            Student
         </td>
         <form action="/user_managing" method = 'POST'>
             <input type="number" value = {{student.id}} style = 'display:none' name = 'promoted_user' id = 'promoted_user'>
@@ -38,7 +38,7 @@
                 </select>
             </td>
             <td>
-                <button type="submit" class="btn btn-primary btn-lg">Submit Feedback</button>
+                <button type="submit" class="btn btn-primary btn-lg">Change Role</button>
             </td>
         </form>
     </tr>
@@ -49,7 +49,7 @@
             {{NHS.username}}
         </td>
         <td>
-            {{NHS.role}}
+            NHS Student
         </td>
         <form action="/user_managing" method = 'POST'>
             <input type="number" value = {{NHS.id}} style = 'display:none' name = 'promoted_user'>
@@ -63,7 +63,48 @@
                 </select>
             </td>
             <td>
-                <button type="submit" class="btn btn-primary btn-lg">Submit Feedback</button>
+                <button type="submit" class="btn btn-primary btn-lg">Change Role</button>
+            </td>
+            </tr><tr>
+            <td>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Student Badges</h5>
+                    <div class="text-right">
+                        <a href="/choose_classes/{{NHS.id}}">
+                            <buttob class="btn btn-secondary py-0 px-2">
+                                +
+                            </button>
+                        </a>
+                    </div>
+                </div>                     
+            </td>
+            <!-- make this td expand through multible tds -->
+            <td>   
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-center">
+                        {% for badge,val in NHS.qualification_data.items() %}
+                            {% if val %}
+                                <span class="badge badge-primary m-1 d-flex align-items-center py-1" id="{{badge}}">
+                                    <span class="badge-text">{{ badge }}</span>
+                                    <button class="btn btn-sm btn-danger remove-badge ml-2 py-0 px-1">&times;</button>
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', (event) => {
+                        document.querySelectorAll('.remove-badge').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const badge = this.parentElement
+                                const id = badge.id
+                                badge.remove()
+
+                                socket.emit("delete_badge",id)
+                            });
+                        });
+                    })
+                </script>
             </td>
         </form>
     </tr>
@@ -74,7 +115,7 @@
             {{teacher.username}}
         </td>
         <td>
-            {{teacher.role}}
+            Teacher
         </td>
         <form action="/user_managing" method = 'POST'>
             <input type="number" value = {{teacher.id}} style = 'display:none' name = 'promoted_user'>
@@ -88,7 +129,7 @@
                 </select>
             </td>
             <td>
-                <button type="submit" class="btn btn-primary btn-lg">Submit Feedback</button>
+                <button type="submit" class="btn btn-primary btn-lg">Change Role</button>
             </td>
         </form>
     </tr>

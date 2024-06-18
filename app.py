@@ -90,7 +90,7 @@ class Session(db.Model):
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
     period = db.Column(db.Integer)
-    tutor_form_completed = db.Column(db.Boolean, default = False)
+    tutor_form_completed = db.Column(db.Boolean, default = True)
     student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
 
@@ -367,13 +367,12 @@ def user_managing():
         rank = request.form.get('role')
         user = User.query.get(int(promoted_user))
         user.role = int(rank)
-        print(promoted_user,rank)
         db.session.commit()
 
     students = User.query.filter_by(role = 0).all()
     NHS_students = User.query.filter_by(role=1).all()
     teachers = User.query.filter_by(role=2).all()
-    return render_template('user_handling/user_managing.html', students = students, NHS=NHS_students,teachers=teachers)
+    return render_template('user_handling/user_managing.html', students = students, NHSs=NHS_students,teachers=teachers)
 
 @app.route("/")
 @login_required
@@ -390,7 +389,7 @@ def index():
             thing[1]["sender"] = username
             return thing
     
-    sessions_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
+    sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
     if sessions_where_teach:
         sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
         sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
@@ -569,6 +568,8 @@ def completion_form():
 ########################################################################################################################
             
             #the code bellow is incomplete. it needs a system in which it takes the session's start time, end time and then do the math for the numebr of weeks
+            
+            #what are you talking about? - Oscar
 
 ##########################################################################################
             tutor = User.query.get(session.tutor)
@@ -686,7 +687,7 @@ def scheduler():
             current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
             current_user.schedule_data[lower_days[day]][str(period)]['subject'] = ''
             data = data.split(' ')
-            data.remove(' ' + str(current_user.id) + ' ')
+            data.remove(' ' + str(current_user.id))
             setattr(period_data, lower_days[day], ' '.join(data))
 
         flag_modified(current_user,'schedule_data')
@@ -836,21 +837,23 @@ def handle_user_join(badge_id):
     flag_modified(current_user,'qualification_data')
     db.session.commit()
 
-@app.route('/choose_classes',methods=['GET','POST'])
+@app.route('/choose_classes/<id>',methods=['GET','POST'])
 @login_required
 @email_verified_required
-def choose_classes():
+def choose_classes(id):
+    user = User.query.get(int(id))
     if request.method == "POST":
         for a_class in UNIVERSAL_CLASSLIST['class_list']:
-            current_user.qualification_data[a_class] = int(request.form.get(a_class) != None)
-        flag_modified(current_user,'qualification_data')
+            user.qualification_data[a_class] = int(request.form.get(a_class) != None)
+        flag_modified(user,'qualification_data')
         db.session.commit()
         flash("Qualifications changed successfully",'success')
     
-    checked = ['''checked="yes"''' if current_user.qualification_data[i] else "" for i in current_user.qualification_data]
+    checked = ['''checked="yes"''' if user.qualification_data[i] else "" for i in user.qualification_data]
     return render_template('choose_classes.html',
                            available_classes=UNIVERSAL_CLASSLIST['class_list'],
-                           checked=checked)
+                           checked=checked,
+                           id = id)
 
 @app.route('/forgot_password')
 def forgot_password():
