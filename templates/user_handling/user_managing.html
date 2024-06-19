@@ -1,0 +1,139 @@
+{% extends 'blank.html' %}
+{%set user_name = username%}
+{%set active_page='user_managing'%}
+{% block content %}
+
+<table class = 'col-12'>
+    <tr>
+        <th>
+            Username
+        </th>
+        <th>
+            Role
+        </th>
+        <th>
+            Promote
+        </th>
+        <th>
+            Submit
+        </th>
+    </tr>
+    {% for student in students %}
+    <tr>
+        <td>
+           {{ student.username}}
+        </td>
+        <td>
+            Student
+        </td>
+        <form action="/user_managing" method = 'POST'>
+            <input type="number" value = {{student.id}} style = 'display:none' name = 'promoted_user' id = 'promoted_user'>
+            <td>
+                <select id="role" name="role" class="form-control" required="required">
+                    <option value="" selected disabled>--Select A Role--</option>
+                    <option value = '0'>Student</option>
+                    <option value = '1'>NHS Student</option>
+                    <option value = '2'>Teacher</option>
+                    <option value = '3'>Admin</option>
+                </select>
+            </td>
+            <td>
+                <button type="submit" class="btn btn-primary btn-lg">Change Role</button>
+            </td>
+        </form>
+    </tr>
+    {% endfor %}
+    {% for NHS in NHSs %}
+    <tr>
+        <td>
+            {{NHS.username}}
+        </td>
+        <td>
+            NHS Student
+        </td>
+        <form action="/user_managing" method = 'POST'>
+            <input type="number" value = {{NHS.id}} style = 'display:none' name = 'promoted_user'>
+            <td>
+                <select id="role" name="role" class="form-control" required="required">
+                    <option value="" selected disabled>--Select A Role--</option>
+                    <option value = '0'>Student</option>
+                    <option value = '1'>NHS Student</option>
+                    <option value = '2'>Teacher</option>
+                    <option value = '3'>Admin</option>
+                </select>
+            </td>
+            <td>
+                <button type="submit" class="btn btn-primary btn-lg">Change Role</button>
+            </td>
+            </tr><tr>
+            <td>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Student Badges</h5>
+                    <div class="text-right">
+                        <a href="/choose_classes/{{NHS.id}}">
+                            <buttob class="btn btn-secondary py-0 px-2">
+                                +
+                            </button>
+                        </a>
+                    </div>
+                </div>                     
+            </td>
+            <!-- make this td expand through multible tds -->
+            <td>   
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-center">
+                        {% for badge,val in NHS.qualification_data.items() %}
+                            {% if val %}
+                                <span class="badge badge-primary m-1 d-flex align-items-center py-1" id="{{badge}}">
+                                    <span class="badge-text">{{ badge }}</span>
+                                    <button class="btn btn-sm btn-danger remove-badge ml-2 py-0 px-1">&times;</button>
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', (event) => {
+                        document.querySelectorAll('.remove-badge').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const badge = this.parentElement
+                                const id = badge.id
+                                badge.remove()
+
+                                socket.emit("delete_badge",id)
+                            });
+                        });
+                    })
+                </script>
+            </td>
+        </form>
+    </tr>
+    {% endfor %}
+    {% for teacher in teachers %}
+    <tr>
+        <td>
+            {{teacher.username}}
+        </td>
+        <td>
+            Teacher
+        </td>
+        <form action="/user_managing" method = 'POST'>
+            <input type="number" value = {{teacher.id}} style = 'display:none' name = 'promoted_user'>
+            <td>
+                <select id="role" name="role" class="form-control" required="required">
+                    <option value="" selected disabled>--Select A Role--</option>
+                    <option value = '0'>Student</option>
+                    <option value = '1'>NHS Student</option>
+                    <option value = '2'>Teacher</option>
+                    <option value = '3'>Admin</option>
+                </select>
+            </td>
+            <td>
+                <button type="submit" class="btn btn-primary btn-lg">Change Role</button>
+            </td>
+        </form>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

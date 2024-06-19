@@ -133,11 +133,20 @@
                         <i class="bi bi-search"></i>
                         <span>Find Tutors</span></a>
                 </li>
+                {% if current_user.role >= 1 %}
                 <li class="nav-item {{'active' if active_page == 'scheduler'}}">
                     <a class="nav-link" href="/scheduler">
                         <i class="bi bi-calendar-fill"></i>
                         <span>Scheduler</span></a>
                 </li>
+                {% endif %}
+                {% if current_user.role >= 3 %}
+                <li class="nav-item {{'active' if active_page == 'user_managing'}}">
+                    <a class="nav-link" href="/user_managing">
+                        <i class="bi bi-calendar-fill"></i>
+                        <span>User Manager</span></a>
+                </li>
+                {% endif %}
                 <li class="nav-item {{'active' if active_page == 'profile'}}">
                     <a class="nav-link" href="/profile">
                         <i class="bi bi-person-fill"></i>

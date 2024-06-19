@@ -62,6 +62,7 @@ class User(db.Model, UserMixin):
     image_data = (db.Column(db.LargeBinary))
     qualification_data = db.Column(JSON,default=current_classlist)
     volunteer_hours = db.Column(JSON,default=load_volunteer_hour_json_file)
+    role = db.Column(db.Integer, default = 0)
 
 
     def set_password(self, password):
@@ -89,7 +90,7 @@ class Session(db.Model):
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
     period = db.Column(db.Integer)
-    tutor_form_completed = db.Column(db.Boolean, default = False)
+    tutor_form_completed = db.Column(db.Boolean, default = True)
     student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
 
@@ -127,21 +128,46 @@ def temp_function_for_default_user_loading():
             name = "Ben",
             last_name = "Lozzano",
             email = "benlozzano@gmail.com",
-            email_verification_token=None
+            email_verification_token=None,
+            role = 0
         )
         user1.set_password("s")
+        db.session.add(user1)
+        db.session.commit()
 
         user2 = User(
             username = "Student2",
             name = "Ben2",
             last_name = "Lozzano2",
             email = "benloz25@bergen.org",
-            email_verification_token=None
+            email_verification_token=None,
+            role = 3
         )
         user2.set_password("s")
 
-        db.session.add(user1)
+        user3 = User(
+            username = "Teacher",
+            name = "Bean",
+            last_name = "Lasanga",
+            email = "bean_lasanga@gmail.com",
+            email_verification_token=None,
+            role = 2
+        )
+        user3.set_password("s")
+
+        user4 = User(
+            username = "NHS Student",
+            name = "Bacon",
+            last_name = "Burrido",
+            email = "america@gmail.com",
+            email_verification_token=None,
+            role = 1
+        )
+        user4.set_password("s")
+
         db.session.add(user2)
+        db.session.add(user3)
+        db.session.add(user4)
         db.session.commit()
 
 with app.app_context():
@@ -329,6 +355,25 @@ def delete_notification():
 def reroute_user():
     return redirect(url_for('index'))
 
+@app.route('/user_managing', methods = ['POST','GET'])
+@login_required
+@email_verified_required
+def user_managing():
+    if current_user.role < 2:
+        return redirect(url_for('404'))
+    
+    if request.method == 'POST':
+        promoted_user = request.form.get('promoted_user')
+        rank = request.form.get('role')
+        user = User.query.get(int(promoted_user))
+        user.role = int(rank)
+        db.session.commit()
+
+    students = User.query.filter_by(role = 0).all()
+    NHS_students = User.query.filter_by(role=1).all()
+    teachers = User.query.filter_by(role=2).all()
+    return render_template('user_handling/user_managing.html', students = students, NHSs=NHS_students,teachers=teachers)
+
 @app.route("/")
 @login_required
 @email_verified_required
@@ -344,7 +389,7 @@ def index():
             thing[1]["sender"] = username
             return thing
     
-    sessions_where_teach = Session.query.filter_by(tutor=current_user.id,tutor_form_completed = False).all()
+    sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
     if sessions_where_teach:
         sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
         sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
@@ -523,6 +568,8 @@ def completion_form():
 ########################################################################################################################
             
             #the code bellow is incomplete. it needs a system in which it takes the session's start time, end time and then do the math for the numebr of weeks
+            
+            #what are you talking about? - Oscar
 
 ##########################################################################################
             tutor = User.query.get(session.tutor)
@@ -608,6 +655,7 @@ def find_session():
 @login_required
 @email_verified_required
 def scheduler():
+    if current_user.role < 1: return redirect(url_for('404'))
     if request.method == 'POST':
         thing = request.form.get('modalPass').split(',')
         period,day = int(thing[0])+1,thing[1]
@@ -639,7 +687,7 @@ def scheduler():
             current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
             current_user.schedule_data[lower_days[day]][str(period)]['subject'] = ''
             data = data.split(' ')
-            data.remove(' ' + str(current_user.id) + ' ')
+            data.remove(' ' + str(current_user.id))
             setattr(period_data, lower_days[day], ' '.join(data))
 
         flag_modified(current_user,'schedule_data')
@@ -789,21 +837,23 @@ def handle_user_join(badge_id):
     flag_modified(current_user,'qualification_data')
     db.session.commit()
 
-@app.route('/choose_classes',methods=['GET','POST'])
+@app.route('/choose_classes/<id>',methods=['GET','POST'])
 @login_required
 @email_verified_required
-def choose_classes():
+def choose_classes(id):
+    user = User.query.get(int(id))
     if request.method == "POST":
         for a_class in UNIVERSAL_CLASSLIST['class_list']:
-            current_user.qualification_data[a_class] = int(request.form.get(a_class) != None)
-        flag_modified(current_user,'qualification_data')
+            user.qualification_data[a_class] = int(request.form.get(a_class) != None)
+        flag_modified(user,'qualification_data')
         db.session.commit()
         flash("Qualifications changed successfully",'success')
     
-    checked = ['''checked="yes"''' if current_user.qualification_data[i] else "" for i in current_user.qualification_data]
+    checked = ['''checked="yes"''' if user.qualification_data[i] else "" for i in user.qualification_data]
     return render_template('choose_classes.html',
                            available_classes=UNIVERSAL_CLASSLIST['class_list'],
-                           checked=checked)
+                           checked=checked,
+                           id = id)
 
 @app.route('/forgot_password')
 def forgot_password():
