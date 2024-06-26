@@ -136,7 +136,7 @@ def temp_function_for_default_user_loading():
         db.session.commit()
 
         user2 = User(
-            username = "Student2",
+            username = "Admin",
             name = "Ben2",
             last_name = "Lozzano2",
             email = "benloz25@bergen.org",
@@ -161,7 +161,10 @@ def temp_function_for_default_user_loading():
             last_name = "Burrido",
             email = "america@gmail.com",
             email_verification_token=None,
+            schedule_data=json.loads('''{"monday": {"1": {"start_time": "08:30", "end_time": "08:31", "times": " 2024-06-24", "subject": null}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "tuesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "wednesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "thursday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "friday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}}'''),
+            volunteer_hours=json.loads('''{"total_hours": 0, "approved_index": [0], "breakdown": [{"start_date": "June 19, 2024", "end_date": "June 30, 2024", "hours": 4.0}]}'''),
             role = 1
+            
         )
         user4.set_password("s")
 
@@ -215,6 +218,17 @@ def email_verified_required(f):
         else:
             flash("You need to verify your email to access this page.", "warning")
             return redirect(url_for('profile'))
+    return decorated_function
+
+
+def admin_only(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.role >= 2:
+            return f(*args, **kwargs)
+        else:
+            flash("You do not have the authority to access this page.", "danger")
+            return redirect(url_for('index'))
     return decorated_function
 
 @app.route('/verify_email/<token>')
@@ -358,10 +372,8 @@ def reroute_user():
 @app.route('/user_managing', methods = ['POST','GET'])
 @login_required
 @email_verified_required
+@admin_only
 def user_managing():
-    if current_user.role < 2:
-        return redirect(url_for('404'))
-    
     if request.method == 'POST':
         promoted_user = request.form.get('promoted_user')
         rank = request.form.get('role')
@@ -369,10 +381,17 @@ def user_managing():
         user.role = int(rank)
         db.session.commit()
 
-    students = User.query.filter_by(role = 0).all()
+    people = User.query.all()
+    people = [i for i in people if i.role < 3]
+    return render_template('user_handling/user_managing.html',people=people)
+
+@app.route('/tag_managing', methods = ['POST','GET'])
+@login_required
+@email_verified_required
+@admin_only
+def tag_managing():
     NHS_students = User.query.filter_by(role=1).all()
-    teachers = User.query.filter_by(role=2).all()
-    return render_template('user_handling/user_managing.html', students = students, NHSs=NHS_students,teachers=teachers)
+    return render_template('user_handling/tag_managing.html', NHSs=NHS_students)
 
 @app.route("/")
 @login_required
@@ -567,8 +586,7 @@ def completion_form():
 
 ########################################################################################################################
             
-            #the code bellow is incomplete. it needs a system in which it takes the session's start time, end time and then do the math for the numebr of weeks
-            
+            #The code need to be abnle to check for the time of start and time of end as well as the date            
             #what are you talking about? - Oscar
 
 ##########################################################################################
@@ -579,7 +597,15 @@ def completion_form():
             difference = difference.total_seconds()/3600
 
             total_days = count_weekdays_between(session.start_date,datetime.today(),session.day_of_the_week)
-            if total_days > 0:
+
+##########################################################################################
+
+            # Put in the if statement in the final product
+
+##########################################################################################
+
+            # if total_days > 0:
+            if True:
                 tutor.hours_of_service += round(float(difference),2)
                 tutor.volunteer_hours["approved_index"].append(0)
                 tutor.volunteer_hours["breakdown"].append({"start_date":session.start_date.strftime("%B %d, %Y"), "end_date":datetime.today().strftime("%B %d, %Y"),"hours":round(float(difference) * total_days,2)})
@@ -831,15 +857,18 @@ def profile():
                            badges=badges
                            )
 
-@socketio.on("delete_badge")
-def handle_user_join(badge_id):
-    current_user.qualification_data[badge_id] = 0
-    flag_modified(current_user,'qualification_data')
+@socketio.on("change_badge")
+def handle_user_join(badge_id,user):
+    user = User.query.get(int(user))
+    user.qualification_data[badge_id] = int(not user.qualification_data[badge_id])
+    flag_modified(user,'qualification_data')
     db.session.commit()
+
 
 @app.route('/choose_classes/<id>',methods=['GET','POST'])
 @login_required
 @email_verified_required
+@admin_only
 def choose_classes(id):
     user = User.query.get(int(id))
     if request.method == "POST":
@@ -854,6 +883,34 @@ def choose_classes(id):
                            available_classes=UNIVERSAL_CLASSLIST['class_list'],
                            checked=checked,
                            id = id)
+
+@app.route('/approve_hours',methods=['GET','POST'])
+@login_required
+@email_verified_required
+@admin_only
+def approve_hours():
+    NHS_students = User.query.filter_by(role=1).all()
+    to_approve = []
+    for student in NHS_students:
+        break_down = student.volunteer_hours["breakdown"]
+        approved_index = student.volunteer_hours["approved_index"]
+        for i in range(len(approved_index)):
+            if not approved_index[i]:
+                to_approve.append([student,break_down[i],i])
+    
+    if request.method == "POST":
+        index_of_student = request.form.get("index_of_approval")
+        student,_,index = to_approve[int(index_of_student)]
+        student.volunteer_hours["approved_index"][int(index)] = 1
+        student.volunteer_hours["total_hours"] += student.volunteer_hours["breakdown"][int(index)]["hours"]
+        flag_modified(student,"volunteer_hours")
+        db.session.commit()
+        flash("Successfully Approved!","success")
+
+        to_approve.pop(int(index_of_student))
+        
+
+    return render_template("approve_hours.html",hours_to_approve=to_approve)
 
 @app.route('/forgot_password')
 def forgot_password():

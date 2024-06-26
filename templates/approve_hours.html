@@ -1,0 +1,46 @@
+{% extends 'blank.html' %}
+{%set user_name = username%}
+{%set active_page='user_managing'%}
+{% block content %}
+
+<table class = 'col-12 table'>
+    <thead>
+        <tr>
+            <th>
+                Username
+            </th>
+            <th>
+                Dates
+            </th>
+            <th>
+                Total Hours
+            </th>
+            <th>
+                
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for check in hours_to_approve %}
+        <tr>
+            <td>
+                {{check[0].username}}
+            </td>
+            <td>
+                {{check[1]["start_date"]}} to {{check[1]["end_date"]}}
+            </td>
+            <td>
+                {{check[1]["hours"]}}
+            </td>
+            <td>
+                <form action="/approve_hours" method="POST">
+                    <input type="number" value = "{{loop.index0}}" class="d-none" name = 'index_of_approval'>
+                    <button type="submit" class="btn btn-success">Approve</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

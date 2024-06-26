@@ -14,16 +14,16 @@
 
     <!-- Page Heading -->
     <!-- the "custom-progress-bar" class can be added to make this into a custom progress bar -->
-    <div class="row align-items-center justify-content-center">
-        <div class="h5 font-weight-bold text-primary" style="font-size: 3vw;">Community Service Hours: <span class="text-{{color}}">{{current_user.hours_of_service}}</span></div>
+     <div class="row align-items-center justify-content-center">
+        <div class="h5 font-weight-bold text-primary" style="font-size: 3vw;">Community Service Hours: <span class="text-{{color}}">{{current_user.volunteer_hours["total_hours"]}}</span></div>
     </div>
     <div class="progress mb-4 bg-gray-600 rounded-pill" style="height:5vw">
-        <div class="progress-bar bg-{{color}} progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{current_user.hours_of_service*100/40}}" style="width:{{current_user.hours_of_service*100/40}}%" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar bg-{{color}} progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{current_user.volunteer_hours['total_hours']*100/40}}" style="width:{{current_user.volunteer_hours['total_hours']*100/40}}%" aria-valuemin="0" aria-valuemax="100">
             
         </div>
     </div>
     <div class="row py-2 mb-4 bg-gradient-secondary px-0">
-    </div> 
+    </div>
     <!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Dashboard: Welcome {{username}}</h1>
     </div> -->

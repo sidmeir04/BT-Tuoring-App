@@ -1,0 +1,126 @@
+{% extends 'blank.html' %}
+{%set user_name = username%}
+{%set active_page='user_managing'%}
+{% block content %}
+
+<table class = 'col-12 table'>
+    <thead>
+        <tr>
+            <th>
+                Username
+            </th>
+            <th>
+                Current Badges
+            </th>
+            <th>
+                Add Badges
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for NHS in NHSs %}
+        <tr>
+            <td>
+                {{NHS.username}}
+            </td>
+            <!-- make this td expand through multible tds -->
+            <td>   
+                <div class="d-flex flex-wrap overflow-auto" id="remove">
+                    {% for badge, val in NHS.qualification_data.items() %}
+                        {% if val %}
+                            <span class="badge badge-primary m-1 d-flex align-items-center py-1" id="{{badge}},{{NHS.id}}">
+                                <span class="badge-text">{{ badge }}</span>
+                                <button class="btn btn-sm btn-danger remove-badge ml-2 py-0 px-1">&times;</button>
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                </div>                
+            </td>
+            <td>
+                <button class="btn btn-secondary py-0 px-2" id="openPopup">
+                    +
+                </button>
+            </td>
+        </tr>
+        <div class="modal fade" id="badgePopup" tabindex="-1" role="dialog" aria-labelledby="badgePopupLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="badgePopupLabel">Select Badges</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex flex-wrap justify-content-center" id="add">
+                            {% for badge, val in NHS.qualification_data.items() %}
+                                {% if not val %}
+                                    <span class="badge badge-primary m-1 d-flex align-items-center py-1" id="{{badge}},{{NHS.id}}">
+                                        <span class="badge-text">{{ badge }}</span>
+                                        <button class="btn btn-sm btn-success add-badge ml-2 py-0 px-1">+</button>
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGaP3p7WVv3P2RfKv1TqJg6aOR" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+xZMKt2V8aCw7HHcwrHb8/2ONC8giBj0eRMXaL8hM2Fm9DzTG" crossorigin="anonymous"></script>
+
+<script>
+    document.getElementById('openPopup').addEventListener('click', function() {
+        $('#badgePopup').modal('show');
+    });
+</script>
+<script>
+    function removes(){
+        document.querySelectorAll('.remove-badge').forEach(button => {
+            button.addEventListener('click', function() {
+                const badge = this.parentElement
+                const id = badge.id.split(',')
+                badge.remove()
+                document.getElementById('add').insertAdjacentHTML('beforeend',`
+                <span class="badge badge-primary m-1 d-flex align-items-center py-1" id="${id[0]},${id[1]}">
+                                        <span class="badge-text">${id[0]}</span>
+                                        <button class="btn btn-sm btn-success add-badge ml-2 py-0 px-1">+</button>
+                                    </span>`)
+                add()
+                socket.emit("change_badge",id[0],id[1])
+            });
+        });
+    }
+
+    function add(){
+        document.querySelectorAll('.add-badge').forEach(button => {
+            button.addEventListener('click', function() {
+                const badge = this.parentElement
+                const id = badge.id.split(',')
+                badge.remove()
+                document.getElementById('remove').insertAdjacentHTML('beforeend',`
+                <span class="badge badge-primary m-1 d-flex align-items-center py-1" id="${id[0]},${id[1]}">
+                                        <span class="badge-text">${id[0]}</span>
+                                        <button class="btn btn-sm btn-danger remove-badge ml-2 py-0 px-1">&times;</button>
+                                    </span>`)
+                removes()
+                socket.emit("change_badge",id[0],id[1])
+            });
+        });
+    }
+    document.addEventListener('DOMContentLoaded', (event) => {
+        add()
+        removes()
+    })
+</script>
+
+
+{% endblock %}
