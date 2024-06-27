@@ -397,16 +397,36 @@ def tag_managing():
 @login_required
 @email_verified_required
 def index():
-    #redirects if not logged
-    if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
-
-    # if current_user.role == 2:
-    #     return render_template('index2.html')
     def replace_with_username(thing):
             if thing == None:return thing
             username = User.query.get(thing[1]["sender"]).username
             thing[1]["sender"] = username
             return thing
+    if current_user.role == 0:
+        sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
+        if sessions_where_learn:
+            sessions_where_learn_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
+            sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
+            sessions_where_learn_MH = [i if i != (0,None) else None for i in sessions_where_learn_MH]
+            sessions_where_learn_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_learn_MH]
+            sessions_where_learn_MH = list(map(lambda x: replace_with_username(x),sessions_where_learn_MH))
+            people = list(map(lambda x: User.query.get(x.tutor),sessions_where_learn ))
+            print(sessions_where_learn_MH,sessions_where_learn_PP,sessions_where_learn[0])
+        return render_template('homepages/student.html',
+                               sessions_where_learn = sessions_where_learn,
+                                sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
+                                sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
+                                enum = enumerate,
+                                username=current_user.username,
+                                image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
+                                people=people)
+
+    #redirects if not logged
+    if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
+
+    # if current_user.role == 2:
+    #     return render_template('index2.html')
+    
     
     sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
     if sessions_where_teach:
@@ -421,14 +441,11 @@ def index():
     if sessions_where_learn:
         sessions_where_learn_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
         sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
-        print(sessions_where_learn_MH)
         sessions_where_learn_MH = [i if i != (0,None) else None for i in sessions_where_learn_MH]
-        print(sessions_where_learn_MH)
         sessions_where_learn_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_learn_MH]
         sessions_where_learn_MH = list(map(lambda x: replace_with_username(x),sessions_where_learn_MH))
-        print(sessions_where_learn_MH)
 
-    return render_template('index0.html',
+    return render_template('homepages/student.html',
                             enum = enumerate,
                             username = current_user.username,
                             sessions_where_teach = sessions_where_teach,
@@ -922,4 +939,5 @@ def not_found(e):
 
 if __name__ == '__main__':
     app.secret_key = 'ben_does_not_suck'
+    #add a host="" to run on capcitor with flask-socketio
     socketio.run(app)
