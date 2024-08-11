@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Student Dashboard - {{ year }}-{{ month }}</h1>
+        
+        <!-- Color Key -->
+        <div class="mb-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-danger rounded-circle mr-2" style="width: 20px; height: 20px;"></div>
+                        <span>Meeting with Teacher</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success rounded-circle mr-2" style="width: 20px; height: 20px;"></div>
+                        <span>Meeting with Peer Tutor</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar -->
+        <div class="calendar">
+            <div class="row mb-2">
+                {% for day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}
+                    <div class="col border text-center font-weight-bold">{{ day }}</div>
+                {% endfor %}
+            </div>
+            <div class="row">
+                {% set first_day = dates[0].weekday() %}
+                {% for _ in range(first_day) %}
+                    <div class="col border"></div>
+                {% endfor %}
+                {% for date in dates %}
+                    {% set date_str = date.strftime('%Y-%m-%d') %}
+                    {% set bg_color = '' %}
+                    {% if date_str in meetings['teacher'] %}
+                        {% set bg_color = 'bg-danger' %}
+                    {% elif date_str in meetings['peer_tutor'] %}
+                        {% set bg_color = 'bg-success' %}
+                    {% endif %}
+                    <div class="col border text-center {{ bg_color }}">{{ date.day }}</div>
+                    {% if date.weekday() == 6 %}
+                        </div><div class="row">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

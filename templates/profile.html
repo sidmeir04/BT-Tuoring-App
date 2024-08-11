@@ -109,11 +109,11 @@
                                         <input type="text" class='form-control' value="{{ current_user.last_name }}" name='last_name' id="last_name">
                                     </div>
                                 </div>
-
+        
                                 <div class="input-group mb-3 mx-2">
                                     <div class="w-100">
                                         <label for="username" class="form-label mb-1">Email</label>
-                                        <input type="email" class='form-control' value="{{ current_user.email }}" name='email' id="email">
+                                        <input type="email" class='form-control' value="{{ current_user.email }}" name='email' id="email" {%if verified%}disabled{%endif%}>
                                     </div>
                                 </div>
                             </div>

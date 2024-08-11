@@ -3,330 +3,322 @@
 {%set active_page='dashboard'%}
 {% block content %}
 
-
+<style>
+  .border-bottom{
+    vertical-align: middle;
+  }
+  
+</style>
 <!-- Begin Page Content -->
 <div class="container-fluid mr-0 pr-0">
 
     <!-- Page Heading -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-        <strong>{{ message }}</strong>
-        <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}   
-    <!-- <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Dashboard: Welcome {{username}}</h1>
-    </div> -->
+    <!-- the "custom-progress-bar" class can be added to make this into a custom progress bar -->
+    
 
     <!-- Content Row -->
-    <div class="d-flex flex-row px-0 justify-content-between mb-3">
-        <div class="h3 text-gray-900">
-            View Sessions
-        </div>
-        <div class="ms-auto dropdown">
-            <button class="btn btn-primary dropdown-toggle" type="button" id="toggleTableMode" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Teaching
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#" onclick="changeTable('teach')">Teaching</a>
-                <a class="dropdown-item" href="#" onclick="changeTable('learn')">Learning</a>
+   <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <img src="
+                        {% if image_data %}
+                        data:image/jpeg;base64,{{ image_data }}
+                        {% else %}
+                        static/assets/img/undraw_profile.svg
+                        {% endif %}
+                        " id="image" alt="Admin" class="rounded-circle" width="130vw" height="130vw">  
+                        <div>
+                            <h1 class="mt-2 ml-4">{{current_user.name}} {{current_user.last_name}}</h1>
+                            <h3 class="mt-2 ml-4">Email: {{current_user.email}}</h3>
+                        </div>
+                        <div class="ml-auto">
+                            Edit Profile
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>    
-    <div class="d-flex flex-row px-0 justify-content-center mb-3">
-        <div class="col-11">
-            <div class="card" style="height:50vh;">
+   </div>
+
+    <div class="row mb-3 d-flex justify-content-between">
+
+        <div class="col-8">
+            <div class="card shadow" style="height:50vh;">
+                <div class="card-header d-flex align-items-center">
+                    <h4 class="text-center h3">Upcoming Events</h4>
+                    <div class="ml-auto">
+                        View All
+                    </div>
+                </div>
                 <div class="card-body d-flex">
-                    
-                    {% if sessions_where_teach %}
-                        <div id="teacher-sessions-table" class="w-100">
-                            <div class="table-responsive w-100">
-                                <table class="table" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>Start</th>
-                                            <th>End</th>
-                                            <th>Period</th>
-                                            <th>Date</th>
-                                            <th>Messaging</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for i, session in enum(sessions_where_teach) %}
-                                            <tr>
-                                                <td class="border-bottom align-middle">{{ session.start_time.strftime("%H:%M") }}</td>
-                                                <td class="border-bottom align-middle">{{ session.end_time.strftime("%H:%M") }}</td>
-                                                <td class="border-bottom align-middle">to be added</td>
-                                                <td class="border-bottom border-right align-middle">{{ session.date.strftime("%B") }} {{ session.date.strftime("%d") }}</td>
-                                                <td class="border-bottom border-right align-middle">
-                                                    <a href="{{ url_for('details', identification=session.id) }}" class="text-decoration-none text-reset">
-                                                        <div class="row">
-                                                            <div class="col-2 d-flex align-items-center justify-content-center">
-                                                                <img class="img-profile rounded-circle"
-                                                                    src="
-                                                                    {% if sessions_where_teach_PP[i] %}
-                                                                    data:image/jpeg;base64,{{ sessions_where_teach_PP[i] }}
-                                                                    {% else %}
-                                                                    static/assets/img/undraw_profile.svg
-                                                                    {% endif %}
-                                                                    " 
-                                                                    style="width: 100%; height:auto;"
-                                                                    id="{{session.id}},image">
-                                                            </div>
-                                                            <div class="col-10">
-                                                                {% if sessions_where_teach_MH[i] %}
-                                                                    <div class="row d-flex justify-content-between" id="secondary_notification">
-                                                                        <span class="mr-2 d-lg-inline text-gray-900" id="{{session.id}},sender">
-                                                                            {% if sessions_where_teach_MH[i][1]['sender'] == username %}
-                                                                            You
-                                                                            {% else %}
-                                                                            {{ sessions_where_teach_MH[i][1]['sender'] }}
-                                                                            {% endif %}
-                                                                        </span>
-                                                                        {% if sessions_where_teach_MH[i][0] %}
-                                                                            <div class="rounded-circle bg-danger py-0 px-2 mr-2">
-                                                                                <span class="text-white" id="{{session.id}},notification">{{ sessions_where_teach_MH[i][0] }}</span>
-                                                                            </div>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                    <div class="row">
-                                                                        <span class="mr-2 d-lg-inline text-gray-600 small" id="{{session.id}},message">{{ sessions_where_teach_MH[i][1]['message'] }}</span>
-                                                                    </div>
-                                                                {% else %}
-                                                                    <div class="row justify-content-center align-items-center h-100">
-                                                                        <span class="mr-2 d-lg-inline text-gray-900">Click here to go to messages and start planning!</span>
-                                                                    </div>
-                                                                {% endif %}
-                                                            </div>
-                                                        </div>
-                                                    </a>
-                                                </td>  
-                                                <td class="border-bottom align-middle">
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                                        style="width: 2vw;
-                                                        height: 2vw;
-                                                        border-radius: 20px;
-                                                        background-color: #007bff;
-                                                        border: none;
-                                                        color: white;
-                                                        font-size: 1.2em;
-                                                        display: flex;
-                                                        align-items: center;
-                                                        justify-content: center;
-                                                        cursor: pointer;">
-                                                            <i class="fa fa-ellipsis-v"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                            <a class="dropdown-item" href="/complete_session/{{ session.id }}">Mark as Done</a>
-                                                            <a class="dropdown-item" href="/delete_session/{{ session.id }}/2">Remove Session</a>
-                                                        </div>
+                    {%if sessions_where_learn or sessions_where_teach%}
+                    <div class="table table-responsive" class="w-100" style="overflow-x:hidden">
+                        {% for i,session in enum(sessions_where_learn)%}
+                            <div class="border-bottom p-2">
+                                <div class="d-flex">
+                                    <div>
+                                        <div class="h2">
+                                            Upcoming Session with {{people_where_learn[i].username}}!
+                                        </div>
+                                        <div class="h4">
+                                            {{session.date.strftime("%B")}} {{session.date.strftime("%d")}}, {{session.start_time.strftime("%H:%M")}} - {{session.end_time.strftime("%H:%M")}}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ml-auto">
+                                        <img class="img-profile rounded-circle"
+                                        src="
+                                        {%if sessions_where_learn_PP[i]%}
+                                        data:image/jpeg;base64,{{ sessions_where_learn_PP[i] }}
+                                        {%else%}
+                                        static/assets/img/undraw_profile.svg
+                                        {%endif%}
+                                        " 
+                                        style="width: 100px; height:auto;"
+                                        id="{{session.id}},image">
+                                    </div>                              
+                                </div>
+                                <a href="{{ url_for('user_messages', identification=session.id) }}" class="text-decoration-none text-reset">
+                                    <div class="row">
+                                        <div class="col-2 d-flex align-items-center justify-content-center">
+                                            
+                                        </div>
+                                        <div class="col-10">
+                                            {%if sessions_where_learn_MH[i]%}
+                                            <div class="row d-flex justify-content-between" id="secondary_notification">
+                                                <span class="mr-2 d-lg-inline text-gray-900" id="{{session.id}},sender">
+                                                    {%if sessions_where_learn_MH[i][1]['sender'] == username %}
+                                                    You
+                                                    {%else%}
+                                                    {{sessions_where_learn_MH[i][1]['sender']}}
+                                                    {%endif%}
+                                                </span>
+                                                {%if sessions_where_learn_MH[i][0]%}
+                                                    <div class="rounded-circle bg-danger py-0 px-2 mr-2">
+                                                        <span class="text-white" id="{{session.id}},notification">{{sessions_where_learn_MH[i][0]}}</span>
                                                     </div>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="w-100 justify-content-center align-self-center" id="teacher-sessions-table">
-                            <div class="text-center text-primary h4 justify-self-center align-self-center">
-                                No current appointments
-                            </div>
-                        </div>
-                    {% endif %}
-              
-                  
-                    {%if sessions_where_learn%}
-                    <div id="student-sessions-table" class="w-100 d-none">
-                        <div class="table-responsive w-100">
-                            <table class="table" id="dataTable" width="100%" cellspacing="0">
-                                <thead>
-                                    <tr>
-                                        <th>Start</th>
-                                        <th>End</th>
-                                        <th>Period</th>
-                                        <th>Date</th>
-                                        <th>Messaging</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for i,session in enum(sessions_where_learn)%}
-                                        <tr>
-                                            <td class="border-bottom align-middle">{{session.start_time.strftime("%H:%M")}}</td>
-                                            <td class="border-bottom align-middle">{{session.end_time.strftime("%H:%M")}}</td>
-                                            <!-- <td>{User.query.get(session.tutor).username}}</td> --> <td class="border-bottom align-middle">to be added</td>
-                                            <td class="border-bottom border-right align-middle">{{session.date.strftime("%B")}} {{session.date.strftime("%d")}}</td>
-                                            <td class="border-bottom border-right align-middle">
-                                              <a href="{{ url_for('details', identification=session.id) }}" class="text-decoration-none text-reset">
-                                                  <div class="row">
-                                                      <div class="col-2 d-flex align-items-center justify-content-center">
-                                                          <img class="img-profile rounded-circle"
-                                                              src="
-                                                              {%if sessions_where_learn_PP[i]%}
-                                                              data:image/jpeg;base64,{{ sessions_where_learn_PP[i] }}
-                                                              {%else%}
-                                                              static/assets/img/undraw_profile.svg
-                                                              {%endif%}
-                                                              " 
-                                                              style="width: 100%; height:auto;"
-                                                              id="{{session.id}},image">
-                                                      </div>
-                                                      <div class="col-10">
-                                                        {%if sessions_where_learn_MH[i]%}
-                                                          <div class="row d-flex justify-content-between" id="secondary_notification">
-                                                              <span class="mr-2 d-lg-inline text-gray-900" id="{{session.id}},sender">
-                                                                {%if sessions_where_learn_MH[i][1]['sender'] == username %}
-                                                                You
-                                                                {%else%}
-                                                                {{sessions_where_learn_MH[i][1]['sender']}}
-                                                                {%endif%}
-                                                              </span>
-                                                              {%if sessions_where_learn_MH[i][0]%}
-                                                                <div class="rounded-circle bg-danger py-0 px-2 mr-2">
-                                                                    <span class="text-white" id="{{session.id}},notification">{{sessions_where_learn_MH[i][0]}}</span>
-                                                                </div>
-                                                              {%endif%}
-                                                          </div>
-                                                          <div class="row">
-                                                              <span class="mr-2 d-lg-inline text-gray-600 small" id="{{session.id}},message">{{sessions_where_learn_MH[i][1]['message']}}</span>
-                                                          </div>
-                                                        {%else%}
-                                                          <div class="row justify-content-center align-items-center h-100">
-                                                              <span class="mr-2 d-lg-inline text-gray-900">Click here to go to messages and start planning!</span>
-                                                          </div>
-                                                        {%endif%}
-                                                      </div>
-                                                  </div>
-                                              </a>
-                                            </td>  
-                                            <td class="border-bottom align-middle">
-                                                <div class="dropdown">
-                                                    <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                                                    style = "width: 2vw;
-                                                    height: 2vw;
-                                                    border-radius: 20px;
-                                                    background-color: #007bff;
-                                                    border: none;
-                                                    color: white;
-                                                    font-size: 1.2em;
-                                                    display: flex;
-                                                    align-items: center;
-                                                    justify-content: center;
-                                                    cursor: pointer;">
-                                                        <i class="fa fa-ellipsis-v"></i>
-                                                    </button>
-                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                        <a class="dropdown-item" href="/complete_session/{{ session.id }}">Mark as Done</a>
-                                                        <a class="dropdown-item" href="/delete_session/{{ session.id }}/2">Remove Session</a>
+                                                {%endif%}
+                                            </div>
+                                            <div class="row">
+                                                <span class="mr-2 d-lg-inline text-gray-600 small" id="{{session.id}},message">{{sessions_where_learn_MH[i][1]['message']}}</span>
+                                            </div>
+                                            {%else%}
+                                            <div class="row justify-content-center align-items-center h-100">
+                                                <span class="mr-2 d-lg-inline text-gray-900">Click here to go to messages and start planning!</span>
+                                            </div>
+                                            {%endif%}
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="dropdown">
+                                    <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                    style = "width: 2vw;
+                                    height: 2vw;
+                                    border-radius: 20px;
+                                    background-color: #007bff;
+                                    border: none;
+                                    color: white;
+                                    font-size: 1.2em;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    cursor: pointer;">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="/complete_session/{{ session.id }}">Mark as Done</a>
+                                        <a class="dropdown-item" href="/delete_session/{{ session.id }}/2">Remove Session</a>
+                                    </div>
+                                </div>
+                            </div>  
+                        {% endfor %}
+                        {% for i,session in enum(sessions_where_teach)%}
+                            <div class="border-bottom p-2">
+                                <div class="d-flex">
+                                    <div>
+                                        <div class="h2">
+                                            Upcoming Session with {{people_where_teach[i].username}}!
+                                        </div>
+                                        <div class="h4">
+                                            {{session.date.strftime("%B")}} {{session.date.strftime("%d")}}, {{session.start_time.strftime("%H:%M")}} - {{session.end_time.strftime("%H:%M")}}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ml-auto">
+                                        <img class="img-profile rounded-circle"
+                                        src="
+                                        {%if sessions_where_teach_PP[i]%}
+                                        data:image/jpeg;base64,{{ sessions_where_teach_PP[i] }}
+                                        {%else%}
+                                        static/assets/img/undraw_profile.svg
+                                        {%endif%}
+                                        " 
+                                        style="width: 100px; height:auto;"
+                                        id="{{session.id}},image">
+                                    </div>                              
+                                </div>
+                                <a href="{{ url_for('user_messages', identification=session.id) }}" class="text-decoration-none text-reset">
+                                    <div class="row">
+                                        <div class="col-2 d-flex align-items-center justify-content-center">
+                                            
+                                        </div>
+                                        <div class="col-10">
+                                            {%if sessions_where_teach_MH[i]%}
+                                            <div class="row d-flex justify-content-between" id="secondary_notification">
+                                                <span class="mr-2 d-lg-inline text-gray-900" id="{{session.id}},sender">
+                                                    {%if sessions_where_teach_MH[i][1]['sender'] == username %}
+                                                    You
+                                                    {%else%}
+                                                    {{sessions_where_teach_MH[i][1]['sender']}}
+                                                    {%endif%}
+                                                </span>
+                                                {%if sessions_where_teach_MH[i][0]%}
+                                                    <div class="rounded-circle bg-danger py-0 px-2 mr-2">
+                                                        <span class="text-white" id="{{session.id}},notification">{{sessions_where_teach_MH[i][0]}}</span>
                                                     </div>
-                                                </div>
-                                                
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-
-                        </div>
+                                                {%endif%}
+                                            </div>
+                                            <div class="row">
+                                                <span class="mr-2 d-lg-inline text-gray-600 small" id="{{session.id}},message">{{sessions_where_teach_MH[i][1]['message']}}</span>
+                                            </div>
+                                            {%else%}
+                                            <div class="row justify-content-center align-items-center h-100">
+                                                <span class="mr-2 d-lg-inline text-gray-900">Click here to go to messages and start planning!</span>
+                                            </div>
+                                            {%endif%}
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="dropdown">
+                                    <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                                    style = "width: 2vw;
+                                    height: 2vw;
+                                    border-radius: 20px;
+                                    background-color: #007bff;
+                                    border: none;
+                                    color: white;
+                                    font-size: 1.2em;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    cursor: pointer;">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="/complete_session/{{ session.id }}">Mark as Done</a>
+                                        <a class="dropdown-item" href="/delete_session/{{ session.id }}/2">Remove Session</a>
+                                    </div>
+                                </div>
+                            </div> 
+                        {% endfor %}  
+                        </div>                                                
                         {%else%}
-                        <div class="w-100 justify-content-center align-self-center d-none" id="student-sessions-table">
-
-                            <div class="text-center text-primary h4 justify-self-center align-self-center">
-                                No current appointments
+                            <div class="w-100 justify-content-center align-self-center">
+                                <div class="text-center text-primary h4 justify-self-center align-self-center">
+                                    No current appointments
+                                </div>
                             </div>
-                        </div>
                         {%endif%}
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-center mb-0 pb-0">
+                    <div class="h3 text-center">
+                        Schedule
                     </div>
+                    <div class="ml-auto text-center">
+                        View
+                    </div>
+                    
+                </div>
+                <div class="card-body">
+                    <!-- Calendar -->
+                    <div class="calendar">
+                        <table class="table table-bordered text-center">
+                            <thead>
+                                <tr>
+                                    {% for day in ['M', 'T', 'W', 'H', 'F', 'S', 'S'] %}
+                                        <th class="font-weight-bold p-1">{{ day }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% set first_day = dates[0].weekday() %}
+                                    {% for _ in range(first_day) %}
+                                        <td></td>
+                                    {% endfor %}
+                                    {% for date in dates %}
+                                        {% set date_str = date.strftime('%Y-%m-%d') %}
+                                        {% set bg_color = '' %}
+                                        {% if date_str in meetings['teacher'] or date_str in meetings['peer_tutor'] %}
+                                            {% set bg_color = 'bg-success' %}
+                                        {% elif date_str == today %}
+                                            {% set bg_color = 'bg-danger' %}
+                                        {% endif %}
+                                        <td class="{{ bg_color }} p-1">{{ date.day }}</td>
+                                        {% if date.weekday() == 6 %}
+                                            </tr><tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="row py-2 mb-4 bg-gradient-secondary px-0">
-    </div>
-    <div class="row p-1 align-items-center">
-
-        <a class="col-xl-3 col-md-6 mb-4" href = "/scheduler">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center h-100">
-                        <div class="col mr-2">
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">Set Schedule</div>
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card" style="height:40vh;">  
+                <div class="card-header">
+                    <div class="h3 mb-0">
+                        Have a Problem or Question?
+                    </div>
+                    <div class="h5">
+                        Message the Staff!
+                    </div>
+                </div>
+                <div class="card-body d-flex">
+                    <div class="table table-responsive" style="overflow-x:hidden;">
+                        {%for i in range(2)%}
+                        <div class="border-bottom p-2">
+                            <div class="d-flex">
+                                <div class="">
+                                    <img class="rounded-circle"
+                                    src="
+                                    static/assets/img/undraw_profile.svg
+                                    " 
+                                    style="width: 5vw; height:auto;" class="mr-2"
+                                    >
+                                </div>
+                                <div class="ml-4">
+                                    <div class="h3 mb-1">
+                                        Username
+                                    </div>
+                                    <div class="">
+                                        Admin
+                                    </div>
+                                </div>
+                                <div class="ml-auto">
+                                    <div class="h4">
+                                        Message
+                                    </div>
+                                </div>              
+                            </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                        </div>
+                        {%endfor%}
                     </div>
                 </div>
             </div>
-        </a>
-        
-        <a class="col-xl-3 col-md-6 mb-4" href = "/find_session">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center h-100">
-                        <div class="col mr-2">
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">Find Sessions</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </a>
+        </div>
     </div>
 </div>
 
-<script>
-    function changeTable(change){
-        if (change == 'learn'){
-            document.getElementById('toggleTableMode').innerText = 'Learning'
-            document.getElementById('student-sessions-table').classList.remove('d-none')
-            document.getElementById('teacher-sessions-table').classList.add('d-none')
-        }
-        else {
-            document.getElementById('toggleTableMode').innerText = 'Teaching'
-            document.getElementById('student-sessions-table').classList.add('d-none')
-            document.getElementById('teacher-sessions-table').classList.remove('d-none')
-        }
-    }
-</script>
-<script>
-    function update_dashboard(data){
-      session_id = data['session_id']
-      console.log(session_id)
-      image = document.getElementById(`${session_id},image`)
-      if (data['image_data']) {
-        image.src = `data:image/jpeg;base64,${data['image_data']}`
-      }
-      else{
-        image.src = "static/assets/img/undraw_profile.svg"
-      }
-      notification = document.getElementById(`${session_id},notification`)
-      if (notification == null){
-        element = `<div class="rounded-circle bg-danger py-0 px-2 mr-2">
-                      <span class="text-white" id="${session_id},notification">0</span>
-                  </div>`
-        document.getElementById('secondary_notification').insertAdjacentHTML('beforeend',element)
-      }
-      else{
-        console.log(String(parseInt(notification.innerText)))
-        notification.innerText = String(parseInt(notification.innerText) + 1)
-      }
-
-      document.getElementById(`${session_id},sender`).innerText = data['username']
-      document.getElementById(`${session_id},message`).innerText = data['message']
-    }
-</script>
-
-
-{% endblock %}
+{%endblock%}

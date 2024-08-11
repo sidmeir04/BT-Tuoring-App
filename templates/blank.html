@@ -102,13 +102,11 @@
                         <span>Dashboard</span></a>
                 </li>
     
-                <!-- Divider -->
-                <hr class="sidebar-divider">
+                <!-- <hr class="sidebar-divider">
     
-                <!-- Heading -->
                 <div class="sidebar-heading">
                     Main Pages
-                </div>
+                </div> -->
     
                 <!-- The active and show tags are what makes this work -->
                 {% if not current_user.is_authenticated %}
@@ -149,11 +147,6 @@
                         <span>User Manager</span></a>
                 </li>
                 {% endif %}
-                <li class="nav-item {{'active' if active_page == 'profile'}}">
-                    <a class="nav-link" href="/profile">
-                        <i class="bi bi-person-fill"></i>
-                        <span>Profile</span></a>
-                </li>
                 {% if current_user.role == 3 %}
                 <li class="nav-item">
                     <a class="nav-link" href="/show_feedback">
@@ -177,7 +170,7 @@
                 {% endif %}
                 {% endif %}
     
-                <hr class="sidebar-divider d-none d-md-block">
+                <!-- <hr class="sidebar-divider d-none d-md-block"> -->
     
     
             </ul>

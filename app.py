@@ -23,13 +23,16 @@ login_manager.login_view = 'login'
 
 # Database configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
+app.config["SQLALCHEMY_BINDS"] = {
+    "records_db": "sqlite:///records_library.db"
+}
 app.config['SESSION_COOKIE_NAME'] = 'Session_Cookie'
 app.config['SESSION_COOKIE_PATH'] = '/'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.config['SESSION_PERMANENT'] = False
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS '] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.secret_key = "ben_sucks"  # Change this to a random, secure key
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -59,7 +62,7 @@ class User(db.Model, UserMixin):
     feedbacks = db.relationship('Feedback', backref='user', lazy = True)
     hours_of_service = db.Column(db.Float, default = 0.0)
     status = db.Column(db.String, default='')
-    image_data = (db.Column(db.LargeBinary))
+    image_data = db.Column(db.LargeBinary)
     qualification_data = db.Column(JSON,default=current_classlist)
     volunteer_hours = db.Column(JSON,default=load_volunteer_hour_json_file)
     role = db.Column(db.Integer, default = 0)
@@ -72,12 +75,19 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
     
 
-class MessageHistory(db.Model):
+class ActiveMessageHistory(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     people = db.Column(JSON, default=load_basic_json_file)
     messages = db.Column(JSON, default=load_non_basic_json_file)
     missed = db.Column(JSON, default=load_basic_json_file)
-    session = db.relationship('Session', backref='message_history', lazy = True)
+    session = db.relationship('Session', backref='active_message_history', lazy = True)
+
+class MessageLogs(db.Model):
+    __bind_key__ = "records_db"
+    id = db.Column(db.Integer, primary_key = True)
+    people = db.Column(JSON, default=load_basic_json_file)
+    messages = db.Column(JSON, default=load_non_basic_json_file)
+    session = db.Column(db.Integer,nullable=False)
 
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -92,7 +102,8 @@ class Session(db.Model):
     period = db.Column(db.Integer)
     tutor_form_completed = db.Column(db.Boolean, default = True)
     student_form_completed = db.Column(db.Boolean, default = False)
-    message_history_id = db.Column(db.Integer, db.ForeignKey('message_history.id'))
+    confirmed = db.Column(db.Boolean, default=False)
+    message_history_id = db.Column(db.Integer, db.ForeignKey('active_message_history.id'))
 
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -174,7 +185,8 @@ def temp_function_for_default_user_loading():
         db.session.commit()
 
 with app.app_context():
-    db.create_all()
+    db.create_all(bind_key=None)
+    db.create_all(bind_key="records_db")
     initialize_period_data()
     temp_function_for_default_user_loading()
 
@@ -263,7 +275,7 @@ def user_messages():
     ID = request.args.get('identification')
     open_session = Session.query.get(ID)
     #gets the message history associated with the session
-    message_history = MessageHistory.query.get(open_session.message_history_id)
+    message_history = ActiveMessageHistory.query.get(open_session.message_history_id)
 
     message_history.missed[str(current_user.id)] = message_history.missed['total']
     flag_modified(message_history,'missed')
@@ -303,7 +315,7 @@ def handle_disconnect():
 @socketio.on("user_join")
 def handle_user_join(user_id,history_id):
     #gets the message history associated and updates the room id
-    history = MessageHistory.query.get(history_id)
+    history = ActiveMessageHistory.query.get(history_id)
     history.people[user_id] = request.sid
     flag_modified(history,'people')
     db.session.commit()
@@ -316,7 +328,7 @@ def handle_notify_update():
 @socketio.on("new_chat_message")
 def handle_new_message(message,sending_user_id,history_id,session_id):
     sending_user = User.query.get(sending_user_id)
-    history = MessageHistory.query.get(history_id)
+    history = ActiveMessageHistory.query.get(history_id)
     people = history.people
     choose = [i for i in people.keys()]
     other = choose[0] if choose[0] != str(sending_user.id) else choose[1]
@@ -340,7 +352,7 @@ def handle_new_message(message,sending_user_id,history_id,session_id):
 
 @socketio.on('recieved_chat_message')
 def handle_recieved_chat_message(other_id,history_id):
-    history = MessageHistory.query.get(history_id)
+    history = ActiveMessageHistory.query.get(history_id)
     print(history.missed)
     history.missed[other_id] += 1
     # history.missed[str(current_user.id)] = history.missed['total']
@@ -397,40 +409,75 @@ def tag_managing():
 @login_required
 @email_verified_required
 def index():
+    #redirects if not logged
+
+    if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
+
     def replace_with_username(thing):
             if thing == None:return thing
             username = User.query.get(thing[1]["sender"]).username
             thing[1]["sender"] = username
             return thing
-    if current_user.role == 0:
+    if current_user.role == 0 or current_user.role == 1:
         sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
         if sessions_where_learn:
-            sessions_where_learn_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
+            sessions_where_learn_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
             sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
             sessions_where_learn_MH = [i if i != (0,None) else None for i in sessions_where_learn_MH]
             sessions_where_learn_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_learn_MH]
             sessions_where_learn_MH = list(map(lambda x: replace_with_username(x),sessions_where_learn_MH))
-            people = list(map(lambda x: User.query.get(x.tutor),sessions_where_learn ))
-            print(sessions_where_learn_MH,sessions_where_learn_PP,sessions_where_learn[0])
-        return render_template('homepages/student.html',
-                               sessions_where_learn = sessions_where_learn,
-                                sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
-                                sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
-                                enum = enumerate,
-                                username=current_user.username,
-                                image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
-                                people=people)
+            people_learn = list(map(lambda x: User.query.get(x.tutor),sessions_where_learn ))
+        if current_user.role == 0:
+            return render_template('homepages/student.html',
+                                sessions_where_learn = sessions_where_learn,
+                                    sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
+                                    sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
+                                    enum = enumerate,
+                                    username=current_user.username,
+                                    image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
+                                    people_where_learn=people_learn if sessions_where_learn else None)
+        
+        sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
+        if sessions_where_teach:
+            sessions_where_teach_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
+            sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
+            sessions_where_teach_MH = [i if i != (0,None) else None for i in sessions_where_teach_MH]
+            sessions_where_teach_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_teach_MH]
+            sessions_where_teach_MH = list(map(lambda x: replace_with_username(x),sessions_where_teach_MH))
+            people_teach = list(map(lambda x: User.query.get(x.student),sessions_where_teach ))
 
-    #redirects if not logged
-    if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
-
-    # if current_user.role == 2:
-    #     return render_template('index2.html')
-    
+        meetings = {
+            'teacher': ['2024-06-01', '2024-06-10', '2024-06-20'],
+            'peer_tutor': ['2024-06-05', '2024-06-15', '2024-06-25']
+        }
+        now = datetime.now()
+        current_year = now.year
+        current_month = now.month
+        def get_month_dates(year, month):
+            first_day = datetime(year, month, 1)
+            next_month = first_day.replace(day=28) + timedelta(days=4)
+            last_day = next_month - timedelta(days=next_month.day)
+            return [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
+        dates = get_month_dates(current_year, current_month)
+        return render_template('homepages/NHS.html',
+                        enum = enumerate,
+                        username = current_user.username,
+                        meetings=meetings, dates=dates, year=current_year, month=current_month,
+                        sessions_where_teach = sessions_where_teach,
+                        sessions_where_teach_MH = sessions_where_teach_MH if sessions_where_teach else None,
+                        sessions_where_teach_PP = sessions_where_teach_PP if sessions_where_teach else None,
+                        sessions_where_learn = sessions_where_learn,
+                        sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
+                        sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
+                        people_where_teach = people_teach if sessions_where_teach else None,
+                        people_where_learn=people_learn if sessions_where_learn else None,
+                        today=datetime.today().strftime('%Y-%m-%d')
+                        )
+        
     
     sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
     if sessions_where_teach:
-        sessions_where_teach_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
+        sessions_where_teach_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
         sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
         sessions_where_teach_MH = [i if i != (0,None) else None for i in sessions_where_teach_MH]
         sessions_where_teach_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_teach_MH]
@@ -439,7 +486,7 @@ def index():
 
     sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
     if sessions_where_learn:
-        sessions_where_learn_MH = [MessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
+        sessions_where_learn_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
         sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
         sessions_where_learn_MH = [i if i != (0,None) else None for i in sessions_where_learn_MH]
         sessions_where_learn_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_learn_MH]
@@ -772,7 +819,7 @@ def delete_session(session_id,type):
         db.session.delete(session)
 
         #this deletes the message history. If you want to save it for later, we can do that
-        message_history = MessageHistory.query.get(session.message_history_id)
+        message_history = ActiveMessageHistory.query.get(session.message_history_id)
         db.session.delete(message_history)
 
         flag_modified(user,'schedule_data')
@@ -794,7 +841,7 @@ def book_session(id, date, period):
 
     data = user.schedule_data[day][period]
     current_user_id = current_user.get_id()
-    conversation = MessageHistory(
+    conversation = ActiveMessageHistory(
         people = {id:'',current_user_id:''},
         missed = {'total':0,id:0,current_user_id:0}
 
@@ -835,7 +882,7 @@ def profile():
     if request.method == 'POST':
         user = User.query.get(current_user.id)
         if 'submit1' in request.form:
-            email = request.form.get('email')
+            email = request.form.get('email') if user.email_verification_token else user.email
             name = request.form.get('name')
             username = request.form.get('username')
             last_name = request.form.get('last_name')
@@ -871,7 +918,8 @@ def profile():
     return render_template('profile.html',
                            image_data=base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
                            is_verified=current_user.email_verification_token != None,
-                           badges=badges
+                           badges=badges,
+                           verified = current_user.email_verification_token == None
                            )
 
 @socketio.on("change_badge")
@@ -900,6 +948,10 @@ def choose_classes(id):
                            available_classes=UNIVERSAL_CLASSLIST['class_list'],
                            checked=checked,
                            id = id)
+
+@app.route('/view_appointments')
+def view_all_appointments():
+    return render_template("view_appointments.html")
 
 @app.route('/approve_hours',methods=['GET','POST'])
 @login_required
