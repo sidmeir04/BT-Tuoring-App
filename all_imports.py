@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Blueprint
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Blueprint, Response, send_file
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
@@ -12,7 +12,7 @@ from sqlalchemy import func
 import base64
 from PIL import Image
 from io import BytesIO
-
+import io
 
 from flask_mail import Mail, Message
 import secrets

@@ -104,6 +104,18 @@ class Session(db.Model):
     student_form_completed = db.Column(db.Boolean, default = False)
     confirmed = db.Column(db.Boolean, default=False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('active_message_history.id'))
+    
+    # Relationship to SessionFile
+    files = db.relationship('SessionFile', back_populates='session', cascade='all, delete-orphan')
+
+class SessionFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255))
+    file_data = db.Column(db.LargeBinary)  # Storing the file content
+    session_id = db.Column(db.Integer, db.ForeignKey('session.id'), nullable=False)
+
+    # Relationship back to Session
+    session = db.relationship('Session', back_populates='files')
 
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -301,6 +313,34 @@ def user_messages():
                            thiss=current_user,
                            messages=messages)
 
+@app.route('/material_upload/<session_id>', methods = ['POST'])
+def material_upload(session_id):
+    session = Session.query.get(session_id)
+    data = request.files.get('material_upload')
+    file_data = data.read()
+    filename = data.filename
+    new_file = SessionFile(filename=filename, file_data=file_data, session=session)
+    db.session.add(new_file)
+    db.session.commit()
+    return redirect(url_for('user_messagess'))
+
+@app.route('/display_file/<int:file_id>')
+def display_file(file_id):
+    file = SessionFile.query.get(file_id)
+    if file.filename.endswith('.png'):
+        return Response(file.file_data, mimetype='image/png')
+    elif file.filename.endswith('.pdf'):
+        return Response(file.file_data, mimetype='application/pdf')
+    return redirect(url_for('user_messagess'))
+
+@app.route('/download_file/<int:file_id>')
+def download_file(file_id):
+    file = SessionFile.query.get(file_id)
+    return send_file(
+        io.BytesIO(file.file_data),
+        download_name=file.filename,
+        as_attachment=True
+    )
 
 @socketio.on("connect")
 def handle_connect():
@@ -429,13 +469,13 @@ def index():
             people_learn = list(map(lambda x: User.query.get(x.tutor),sessions_where_learn ))
         if current_user.role == 0:
             return render_template('homepages/student.html',
-                                sessions_where_learn = sessions_where_learn,
+                                    sessions_where_learn = sessions_where_learn,
                                     sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
                                     sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
                                     enum = enumerate,
                                     username=current_user.username,
                                     image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
-                                    people_where_learn=people_learn if sessions_where_learn else None)
+                                    people=people_learn if sessions_where_learn else None)
         
         sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
         if sessions_where_teach:
@@ -808,7 +848,7 @@ def scheduler():
 def delete_session(session_id,type):
     session = Session.query.get(session_id)
     if type != "1" or session.tutor_form_completed and session.student_form_completed:
-        user = User.query.get(current_user.id)
+        user = User.query.get(session.tutor)
         date = date_to_day(session.date.strftime('%Y-%m-%d'))
         user.schedule_data[date][str(session.period)]['times'] = user.schedule_data[date][str(session.period)]['times'].replace(session.date.strftime('%Y-%m-%d'), "")
         if type != "1":
