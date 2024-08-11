@@ -11,7 +11,7 @@
             width: 100%;
             max-width: 600px; /* Cards will scale but not exceed this width */
             margin-bottom: 20px;
-            border-radius: 10px;
+            /* border-radius: 10px; */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
@@ -21,16 +21,6 @@
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .card-header {
-            background-color: #007bff;
-            color: white;
-            padding: 15px;
-            border-bottom: 1px solid #007bff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .card-body {
@@ -51,7 +41,7 @@
         }
 
         .cancel-btn {
-            color: white;
+            color: red;
             font-size: 1.2rem;
         }
 
@@ -69,14 +59,22 @@
     </style>
     <div class="container mt-5">
         <div class="card-container">
-
-            <!-- Card 1 -->
+            {%for i in range(length)%}
             <div class="card mb-3" id="card1">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Card 1</h5>
-                    <button type="button" class="close cancel-btn" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                <div class="card-header bg-primary p-3">
+                    <div class="d-flex align-items-center">
+                        <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{session_requests[i].date}}</span></h4>
+                        <h4 class="mb-0 text-white">Tutor: <span class="text-success">{{session_requests[i].tutor}}</span></h4>
+                        <h5 class="mb-0 ml-auto mr-3 text-white">Status: <span class="text-warning">Pending</span></h5>
+                        <div>
+                            <form action="/view_appointments" method="POST">
+                                <input type="hidden" value="{{session_requests[i].id}}" id="id" name="id">
+                                <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
+                                    Cancel
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <p class="card-text">
@@ -85,38 +83,9 @@
                     </p>
                 </div>
             </div>
+            {%endfor%}
 
-            <!-- Card 2 -->
-            <div class="card mb-3" id="card2">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Card 2</h5>
-                    <button type="button" class="close cancel-btn" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque fermentum consequat velit, 
-                        sit amet volutpat metus bibendum et. Integer vehicula massa et est hendrerit, ac efficitur dolor gravida.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="card" id="card3">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Card 3</h5>
-                    <button type="button" class="close cancel-btn" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque fermentum consequat velit, 
-                        sit amet volutpat metus bibendum et. Integer vehicula massa et est hendrerit, ac efficitur dolor gravida.
-                    </p>
-                </div>
-            </div>
+            
 
             <!-- Add more cards as needed -->
 

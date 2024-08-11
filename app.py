@@ -419,7 +419,7 @@ def index():
             thing[1]["sender"] = username
             return thing
     if current_user.role == 0 or current_user.role == 1:
-        sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
+        sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False, confirmed=True).all()
         if sessions_where_learn:
             sessions_where_learn_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
             sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
@@ -435,9 +435,9 @@ def index():
                                     enum = enumerate,
                                     username=current_user.username,
                                     image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
-                                    people_where_learn=people_learn if sessions_where_learn else None)
+                                    people=people_learn if sessions_where_learn else None)
         
-        sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
+        sessions_where_teach = Session.query.filter_by(tutor=current_user.id,confirmed=True).all()
         if sessions_where_teach:
             sessions_where_teach_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
             sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
@@ -475,7 +475,7 @@ def index():
                         )
         
     
-    sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
+    sessions_where_teach = Session.query.filter_by(tutor=current_user.id, confirmed=True).all()
     if sessions_where_teach:
         sessions_where_teach_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
         sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
@@ -484,7 +484,7 @@ def index():
         sessions_where_teach_MH = list(map(lambda x: replace_with_username(x),sessions_where_teach_MH))
 
 
-    sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
+    sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False, confirmed=True).all()
     if sessions_where_learn:
         sessions_where_learn_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
         sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
@@ -873,7 +873,7 @@ def book_session(id, date, period):
     flag_modified(user, 'schedule_data')
     db.session.add(conversation)
     db.session.commit()
-    flash('Booked Session', 'success')
+    flash('Session requested!', 'success')
     return redirect(url_for('index'))
 
 @app.route('/profile', methods = ['POST','GET'])
@@ -949,9 +949,17 @@ def choose_classes(id):
                            checked=checked,
                            id = id)
 
-@app.route('/view_appointments')
-def view_all_appointments():
-    return render_template("view_appointments.html")
+@app.route('/view_appointments',methods=["GET","POST"])
+@login_required
+@email_verified_required
+def view_appointments():
+    if request.method == "POST":
+        id = request.form.get("id")
+        return redirect(f'/delete_session/{id}/0')
+    session_requests = Session.query.filter_by(student=current_user.id,confirmed=False).all()
+    return render_template("view_appointments.html",
+                           length=len(session_requests),
+                           session_requests=session_requests)
 
 @app.route('/approve_hours',methods=['GET','POST'])
 @login_required
