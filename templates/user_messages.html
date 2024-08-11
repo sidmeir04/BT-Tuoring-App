@@ -34,29 +34,33 @@
                         <!-- Card Body -->
                         <div class="card-body">
                             {% if current_user.id == session.tutor %}
-                            <form action="/user_messaging/{{session.id}}" method = 'post' enctype="multipart/form-data">
-                                <input type="file" class="form-control-file d-none" id="imageUpload" name="image" accept=".jpg, .png .pdf" required>
-                                <button type="submit" class="btn btn-primary btn-lg mt-3" name="submit3">Confirm Change</button>
+                            <form action="/material_upload/{{session.id}}" method = "post" enctype="multipart/form-data">
+                                <label for="material_upload">Upload Materials</label>
+                                <input id="material_upload" name="material_upload" type="file" accept = '.png, .jpeg, .pdf'>
+                                <button type = 'submit'>Submit</button>
                             </form>
-                            <script>
-                                document.getElementById('imageUpload').addEventListener('change', function(event) {
-                                    var reader = new FileReader();
-
-                                    reader.onload = function(e)
-                                    {
-                                        document.getElementById('image').src = e.target.result
-                                    };
-                                    var file = document.getElementById('imageUpload').files[0];
-                                    if (file) {
-                                        reader.readAsDataURL(file);
-                                    }
-                                    console.log(reader)
-                                });
-                            </script>
-                            {% else %}
-                            
                             {% endif %}
-                            <img class="img-fluid" src="https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg" alt="">
+                            {% if session.files %}
+                                <div>
+                                    {% for file in session.files %}
+                                        <div>
+                                            <h3><a href="{{ url_for('download_file', file_id=file.id) }}">{{ file.filename }}</a></h3>
+                                            {% if file.filename.endswith('.png') %}
+                                                <!-- Display PNG Image -->
+                                                <img src="{{ url_for('display_file', file_id=file.id) }}" alt="{{ file.filename }}" style="max-width: 100%; height: auto;">
+                                            {% elif file.filename.endswith('.pdf') %}
+                                                <!-- Display PDF Document -->
+                                                <embed src="{{ url_for('display_file', file_id=file.id) }}" type="application/pdf" width="100%" height="600px">
+                                            {% else %}
+                                                <p>Unsupported file type.</p>
+                                            {% endif %}
+                                        </div>
+                                        <hr>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p>No files uploaded for this session.</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
