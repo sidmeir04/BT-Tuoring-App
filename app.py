@@ -995,9 +995,15 @@ def choose_classes(id):
 def view_appointments():
     if request.method == "POST":
         id = request.form.get("id")
-        return redirect(f'/delete_session/{id}/0')
+        if current_user.role == 0:
+            return redirect(f'/delete_session/{id}/0')
+        elif current_user.role == 1:
+            session = Session.query.get(id)
+            session.confirmed = True
+            db.session.commit() 
     session_requests = Session.query.filter_by(student=current_user.id,confirmed=False).all()
     return render_template("view_appointments.html",
+                           type=current_user.role,
                            length=len(session_requests),
                            session_requests=session_requests)
 

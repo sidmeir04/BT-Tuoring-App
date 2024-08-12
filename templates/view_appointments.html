@@ -69,9 +69,15 @@
                         <div>
                             <form action="/view_appointments" method="POST">
                                 <input type="hidden" value="{{session_requests[i].id}}" id="id" name="id">
+                                {%if type == 0%}
                                 <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
                                     Cancel
                                 </button>
+                                {%else%}
+                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
+                                    Confirm
+                                </button>
+                                {%endif%}
                             </form>
                         </div>
                     </div>
