@@ -1,0 +1,183 @@
+{% extends "blank.html" %}
+{% set active_page = "messages" %}
+{% set active_material = 0 %}
+{% block content %}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<div id="wrapper">
+    <!-- Begin Page Content -->
+    <div class="container-fluid">
+
+        <!-- Page Heading -->
+        <div class="d-flex">
+            <a href="/"><i class="fa fa-arrow-left"></i></a>
+        </div>
+        <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
+            <h1 class="h3 mb-0 text-gray-800">Materials from Session With {{ recipient }}</h1>
+        </div>
+        <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
+            <button class="btn mr-2 btn-secondary" id="messaging_btn">
+                <a href="{{ url_for('user_messages', identification=session.id) }}" class="text-white">Overview</a>
+            </button>
+            <button class="selector btn ml-2 btn-primary" id="materials_btn">
+                <a href="" class="text-white">Materials</a>
+            </button>
+        </div>
+
+        <div class="row py-2 mb-4 bg-gradient-secondary px-0"></div>
+
+        <div class="d-block" id="materials">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow mb-4">
+                        <!-- Card Header -->
+                        <div class="card-header">
+                            <div class="h1 mb-0 header-text">Upload New Materials</div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            {% if current_user.id == session.student %}
+                            <div class="upload-form">
+                                <form action="/material_upload/{{ session.id }}" method="post" enctype="multipart/form-data" class="d-flex align-items-center w-100 px-5">
+                                    <style>
+                                        #formSubmit {
+                                            height: auto;
+                                            width: 20vw;
+                                        }
+                                        #image {
+                                            height: auto;
+                                            width: 30vw;
+                                        }
+                                        #image:hover {
+                                            opacity: .5;
+                                        }
+                                    </style>
+                                    <label for="material_upload" class="mb-3">
+                                        <img src="https://static.vecteezy.com/system/resources/thumbnails/023/454/938/small/important-document-upload-logo-design-vector.jpg" id="image" alt="Admin" width="130vw" height="130vw" style="cursor: pointer">
+                                    </label>
+                                    <input class="d-none" id="material_upload" name="material_upload" type="file" accept='.png, .pdf' required>
+                                    <button class="btn btn-primary ml-auto rounded-pill" type='submit' id="formSubmit">
+                                        <div class="h1 p-5">Submit</div>
+                                    </button>
+                                </form>
+                            </div>
+                            <script>
+                                document.getElementById('material_upload').addEventListener('change', function(event) {
+                                    var reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        document.getElementById('image').src = e.target.result;
+                                    };
+                                    var file = document.getElementById('material_upload').files[0];
+                                    if (file) {
+                                        reader.readAsDataURL(file);
+                                    }
+                                });
+                            </script>
+                            {% endif %}
+
+                            <div class="file-display d-none">
+                                {% if session.files %}
+                                    {% for file in session.files %}
+                                        <div class="file-page d-none" style="height: 57.5vh; overflow-y: auto;">
+                                            {% if file.filename.endswith('.png') %}
+                                            <!-- Display PNG Image -->
+                                            <img src="{{ url_for('display_file', file_id=file.id) }}" alt="{{ file.filename }}" style="width: 100%; height: auto; border: 2px solid #000;">
+                                            {% elif file.filename.endswith('.pdf') %}
+                                            <!-- Display PDF Document -->
+                                            <embed src="{{ url_for('display_file', file_id=file.id) }}" type="application/pdf" height="100%" style="width: 100%; border: 2px solid #000;">
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            
+                            
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <button class="btn btn-primary mode-toggle" data-mode="upload">Upload Materials</button>
+                            <div class="button-group pagination-controls d-none">
+                                <button class="btn btn-secondary p-1 prev-page"><<</button>
+                                <span class="page-number btn btn-primary py-1">1</span>
+                                <button class="btn btn-secondary p-1 next-page">>></button>
+                            </div>
+                            <button class="btn btn-secondary mode-toggle" data-mode="view">View Uploads</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+</div>
+
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+
+<script>
+    let currentPage = 1;
+    const pages = document.querySelectorAll('.file-page');
+    const itemsPerPage = 1;
+
+    function updatePaginationControls() {
+        const totalPages = pages.length;
+        document.querySelector('.page-number').innerText = currentPage;
+        document.querySelector('.prev-page').disabled = currentPage === 1;
+        document.querySelector('.next-page').disabled = currentPage === totalPages;
+    }
+
+    function showPage(page) {
+        pages.forEach((pageElement, index) => {
+            if (index + 1 === page) {
+                pageElement.classList.remove('d-none');
+                pageElement.classList.add('d-block');
+            } else {
+                pageElement.classList.remove('d-block');
+                pageElement.classList.add('d-none');
+            }
+        });
+        updatePaginationControls();
+    }
+
+    document.querySelector('.prev-page').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            showPage(currentPage);
+        }
+    });
+
+    document.querySelector('.next-page').addEventListener('click', () => {
+        if (currentPage < pages.length) {
+            currentPage++;
+            showPage(currentPage);
+        }
+    });
+
+    document.querySelectorAll('.mode-toggle').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const mode = e.target.getAttribute('data-mode');
+            if (mode === 'view') {
+                document.querySelector('.pagination-controls').classList.remove('d-none');
+                document.querySelector('.file-display').classList.remove('d-none');
+                document.querySelector('.upload-form').classList.add('d-none');
+                document.querySelector('.header-text').textContent = "View Materials";
+                document.querySelector('.mode-toggle[data-mode="view"]').classList.replace('btn-secondary', 'btn-primary');
+                document.querySelector('.mode-toggle[data-mode="upload"]').classList.replace('btn-primary', 'btn-secondary');
+                showPage(currentPage);
+            } else {
+                document.querySelector('.pagination-controls').classList.add('d-none');
+                document.querySelector('.file-display').classList.add('d-none');
+                document.querySelector('.upload-form').classList.remove('d-none');
+                document.querySelector('.header-text').textContent = "Upload New Materials";
+                document.querySelector('.mode-toggle[data-mode="upload"]').classList.replace('btn-secondary', 'btn-primary');
+                document.querySelector('.mode-toggle[data-mode="view"]').classList.replace('btn-primary', 'btn-secondary');
+            }
+        });
+    });
+
+    // Initialize in upload mode
+    document.querySelector('.mode-toggle[data-mode="upload"]').click();
+</script>
+
+{% endblock %}

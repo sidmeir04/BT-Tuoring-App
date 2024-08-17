@@ -142,7 +142,7 @@ def initialize_period_data():
         for _ in range(1,10):
             newThing = Periods()
             db.session.add(newThing)
-            db.session.commit()
+        db.session.commit()
 
 def temp_function_for_default_user_loading():
     if not User.query.first():
@@ -190,6 +190,9 @@ def temp_function_for_default_user_loading():
             
         )
         user4.set_password("s")
+        period1 = Periods.query.first()
+        period1.monday = " 4"
+
 
         db.session.add(user2)
         db.session.add(user3)
@@ -304,7 +307,6 @@ def user_messages():
     messages = message_history.messages['list']
     #the next line is a horribly inefficient bit of code, pls fix it
     messages = [{'mine': True if i['sender'] == current_user.id else False,'message':i['message'],'sender':User.query.get(i['sender']).username}  for i in messages]
-
     return render_template('user_messages.html',
                            recipient = other,
                            my_image=my_image,
@@ -313,16 +315,38 @@ def user_messages():
                            thiss=current_user,
                            messages=messages)
 
+@app.route('/appointment_uploads')
+@login_required
+@email_verified_required
+def user_uploads():
+    ID = request.args.get("identification")
+    open_session = Session.query.get(ID)
+    other = open_session.tutor if open_session.tutor != current_user.id else open_session.student
+    other = User.query.get(other)
+    my_image = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None
+    other_image = base64.b64encode(other.image_data).decode('utf-8') if other.image_data else None
+
+    other = other.username
+    return render_template("user_uploads.html",
+                           recipient = other,
+                           my_image=my_image,
+                           other_image = other_image,
+                           session=open_session,
+                           thiss=current_user)
+
 @app.route('/material_upload/<session_id>', methods = ['POST'])
 def material_upload(session_id):
     session = Session.query.get(session_id)
     data = request.files.get('material_upload')
+    if not data:
+        flash("Attatch a file first!","danger")
+        return redirect(url_for('user_uploads',identification=session_id))
     file_data = data.read()
     filename = data.filename
     new_file = SessionFile(filename=filename, file_data=file_data, session=session)
     db.session.add(new_file)
     db.session.commit()
-    return redirect(url_for('user_messagess'))
+    return redirect(url_for('user_uploads',identification=session_id))
 
 @app.route('/display_file/<int:file_id>')
 def display_file(file_id):
@@ -331,7 +355,7 @@ def display_file(file_id):
         return Response(file.file_data, mimetype='image/png')
     elif file.filename.endswith('.pdf'):
         return Response(file.file_data, mimetype='application/pdf')
-    return redirect(url_for('user_messagess'))
+    return redirect(url_for('user_uploads'))
 
 @app.route('/download_file/<int:file_id>')
 def download_file(file_id):
@@ -1002,6 +1026,11 @@ def view_appointments():
             session.confirmed = True
             db.session.commit() 
     session_requests = Session.query.filter_by(student=current_user.id,confirmed=False).all()
+    ########################################################################################################
+    for i in session_requests:
+        session_requests[i].confirmed=True
+    ########################################################################################################
+    db.session.commit()
     return render_template("view_appointments.html",
                            type=current_user.role,
                            length=len(session_requests),

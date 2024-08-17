@@ -16,56 +16,18 @@
             <h1 class="h3 mb-0 text-gray-800">Your Message Conversation With {{recipient}}</h1>
         </div>
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <button class="btn mr-2 btn-primary" id="messaging_btn" onclick="do_open('messaging')">
-                Overview
+            <button class="btn mr-2 btn-primary" id="messaging_btn">
+                <a href="" class="text-white">Overview</a>
             </button>
-            <button class="selector btn ml-2 btn-secondary" id="materials_btn" onclick="do_open('materials')">
-                Materials
+            <button class="selector btn ml-2 btn-secondary" id="materials_btn">
+                <a href="{{ url_for('user_uploads', identification=session.id) }}" class="text-white">Materials</a>
             </button>
         </div>
 
         <div class="row py-2 mb-4 bg-gradient-secondary px-0">
         </div>
 
-        <div class="d-none" id="materials">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card shadow mb-4">
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            {% if current_user.id == session.tutor %}
-                            <form action="/material_upload/{{session.id}}" method = "post" enctype="multipart/form-data">
-                                <label for="material_upload">Upload Materials</label>
-                                <input id="material_upload" name="material_upload" type="file" accept = '.png, .jpeg, .pdf'>
-                                <button type = 'submit'>Submit</button>
-                            </form>
-                            {% endif %}
-                            {% if session.files %}
-                                <div>
-                                    {% for file in session.files %}
-                                        <div>
-                                            <h3><a href="{{ url_for('download_file', file_id=file.id) }}">{{ file.filename }}</a></h3>
-                                            {% if file.filename.endswith('.png') %}
-                                                <!-- Display PNG Image -->
-                                                <img src="{{ url_for('display_file', file_id=file.id) }}" alt="{{ file.filename }}" style="max-width: 100%; height: auto;">
-                                            {% elif file.filename.endswith('.pdf') %}
-                                                <!-- Display PDF Document -->
-                                                <embed src="{{ url_for('display_file', file_id=file.id) }}" type="application/pdf" width="100%" height="600px">
-                                            {% else %}
-                                                <p>Unsupported file type.</p>
-                                            {% endif %}
-                                        </div>
-                                        <hr>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                <p>No files uploaded for this session.</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
         <div class="d-block" id="messaging">
             <div class="row">
                 <div class="col-3">
@@ -222,26 +184,6 @@
 
 </div>
 <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
-
-<script>
-
-    function do_open(choice){
-        message = document.getElementById('messaging')
-        material = document.getElementById('materials')
-
-        message.classList = ['d-none']
-        material.classList = ['d-none']
-
-        document.getElementById(choice).classList = ['d-block']
-
-        possible = {'messaging':'materials','materials':'messaging'}
-
-
-        document.getElementById(`${choice}_btn`).classList.replace('btn-secondary','btn-primary')
-        document.getElementById(`${possible[choice]}_btn`).classList.replace('btn-primary','btn-secondary')
-    }
-
-</script>
 
 <script>
     window.onload = scrollToBottom;
