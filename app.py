@@ -346,6 +346,7 @@ def material_upload(session_id):
     new_file = SessionFile(filename=filename, file_data=file_data, session=session)
     db.session.add(new_file)
     db.session.commit()
+    flash("File added successfully","success")
     return redirect(url_for('user_uploads',identification=session_id))
 
 @app.route('/display_file/<int:file_id>')
