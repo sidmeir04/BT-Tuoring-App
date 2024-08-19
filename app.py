@@ -89,6 +89,22 @@ class MessageLogs(db.Model):
     messages = db.Column(JSON, default=load_non_basic_json_file)
     session = db.Column(db.Integer,nullable=False)
 
+class SessionLog(db.Model):
+    __bind_key__ = "records_db"
+    id = db.Column(db.Integer, primary_key=True)
+    start_time = db.Column(db.Time)
+    end_time = db.Column(db.Time)
+    day_of_the_week = db.Column(db.Integer)
+    date = db.Column(db.Date)
+    start_date = db.Column(db.Date)
+    subject = db.Column(db.String(255))
+    tutor = db.Column(db.Integer, nullable = False) # Tutor's ID number
+    student = db.Column(db.Integer, nullable = False)
+    period = db.Column(db.Integer)
+    cancel_reason = db.Column(db.Integer)
+    tutor_form_completed = db.Column(db.Boolean, default = True)
+    student_form_completed = db.Column(db.Boolean, default = False)
+
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time)
@@ -130,12 +146,13 @@ class SessionFile(db.Model):
 
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    on_time = db.Column(db.Integer)
-    understanding = db.Column(db.Integer)
-    date = db.Column(db.String(255))
-    review_text = db.Column(db.String(255))
-    subject = db.Column(db.String(255))
-    tutoring = db.Column(db.Boolean)
+    exists = db.Column(db.Boolean, nullable=False)
+    on_time = db.Column(db.Integer, nullable=True)
+    understanding = db.Column(db.Integer, nullable=True)
+    date = db.Column(db.String(255), nullable=True)
+    review_text = db.Column(db.String(255), nullable=True)
+    subject = db.Column(db.String(255), nullable=True)
+    tutoring = db.Column(db.Boolean, nullable=True)
     review_for = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     review_from = db.Column(db.String(255), nullable = False)
 
@@ -662,15 +679,92 @@ def register():
 @login_required
 @email_verified_required
 def terminate_session():
+    id = request.args.get("identification")
     if request.method == "POST":
-        return redirect(url_for())
-    return render_template('terminate_session.html')
+        cancel_reason = request.form.get("cancel_reason")
+        finished = int(request.form.get('had_class'))
+        ##############################################################################################################################
 
-@app.route('/complete_session/<id>')
+                                            # for final product, there needs to be a more reliable way to tell if class happened than this #
+
+        ##############################################################################################################################
+        session = Session.query.get(id)
+        session_log = SessionLog(
+            tutor = session.tutor,
+            student = session.student,
+            cancel_reason = cancel_reason,
+            start_time = session.start_time,
+            end_time = session.end_time,
+            day_of_the_week = session.day_of_the_week,
+            date = session.date,
+            start_date = session.start_date,
+            subject = session.subject,
+            period = session.period
+        )
+        db.session.add(session_log)
+        db.session.commit()
+
+        if finished:
+            params = {"form":request.form.get("fill_form"),"id":id}
+            return redirect(url_for("complete_session",**params))
+        return redirect(f"delete_session/{id}")
+    
+    return render_template('terminate_session.html',id=id)
+
+@app.route('/complete_session')
 @login_required
 @email_verified_required
-def complete_session(id):
+def complete_session():
+    id = request.args.get("id")
     session = Session.query.get(id)
+
+    tutor = User.query.get(session.tutor)
+    student = User.query.get(session.student)
+
+    feedback = Feedback(
+        date = datetime.today().strftime('%Y-%m-%d'),
+        review_from = student.username,
+        exists=bool(int(request.args.get('form'))),
+        review_for = tutor.username,
+        subject = session.subject
+    )
+
+    temp = tutor.notifaction_data['deleted']
+    tutor.notifaction_data['deleted'] = temp + [f'{tutor.username} gave you feedback']
+    flag_modified(tutor,"notifaction_data")
+
+    db.session.add(feedback)
+    db.session.commit()
+
+    # delete the session and add community service hours to the user
+
+########################################################################################################################
+    
+    #The code need to be abnle to check for the time of start and time of end as well as the date            
+    #what are you talking about? - Oscar
+
+##########################################################################################
+    tutor = User.query.get(session.tutor)
+    datetime1 = datetime.combine(datetime.today(), session.end_time)
+    datetime2 = datetime.combine(datetime.today(), session.start_time)
+    difference =  datetime1 - datetime2
+    difference = difference.total_seconds()/3600
+
+    total_days = count_weekdays_between(session.start_date,datetime.today(),session.day_of_the_week)
+
+##########################################################################################
+
+        # Put in the if statement in the final product
+
+##########################################################################################
+
+    # if total_days > 0:
+    if True:
+        tutor.hours_of_service += round(float(difference),2)
+        tutor.volunteer_hours["approved_index"].append(0)
+        tutor.volunteer_hours["breakdown"].append({"start_date":session.start_date.strftime("%B %d, %Y"), "end_date":datetime.today().strftime("%B %d, %Y"),"hours":round(float(difference) * total_days,2)})
+        flag_modified(tutor,"volunteer_hours")
+        db.session.commit()
     ##############################################################################################################################
 
                                         # add for final product #
@@ -681,84 +775,30 @@ def complete_session(id):
     # if date >= today:
     #     flash('Tutoring Session has not Happened yet', 'warning')
     #     return redirect(url_for('index'))
-    params = {'type': 0,'id': session.id}
-    if current_user.id == session.student:
-        params['type'] = 1
-        return redirect(url_for('completion_form',**params))
-    return redirect(url_for('index'))
+    if current_user.id == session.student and int(request.args.get("form")):
+        return redirect(url_for('completion_form',sid=session.id,fid=feedback.id))
+    flash("Session completed successfully",'success')
+    return redirect(f"/delete_session/{id}?post=1")
 
 @app.route('/completion_form', methods = ['GET','POST'])
 @login_required
 @email_verified_required
 def completion_form():
-    type = request.args.get('type')
-    id = request.args.get('id')
-    if request.method == 'POST':
+    id = request.args.get('sid')
+    fid = request.args.get("fid")
+    if request.method == "POST":
         understanding = request.form.get('personal_rating')
         on_time = request.form.get('on_time')
         review = request.form.get('message')
-        session = Session.query.get(id)
+        feedback = Feedback.query.get(fid)
 
-        if int(type) == 1:review_for = session.tutor
-        else:review_for = session.student
-
-        feedback = Feedback(
-            on_time = on_time,
-            understanding = understanding,
-            date = datetime.today().strftime('%Y-%m-%d'),
-            review_text = review,
-            review_for = review_for,
-            review_from = current_user.username,
-            subject = session.subject
-        )
-        if int(current_user.id) == int(session.tutor):
-            session.tutor_form_completed = True
-            feedback.tutoring = False
-        else:
-            session.student_form_completed = True
-            feedback.tutoring = True
-
-        other_user = User.query.get(review_for)
-        temp = other_user.notifaction_data['deleted']
-        other_user.notifaction_data['deleted'] = temp + [f'{other_user.username} gave you feedback']
-        flag_modified(other_user,"notifaction_data")
-
-        db.session.add(feedback)
+        feedback.on_time = on_time
+        feedback.understanding = understanding
+        feedback.review_text = review
         db.session.commit()
-
-        if session.student_form_completed:
-            # delete the session and add community service hours to the user
-
-########################################################################################################################
-            
-            #The code need to be abnle to check for the time of start and time of end as well as the date            
-            #what are you talking about? - Oscar
-
-##########################################################################################
-            tutor = User.query.get(session.tutor)
-            datetime1 = datetime.combine(datetime.today(), session.end_time)
-            datetime2 = datetime.combine(datetime.today(), session.start_time)
-            difference =  datetime1 - datetime2
-            difference = difference.total_seconds()/3600
-
-            total_days = count_weekdays_between(session.start_date,datetime.today(),session.day_of_the_week)
-
-##########################################################################################
-
-            # Put in the if statement in the final product
-
-##########################################################################################
-
-            # if total_days > 0:
-            if True:
-                tutor.hours_of_service += round(float(difference),2)
-                tutor.volunteer_hours["approved_index"].append(0)
-                tutor.volunteer_hours["breakdown"].append({"start_date":session.start_date.strftime("%B %d, %Y"), "end_date":datetime.today().strftime("%B %d, %Y"),"hours":round(float(difference) * total_days,2)})
-                flag_modified(tutor,"volunteer_hours")
-                db.session.commit()
-            return redirect(f'/delete_session/{session.id}')
-        return redirect(url_for('index'))
-    return render_template('completion_form.html', type = type, id = id)
+        return redirect(f"/delete_session/{id}?post=1")
+    
+    return render_template('completion_form.html', id = id, fid=fid)
 
 @app.route('/one_pager')
 def one_pager():
@@ -902,11 +942,15 @@ def delete_session(session_id):
         db.session.delete(message_history)
 
         flag_modified(user,'schedule_data')
+        if request.args.get("post"):
+            flash('Session completed!', 'success')
+            db.session.commit()
+            return redirect(url_for("index"))
         if session.tutor == current_user.id: other_user = User.query.get(session.student)
         else: other_user = User.query.get(session.tutor)
         other_user.notifaction_data['deleted'] = other_user.notifaction_data['deleted'] + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
         flag_modified(other_user, "notifaction_data")
-        flash('Session Deleted', 'success')
+        flash('Session cancelled!', 'success')
     else:
         session = SessionRequest.query.get(session_id)
         db.session.delete(session)
@@ -1032,7 +1076,7 @@ def view_appointments():
             return redirect(url_for("confirm_appointment",id=id))
         if int(request.form.get("pre")):
             return redirect(f'/delete_session/{id}?pre=1')
-        return redirect(f'/delete_session/{id}')
+        return redirect(f'/terminate_session?identification={id}')
 
     session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
     session_requests_where_tutor = SessionRequest.query.filter_by(tutor=current_user.id).all()

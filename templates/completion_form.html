@@ -10,10 +10,9 @@
             </div>
             <div class="card shadow-lg p-4">
                 <div class="card-body">
-                    <form id="contact-form" role="form" action="/completion_form?type={{1}}&id={{id}}" method="POST">
+                    <form id="contact-form" role="form" action="/completion_form?fid={{fid}}&sid={{id}}" method="POST">
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                {% if type == '1'%}
                                 <label for="form_need">Do you understand the subject better?</label>
                                 <select id="form_need" name="personal_rating" class="form-control" required>
                                     <option value="" selected disabled>--Select An Option--</option>
@@ -22,19 +21,9 @@
                                     <option value="3">About the same</option>
                                     <option value="4">Somehow worse</option>
                                 </select>
-                                {% else %}
-                                <label for="form_need">Did your student want to learn?</label>
-                                <select id="form_need" name="personal_rating" class="form-control" required>
-                                    <option value="" selected disabled>--Select An Option--</option>
-                                    <option value="1">They were eager to</option>
-                                    <option value="2">They paid attention</option>
-                                    <option value="3">They seemed uninterested</option>
-                                    <option value="4">They left early</option>
-                                </select>
-                                {% endif %}
                             </div>
                             <div class="form-group col-md-6">
-                                <label for="form_time">Was your {% if type == "1"%}tutor{% else %}student{% endif %} on time?</label>
+                                <label for="form_time">Was your tutor on time?</label>
                                 <select id="form_time" name="on_time" class="form-control" required>
                                     <option value="" selected disabled>--Select An Option--</option>
                                     <option value="1">They were early</option>
@@ -46,7 +35,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="feedback_text">Do you have any feedback for your {% if type == "1"%}tutor{% else %}student{% endif %}?</label>
+                            <label for="feedback_text">Do you have any feedback for your tutor?</label>
                             <textarea id="feedback_text" name="message" class="form-control" placeholder="Write your feedback here." rows="5" required></textarea>
                         </div>
                         <div class="d-flex justify-content-center mt-4">

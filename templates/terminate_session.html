@@ -9,48 +9,43 @@
                 <p class="lead">Please let us know if there were any problems</p>
             </div>
             <div class="card shadow-lg p-4">
-                <div class="card-body">
-                    <form id="contact-form" role="form" action="/completion_form?type={{1}}&id={{id}}" method="POST">
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                {% if type == '1'%}
-                                <label for="form_need">Do you understand the subject better?</label>
-                                <select id="form_need" name="personal_rating" class="form-control" required>
+                <div class="card-body text-center d-flex justify-content-center">
+                    <form id="contact-form" role="form" action="/terminate_session?identification={{id}}" method="POST">
+                        <div class="form-row mb-2 d-flex justify-content-center">
+                            <div class="form-group col-9">
+                                <label for="cancel_reason">What is the reason for your cancellation?</label>
+                                <select id="cancel_reason" name="cancel_reason" class="form-control" required>
                                     <option value="" selected disabled>--Select An Option--</option>
-                                    <option value="1">Much better</option>
-                                    <option value="2">A bit better</option>
-                                    <option value="3">About the same</option>
-                                    <option value="4">Somehow worse</option>
-                                </select>
-                                {% else %}
-                                <label for="form_need">Did your student want to learn?</label>
-                                <select id="form_need" name="personal_rating" class="form-control" required>
-                                    <option value="" selected disabled>--Select An Option--</option>
-                                    <option value="1">They were eager to</option>
-                                    <option value="2">They paid attention</option>
-                                    <option value="3">They seemed uninterested</option>
-                                    <option value="4">They left early</option>
-                                </select>
-                                {% endif %}
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="form_time">Was your {% if type == "1"%}tutor{% else %}student{% endif %} on time?</label>
-                                <select id="form_time" name="on_time" class="form-control" required>
-                                    <option value="" selected disabled>--Select An Option--</option>
-                                    <option value="1">They were early</option>
-                                    <option value="2">They were on time</option>
-                                    <option value="3">They were a bit late (1-2 minutes)</option>
-                                    <option value="4">They were very late</option>
-                                    <option value="5">They didn't show up</option>
+                                    <option value="1">Scheduling conflict with other tutors</option>
+                                    <option value="2">Need to study for other tests</option>
+                                    <option value="3">Not feeling it today</option>
+                                    <option value="4">Prefer not to say</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="feedback_text">Do you have any feedback for your {% if type == "1"%}tutor{% else %}student{% endif %}?</label>
-                            <textarea id="feedback_text" name="message" class="form-control" placeholder="Write your feedback here." rows="5" required></textarea>
+                        <div class="form-row mb-2 d-flex justify-content-center">
+                            <div class="form-group col-9">
+                                <label for="had_class">Have you had at least one class?</label>
+                                <select id="had_class" name="had_class" class="form-control" required>
+                                    <option value="" selected disabled>--Select An Option--</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
                         </div>
+                        <div class="form-row mb-2 d-flex justify-content-center">
+                            <div class="form-group col-9">
+                                <label for="fill_form">Would you like to fill out an optional feedback form for your tutor?</label>
+                                <select id="fill_form" name="fill_form" class="form-control" required>
+                                    <option value="" selected disabled>--Select An Option--</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div>
+                       
                         <div class="d-flex justify-content-center mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">Submit Feedback</button>
+                            <button type="submit" class="btn btn-primary btn-lg">Submit</button>
                         </div>
                     </form>
                 </div>
