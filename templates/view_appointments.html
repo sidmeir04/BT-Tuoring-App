@@ -1,127 +1,217 @@
-{%extends "blank.html"%}
-{%block content%}
-    <style>
-        .card-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+{% extends "blank.html" %}
+{%set active_page='view_appointments'%}
+{% block content %}
+<style>
+    /* Center the card container */
+    .card-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
 
-        .card {
-            width: 100%;
-            max-width: 600px; /* Cards will scale but not exceed this width */
-            margin-bottom: 20px;
-            /* border-radius: 10px; */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            cursor: pointer;
-            overflow: hidden; /* Ensure smooth hiding and showing of content */
-        }
+    /* Style for buttons */
+    .btn-toggle {
+        margin: 10px;
+        padding: 10px 20px;
+        border: 2px solid #007bff;
+        background-color: white;
+        color: #007bff;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
+    .btn-toggle.active {
+        background-color: #007bff;
+        color: white;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
 
-        .card-body {
-            padding: 0px;
-            background-color: #f8f9fa;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
+    .card {
+        width: 100%;
+        max-width: 800px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        overflow: hidden;
+    }
 
-        }
+    .card-body {
+        padding: 0;
+        background-color: #f8f9fa;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
 
-        .card-body.show {
-            max-height: 1000px; /* Arbitrary large max-height to ensure full expansion */
-            opacity: 1;
-            padding:20px;
-            padding-top: 20px;
-            padding-bottom: 20px;
-        }
+    .card-body.show {
+        max-height: 1000px;
+        opacity: 1;
+        padding: 20px;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
 
-        .cancel-btn {
-            color: red;
-            font-size: 1.2rem;
-        }
+    .card-body.hide {
+        max-height: 0;
+        padding: 0;
+    }
 
-        @media (min-width: 768px) {
-            .card {
-                max-width: 90%; /* Adjusts for larger screens */
-            }
-        }
+    /* Style for no requests message */
+    .no-requests {
+        font-size: 18px;
+        color: #666;
+        margin: 20px 0;
+    }
+</style>
 
-        @media (min-width: 992px) {
-            .card {
-                max-width: 75%; /* Further adjustment for larger screens */
-            }
-        }
-    </style>
-    <div class="container mt-5">
-        <div class="card-container">
-            {%for i in range(length)%}
-            <div class="card mb-3" id="card1">
-                <div class="card-header bg-primary p-3">
-                    <div class="d-flex align-items-center">
-                        <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{session_requests[i].date}}</span></h4>
-                        <h4 class="mb-0 text-white">Tutor: <span class="text-success">{{session_requests[i].tutor}}</span></h4>
-                        <h5 class="mb-0 ml-auto mr-3 text-white">Status: <span class="text-warning">Pending</span></h5>
-                        <div>
-                            <form action="/view_appointments" method="POST">
-                                <input type="hidden" value="{{session_requests[i].id}}" id="id" name="id">
-                                {%if type == 0%}
-                                <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
-                                    Cancel
-                                </button>
-                                {%else%}
-                                <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
-                                    Confirm
-                                </button>
-                                {%endif%}
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque fermentum consequat velit, 
-                        sit amet volutpat metus bibendum et. Integer vehicula massa et est hendrerit, ac efficitur dolor gravida.
-                    </p>
+<div class="container mt-5 text-center">
+    <!-- Toggle Buttons -->
+    <div class="h1 mb-3">
+        View All Appointments
+    </div>
+
+    <div class="mb-5">
+        <button id="incoming-requests-btn" class="btn-toggle active" onclick="toggleView('incoming-requests')">Outgoing Requests</button>
+        <button id="learning-sessions-btn" class="btn-toggle" onclick="toggleView('learning-sessions')">Learning Sessions</button>
+        {% if type != 0 %}
+        <button id="outgoing-requests-btn" class="btn-toggle" onclick="toggleView('outgoing-requests')">Incoming Requests</button>
+        <button id="tutoring-sessions-btn" class="btn-toggle" onclick="toggleView('tutoring-sessions')">Tutoring Sessions</button>
+        {% endif %}
+    </div>
+
+    <!-- Card Containers -->
+    <div id="incoming-requests" class="card-container">
+        {% if session_requests_where_student|length == 0 %}
+        <div class="no-requests">No outgoing requests found.</div>
+        {% else %}
+        {% for session in session_requests_where_student %}
+        <div class="card mb-3">
+            <div class="card-header bg-primary p-3">
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{ session.date }}</span></h4>
+                    <h4 class="mb-0 text-white">Tutor: <span class="text-success">{{ session.tutor }}</span></h4>
+                    <h5 class="mb-0 ml-auto mr-3 text-white">Status: <span class="text-warning">Pending</span></h5>
+                    <form action="/view_appointments" method="POST">
+                        <input type="hidden" value="{{session.id}}" name="id">
+                        <input type="hidden" value="1" name="pre">
+                        {%if type == 1%}
+                        <button class="btn btn-success btn-sm rounded-pill px-3" name="submit" value="1">Confirm</button>
+                        {%endif%}
+                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3" name="submit" value="0">Cancel</button>
+                    </form>
                 </div>
             </div>
-            {%endfor%}
-
-            
-
-            <!-- Add more cards as needed -->
-
+            <div class="card-body">
+                <p class="card-text">Details of the session request...</p>
+            </div>
         </div>
+        {% endfor %}
+        {% endif %}
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('.card').on('click', function(e) {
-                var currentCard = $(this).find('.card-body');
-                var otherCards = $('.card-body').not(currentCard);
+    
+    <div id="learning-sessions" class="card-container d-none">
+        {% if confirmed_sessions_where_student|length == 0 %}
+        <div class="no-requests">No learning sessions found.</div>
+        {% else %}
+        {% for session in confirmed_sessions_where_student %}
+        <div class="card mb-3">
+            <div class="card-header bg-primary p-3">
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{ session.date }}</span></h4>
+                    <h4 class="mb-0 text-white">Tutor: <span class="text-success">{{ session.tutor }}</span></h4>
+                    <h5 class="mb-0 ml-auto mr-3 text-white">Status: <span class="text-success">Confirmed</span></h5>
+                    <form action="/view_appointments" method="POST">
+                        <input type="hidden" value="{{session.id}}" name="id">
+                        <input type="hidden" value="0" name="pre">
+                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3" name="submit" value="0">Cancel</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Details of the learning session...</p>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
 
-                // Collapse all other cards
-                otherCards.removeClass('show');
+    {% if type != 0 %}
+    <div id="tutoring-sessions" class="card-container d-none">
+        {% if confirmed_sessions_where_tutor|length == 0 %}
+        <div class="no-requests">No tutoring sessions found.</div>
+        {% else %}
+        {% for session in confirmed_sessions_where_tutor %}
+        <div class="card mb-3">
+            <div class="card-header bg-primary p-3">
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{ session.date }}</span></h4>
+                    <h4 class="mb-0 text-white">Student: <span class="text-success">{{ session.student }}</span></h4>
+                    <h5 class="mb-0 ml-auto mr-3 text-white">Status: <span class="text-success">Confirmed</span></h5>
+                    <form action="/view_appointments" method="POST">
+                        <input type="hidden" value="{{session.id}}" name="id">
+                        <input type="hidden" value="0" name="pre">
+                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3" name="submit" value="0">Cancel</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Details of the tutoring session...</p>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+    
+    <div id="outgoing-requests" class="card-container d-none">
+        {% if session_requests_where_tutor|length == 0 %}
+        <div class="no-requests">No incoming requests found.</div>
+        {% else %}
+        {% for session in session_requests_where_tutor %}
+        <div class="card mb-3">
+            <div class="card-header bg-primary p-3">
+                <div class="d-flex align-items-center">
+                    <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{ session.date }}</span></h4>
+                    <h4 class="mb-0 text-white">Student: <span class="text-success">{{ session.student }}</span></h4>
+                    <h5 class="mb-0 ml-auto mr-3 text-white">Status: <span class="text-warning">Pending</span></h5>
+                    <form action="/view_appointments" method="POST">
+                        <input type="hidden" value="{{session.id}}" name="id">
+                        <input type="hidden" value="1" name="pre">
+                        {%if type == 1%}
+                        <button class="btn btn-success btn-sm rounded-pill px-3" name="submit" value="1">Confirm</button>
+                        {%endif%}
+                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3" name="submit" value="0">Cancel</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Details of the session request...</p>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
 
-                // Expand or collapse the clicked card
-                currentCard.toggleClass('show');
-                
-                e.stopPropagation(); // Prevent triggering other cards when clicking on the body of the card
-            });
-
-            $('.cancel-btn').on('click', function(e) {
-                // Prevent the card from expanding/collapsing when clicking the cancel button
-                e.stopPropagation();
-
-                // Collapse the card
-                $(this).closest('.card').find('.card-body').removeClass('show');
-            });
+<script>
+    function toggleView(viewId) {
+        // Hide all views
+        document.querySelectorAll('.card-container').forEach(function(container) {
+            container.classList.add('d-none');
         });
-    </script>
-{%endblock%}
+
+        // Remove active class from all buttons
+        document.querySelectorAll('.btn-toggle').forEach(function(button) {
+            button.classList.remove('active');
+        });
+
+        // Show the selected view
+        document.getElementById(viewId).classList.remove('d-none');
+
+        // Add active class to the clicked button
+        document.getElementById(viewId + '-btn').classList.add('active');
+    }
+
+</script>
+{% endblock %}

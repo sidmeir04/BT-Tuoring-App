@@ -16,12 +16,16 @@
             <h1 class="h3 mb-0 text-gray-800">Your Message Conversation With {{recipient}}</h1>
         </div>
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <button class="btn mr-2 btn-primary" id="messaging_btn">
-                <a href="" class="text-white">Overview</a>
-            </button>
-            <button class="selector btn ml-2 btn-secondary" id="materials_btn">
-                <a href="{{ url_for('user_uploads', identification=session.id) }}" class="text-white">Materials</a>
-            </button>
+            <a href="" class="text-white">
+                <button class="btn mr-2 btn-primary" id="messaging_btn">
+                    Overview
+                </button>
+            </a>
+            <a href="{{ url_for('user_uploads', identification=session.id) }}" class="text-white">
+                <button class="selector btn ml-2 btn-secondary" id="materials_btn">
+                    Materials
+                </button>
+            </a>
         </div>
 
         <div class="row py-2 mb-4 bg-gradient-secondary px-0">
@@ -206,9 +210,29 @@
     document.getElementById("send-button").addEventListener("click", function () {
         send_message();
     });
+    function resetTextarea() {
+        const textarea = document.getElementById("message");
+
+        // Temporarily add a small amount of text
+        textarea.value = "temporary";
+        
+        // Trigger a reflow/repaint
+        textarea.style.height = 'auto'; // Adjust height to auto to recalculate the size
+        textarea.style.height = `${textarea.scrollHeight}px`; // Set height based on scrollHeight
+
+        // Clear the text and reset rows attribute
+        setTimeout(() => {
+            textarea.value = "";
+            textarea.setAttribute("rows", "1");
+            textarea.style.height = 'auto'; // Reset height to auto
+        }, 0); // Delay to ensure the text is added and removed immediately
+    }
+
 
     // Function to send a message
     function send_message(){
+        // document.getElementById("message").setAttribute(rows,"1")
+        
         let message = document.getElementById("message").value;
         if (message.trim() !== ""){
             socket.emit("new_chat_message", message, "{{ thiss.id }}","{{session.message_history_id}}","{{session.id}}");
@@ -235,6 +259,7 @@
 
             document.getElementById("chat-messages").insertAdjacentHTML('beforeend',thing);
             scrollToBottom();
+            resetTextarea()
         }
     }
 

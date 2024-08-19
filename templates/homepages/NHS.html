@@ -321,4 +321,46 @@
     </div>
 </div>
 
+<script>
+    function changeTable(change){
+        if (change == 'learn'){
+            document.getElementById('toggleTableMode').innerText = 'Learning'
+            document.getElementById('student-sessions-table').classList.remove('d-none')
+            document.getElementById('teacher-sessions-table').classList.add('d-none')
+        }
+        else {
+            document.getElementById('toggleTableMode').innerText = 'Teaching'
+            document.getElementById('student-sessions-table').classList.add('d-none')
+            document.getElementById('teacher-sessions-table').classList.remove('d-none')
+        }
+    }
+</script>
+<script>
+    function update_dashboard(data){
+      session_id = data['session_id']
+      console.log(session_id)
+      image = document.getElementById(`${session_id},image`)
+      if (data['image_data']) {
+        image.src = `data:image/jpeg;base64,${data['image_data']}`
+      }
+      else{
+        image.src = "static/assets/img/undraw_profile.svg"
+      }
+      notification = document.getElementById(`${session_id},notification`)
+      if (notification == null){
+        element = `<div class="rounded-circle bg-danger py-0 px-2 mr-2">
+                      <span class="text-white" id="${session_id},notification">1</span>
+                  </div>`
+        document.getElementById('secondary_notification').insertAdjacentHTML('beforeend',element)
+      }
+      else{
+        console.log(String(parseInt(notification.innerText)))
+        notification.innerText = String(parseInt(notification.innerText) + 1)
+      }
+
+      document.getElementById(`${session_id},sender`).innerText = data['username']
+      document.getElementById(`${session_id},message`).innerText = data['message']
+    }
+</script>
+
 {%endblock%}

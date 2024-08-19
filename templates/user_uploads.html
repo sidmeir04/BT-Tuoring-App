@@ -16,12 +16,16 @@
             <h1 class="h3 mb-0 text-gray-800">Materials from Session With {{ recipient }}</h1>
         </div>
         <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <button class="btn mr-2 btn-secondary" id="messaging_btn">
-                <a href="{{ url_for('user_messages', identification=session.id) }}" class="text-white">Overview</a>
-            </button>
-            <button class="selector btn ml-2 btn-primary" id="materials_btn">
-                <a href="" class="text-white">Materials</a>
-            </button>
+            <a href="{{ url_for('user_messages', identification=session.id) }}" class="text-white">
+                <button class="btn mr-2 btn-secondary" id="messaging_btn">
+                    Overview
+                </button>
+            </a>
+            <a href="" class="text-white">
+                <button class="selector btn ml-2 btn-primary" id="materials_btn">
+                    Materials
+                </button>
+            </a>
         </div>
 
         <div class="row py-2 mb-4 bg-gradient-secondary px-0"></div>
@@ -32,12 +36,18 @@
                     <div class="card shadow mb-4">
                         <!-- Card Header -->
                         <div class="card-header">
-                            <div class="h1 mb-0 header-text">Upload New Materials</div>
+                            <div class="h1 mb-0 header-text">
+                                {%if thiss.role == 0%}
+                                Upload New Materials
+                                {%else%}
+                                View Appointment Materials
+                                {%endif%}
+                            </div>
                         </div>
 
                         <!-- Card Body -->
                         <div class="card-body">
-                            {% if current_user.id == session.student %}
+
                             <div class="upload-form">
                                 <form action="/material_upload/{{ session.id }}" method="post" enctype="multipart/form-data" class="d-flex align-items-center w-100 px-5">
                                     <style>
@@ -74,7 +84,7 @@
                                     }
                                 });
                             </script>
-                            {% endif %}
+
 
                             <div class="file-display d-none">
                                 {% if session.files %}
@@ -96,14 +106,14 @@
                         </div>
 
                         <!-- Card Footer -->
-                        <div class="card-footer d-flex align-items-center justify-content-between">
-                            <button class="btn btn-primary mode-toggle" data-mode="upload">Upload Materials</button>
+                        <div class="card-footer d-flex align-items-center justify-content-center">
+                            <button class="btn btn-primary mode-toggle mr-auto" data-mode="upload">Upload Materials</button>
                             <div class="button-group pagination-controls d-none">
                                 <button class="btn btn-secondary p-1 prev-page"><<</button>
                                 <span class="page-number btn btn-primary py-1">1</span>
                                 <button class="btn btn-secondary p-1 next-page">>></button>
                             </div>
-                            <button class="btn btn-secondary mode-toggle" data-mode="view">View Uploads</button>
+                            <button class="btn btn-secondary mode-toggle ml-auto" data-mode="view">View Uploads</button>
                         </div>
                     </div>
                 </div>
@@ -154,30 +164,38 @@
         }
     });
 
+    function modeChange(mode){
+        if (mode === 'view') {
+            document.querySelector('.pagination-controls').classList.remove('d-none');
+            document.querySelector('.file-display').classList.remove('d-none');
+            document.querySelector('.upload-form').classList.add('d-none');
+            document.querySelector('.header-text').textContent = "View Materials";
+            document.querySelector('.mode-toggle[data-mode="view"]').classList.replace('btn-secondary', 'btn-primary');
+            document.querySelector('.mode-toggle[data-mode="upload"]').classList.replace('btn-primary', 'btn-secondary');
+            showPage(currentPage);
+        } else {
+            document.querySelector('.pagination-controls').classList.add('d-none');
+            document.querySelector('.file-display').classList.add('d-none');
+            document.querySelector('.upload-form').classList.remove('d-none');
+            document.querySelector('.header-text').textContent = "Upload New Materials";
+            document.querySelector('.mode-toggle[data-mode="upload"]').classList.replace('btn-secondary', 'btn-primary');
+            document.querySelector('.mode-toggle[data-mode="view"]').classList.replace('btn-primary', 'btn-secondary');
+        }
+    }
+
     document.querySelectorAll('.mode-toggle').forEach(button => {
         button.addEventListener('click', (e) => {
             const mode = e.target.getAttribute('data-mode');
-            if (mode === 'view') {
-                document.querySelector('.pagination-controls').classList.remove('d-none');
-                document.querySelector('.file-display').classList.remove('d-none');
-                document.querySelector('.upload-form').classList.add('d-none');
-                document.querySelector('.header-text').textContent = "View Materials";
-                document.querySelector('.mode-toggle[data-mode="view"]').classList.replace('btn-secondary', 'btn-primary');
-                document.querySelector('.mode-toggle[data-mode="upload"]').classList.replace('btn-primary', 'btn-secondary');
-                showPage(currentPage);
-            } else {
-                document.querySelector('.pagination-controls').classList.add('d-none');
-                document.querySelector('.file-display').classList.add('d-none');
-                document.querySelector('.upload-form').classList.remove('d-none');
-                document.querySelector('.header-text').textContent = "Upload New Materials";
-                document.querySelector('.mode-toggle[data-mode="upload"]').classList.replace('btn-secondary', 'btn-primary');
-                document.querySelector('.mode-toggle[data-mode="view"]').classList.replace('btn-primary', 'btn-secondary');
-            }
+            modeChange(mode)
         });
     });
 
     // Initialize in upload mode
-    document.querySelector('.mode-toggle[data-mode="upload"]').click();
+    document.querySelector('.mode-toggle[data-mode="view"]').click();
+    {%if thiss.role==1%}
+    document.querySelector('.mode-toggle[data-mode="view"]').classList.add('d-none')
+    document.querySelector('.mode-toggle[data-mode="upload"]').classList.add('d-none')
+    {%endif%}
 </script>
 
 {% endblock %}

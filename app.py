@@ -102,11 +102,22 @@ class Session(db.Model):
     period = db.Column(db.Integer)
     tutor_form_completed = db.Column(db.Boolean, default = True)
     student_form_completed = db.Column(db.Boolean, default = False)
-    confirmed = db.Column(db.Boolean, default=False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('active_message_history.id'))
     
     # Relationship to SessionFile
     files = db.relationship('SessionFile', back_populates='session', cascade='all, delete-orphan')
+
+class SessionRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    start_time = db.Column(db.Time)
+    end_time = db.Column(db.Time)
+    day_of_the_week = db.Column(db.Integer)
+    date = db.Column(db.Date)
+    start_date = db.Column(db.Date)
+    subject = db.Column(db.String(255))
+    tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
+    student = db.Column(db.Integer, nullable = False)
+    period = db.Column(db.Integer)
 
 class SessionFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -484,7 +495,7 @@ def index():
             thing[1]["sender"] = username
             return thing
     if current_user.role == 0 or current_user.role == 1:
-        sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False, confirmed=True).all()
+        sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
         if sessions_where_learn:
             sessions_where_learn_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
             sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
@@ -502,7 +513,7 @@ def index():
                                     image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
                                     people=people_learn if sessions_where_learn else None)
         
-        sessions_where_teach = Session.query.filter_by(tutor=current_user.id,confirmed=True).all()
+        sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
         if sessions_where_teach:
             sessions_where_teach_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
             sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
@@ -540,7 +551,7 @@ def index():
                         )
         
     
-    sessions_where_teach = Session.query.filter_by(tutor=current_user.id, confirmed=True).all()
+    sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
     if sessions_where_teach:
         sessions_where_teach_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
         sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
@@ -549,7 +560,7 @@ def index():
         sessions_where_teach_MH = list(map(lambda x: replace_with_username(x),sessions_where_teach_MH))
 
 
-    sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False, confirmed=True).all()
+    sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
     if sessions_where_learn:
         sessions_where_learn_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
         sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
@@ -647,6 +658,14 @@ def register():
         return redirect(url_for('login'))
     return render_template("user_handling/register.html")
 
+@app.route('/terminate_session',methods=['GET','POST'])
+@login_required
+@email_verified_required
+def terminate_session():
+    if request.method == "POST":
+        return redirect(url_for())
+    return render_template('terminate_session.html')
+
 @app.route('/complete_session/<id>')
 @login_required
 @email_verified_required
@@ -663,9 +682,6 @@ def complete_session(id):
     #     flash('Tutoring Session has not Happened yet', 'warning')
     #     return redirect(url_for('index'))
     params = {'type': 0,'id': session.id}
-    if current_user.id == session.tutor:
-        params['type'] = 2
-        return redirect(url_for('completion_form',**params))
     if current_user.id == session.student:
         params['type'] = 1
         return redirect(url_for('completion_form',**params))
@@ -710,7 +726,7 @@ def completion_form():
         db.session.add(feedback)
         db.session.commit()
 
-        if session.tutor_form_completed and session.student_form_completed:
+        if session.student_form_completed:
             # delete the session and add community service hours to the user
 
 ########################################################################################################################
@@ -740,7 +756,7 @@ def completion_form():
                 tutor.volunteer_hours["breakdown"].append({"start_date":session.start_date.strftime("%B %d, %Y"), "end_date":datetime.today().strftime("%B %d, %Y"),"hours":round(float(difference) * total_days,2)})
                 flag_modified(tutor,"volunteer_hours")
                 db.session.commit()
-            return redirect(f'/delete_session/{session.id}/1')
+            return redirect(f'/delete_session/{session.id}')
         return redirect(url_for('index'))
     return render_template('completion_form.html', type = type, id = id)
 
@@ -867,32 +883,38 @@ def scheduler():
 
     return render_template('scheduler.html',booked_periods=periods)
 
-@app.route('/delete_session/<session_id>/<type>')
+@app.route('/delete_session/<session_id>')
 @login_required
 @email_verified_required
-def delete_session(session_id,type):
-    session = Session.query.get(session_id)
-    if type != "1" or session.tutor_form_completed and session.student_form_completed:
+def delete_session(session_id):
+    if not request.args.get("pre"):
+        session = Session.query.get(session_id)
+
         user = User.query.get(session.tutor)
         date = date_to_day(session.date.strftime('%Y-%m-%d'))
         user.schedule_data[date][str(session.period)]['times'] = user.schedule_data[date][str(session.period)]['times'].replace(session.date.strftime('%Y-%m-%d'), "")
-        if type != "1":
-            if session.tutor == current_user.id: other_user = User.query.get(session.student)
-            else: other_user = User.query.get(session.tutor)
-            other_user.notifaction_data['deleted'] = other_user.notifaction_data['deleted'] + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
-            flag_modified(other_user, "notifaction_data")
+        
         db.session.delete(session)
 
         #this deletes the message history. If you want to save it for later, we can do that
         message_history = ActiveMessageHistory.query.get(session.message_history_id)
+
         db.session.delete(message_history)
 
         flag_modified(user,'schedule_data')
-        db.session.commit()
+        if session.tutor == current_user.id: other_user = User.query.get(session.student)
+        else: other_user = User.query.get(session.tutor)
+        other_user.notifaction_data['deleted'] = other_user.notifaction_data['deleted'] + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
+        flag_modified(other_user, "notifaction_data")
         flash('Session Deleted', 'success')
     else:
-        flash('Tutor and Student Forms not Complete', 'warning')
-    return redirect(url_for('index'))
+        session = SessionRequest.query.get(session_id)
+        db.session.delete(session)
+        db.session.commit()
+        flash('Request Cancelled',"success")
+
+    db.session.commit()
+    return redirect(url_for('view_appointments'))
 
 @app.route('/book_session/<id>/<date>/<period>')
 @login_required
@@ -906,15 +928,8 @@ def book_session(id, date, period):
 
     data = user.schedule_data[day][period]
     current_user_id = current_user.get_id()
-    conversation = ActiveMessageHistory(
-        people = {id:'',current_user_id:''},
-        missed = {'total':0,id:0,current_user_id:0}
 
-    )
-
-    db.session.add(conversation)
-    db.session.commit()
-    new_session = Session(
+    new_session = SessionRequest(
         tutor = id,
         start_time = string_to_time(data['start_time']),
         end_time = string_to_time(data['end_time']),
@@ -922,24 +937,19 @@ def book_session(id, date, period):
         period = period,
         start_date = datetime.today(),
         day_of_the_week = dayNumber,
-        date = datetime.strptime(date, '%Y-%m-%d').date(),
-        message_history_id = conversation.id
+        date = datetime.strptime(date, '%Y-%m-%d').date()
     )
 
     db.session.add(new_session)
-    db.session.commit()
 
     other_user = User.query.get(id)
     temp = other_user.notifaction_data['deleted']
-    other_user.notifaction_data['deleted'] = temp + [f'{user.username} booked a session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
+    other_user.notifaction_data['deleted'] = temp + [f'{other_user.username} has requested a session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
     flag_modified(other_user, 'notifaction_data')
 
-    user.schedule_data[day][period]['times'] += ' ' + str(date)
-    flag_modified(user, 'schedule_data')
-    db.session.add(conversation)
     db.session.commit()
     flash('Session requested!', 'success')
-    return redirect(url_for('index'))
+    return redirect(url_for('view_appointments'))
 
 @app.route('/profile', methods = ['POST','GET'])
 @login_required
@@ -952,8 +962,6 @@ def profile():
             username = request.form.get('username')
             last_name = request.form.get('last_name')
             user.email = email
-            if username != user.username:
-                pass
 
             user.username = username
             user.name = name
@@ -1019,23 +1027,68 @@ def choose_classes(id):
 @email_verified_required
 def view_appointments():
     if request.method == "POST":
-        id = request.form.get("id")
-        if current_user.role == 0:
-            return redirect(f'/delete_session/{id}/0')
-        elif current_user.role == 1:
-            session = Session.query.get(id)
-            session.confirmed = True
-            db.session.commit() 
-    session_requests = Session.query.filter_by(student=current_user.id,confirmed=False).all()
-    ########################################################################################################
-    for i in session_requests:
-        session_requests[i].confirmed=True
-    ########################################################################################################
-    db.session.commit()
+        id = request.form["id"]
+        if int(request.form.get("submit")):
+            return redirect(url_for("confirm_appointment",id=id))
+        if int(request.form.get("pre")):
+            return redirect(f'/delete_session/{id}?pre=1')
+        return redirect(f'/delete_session/{id}')
+
+    session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
+    session_requests_where_tutor = SessionRequest.query.filter_by(tutor=current_user.id).all()
+
+    confirmed_sessions_where_student = Session.query.filter_by(student=current_user.id).all()
+    confirmed_sessions_where_tutor = Session.query.filter_by(tutor=current_user.id).all()
+
     return render_template("view_appointments.html",
                            type=current_user.role,
-                           length=len(session_requests),
-                           session_requests=session_requests)
+                           len=len,
+                           session_requests_where_student=session_requests_where_student,
+                           session_requests_where_tutor=session_requests_where_tutor,
+                           confirmed_sessions_where_student=confirmed_sessions_where_student,
+                           confirmed_sessions_where_tutor=confirmed_sessions_where_tutor)
+
+@app.route('/confirm_appointment')
+@login_required
+@email_verified_required
+def confirm_appointment():
+    id = request.args.get('id')
+    session_request = SessionRequest.query.get(id)
+    tutor = User.query.get(session_request.tutor)
+    student = User.query.get(session_request.student)
+
+    current_user_id = current_user.get_id()
+    conversation = ActiveMessageHistory(
+        people = {id:'',current_user_id:''},
+        missed = {'total':0,id:0,current_user_id:0}
+    )
+
+    db.session.add(conversation)
+    db.session.commit()
+    new_session = Session(
+        tutor = session_request.tutor,
+        start_time = session_request.start_time,
+        end_time = session_request.end_time,
+        student = session_request.student,
+        period = session_request.period,
+        start_date = session_request.start_date,
+        day_of_the_week = session_request.day_of_the_week,
+        date = session_request.date,
+        message_history_id = conversation.id
+    )
+
+    db.session.add(new_session)
+
+    temp = tutor.notifaction_data['deleted']
+    student.notifaction_data['deleted'] = temp + [f'{student.username} confirmed the session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
+    flag_modified(student, 'notifaction_data')
+    tutor.schedule_data[date_to_day(str(new_session.date))][str(new_session.period)]['times'] += ' ' + str(new_session.date)
+    flag_modified(tutor, 'schedule_data')
+    db.session.add(conversation)
+    db.session.delete(session_request)
+    db.session.commit()
+    flash("Session confirmed!","success")
+    return redirect(url_for("index"))
 
 @app.route('/approve_hours',methods=['GET','POST'])
 @login_required
