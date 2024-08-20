@@ -66,6 +66,7 @@ class User(db.Model, UserMixin):
     qualification_data = db.Column(JSON,default=current_classlist)
     volunteer_hours = db.Column(JSON,default=load_volunteer_hour_json_file)
     role = db.Column(db.Integer, default = 0)
+    marked = db.Column(db.Integer,default=0)
 
 
     def set_password(self, password):
@@ -275,6 +276,15 @@ def email_verified_required(f):
             return redirect(url_for('profile'))
     return decorated_function
 
+def check_for_closed_session(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.marked:
+            params = {"id":current_user.marked,"form":"0","cancel_reason":"4"}
+            return redirect(url_for("complete_session",**params))
+        return f(*args,**kwargs)
+    return decorated_function
+
 
 def admin_only(f):
     @wraps(f)
@@ -313,6 +323,7 @@ def send_verification_email():
 @app.route('/appointment_details')
 @login_required
 @email_verified_required
+@check_for_closed_session
 def user_messages():
     #gets the session currently being viewed
     ID = request.args.get('identification')
@@ -346,6 +357,7 @@ def user_messages():
 @app.route('/appointment_uploads')
 @login_required
 @email_verified_required
+@check_for_closed_session
 def user_uploads():
     ID = request.args.get("identification")
     open_session = Session.query.get(ID)
@@ -478,6 +490,7 @@ def reroute_user():
 @login_required
 @email_verified_required
 @admin_only
+@check_for_closed_session
 def user_managing():
     if request.method == 'POST':
         promoted_user = request.form.get('promoted_user')
@@ -494,6 +507,7 @@ def user_managing():
 @login_required
 @email_verified_required
 @admin_only
+@check_for_closed_session
 def tag_managing():
     NHS_students = User.query.filter_by(role=1).all()
     return render_template('user_handling/tag_managing.html', NHSs=NHS_students)
@@ -501,11 +515,15 @@ def tag_managing():
 @app.route("/")
 @login_required
 @email_verified_required
+@check_for_closed_session
 def index():
     #redirects if not logged
 
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
-
+    admins = User.query.filter_by(role=3).all()
+    teachers = User.query.filter_by(role=2).all()
+    temp = {2:'Teacher',3:"Admin"}
+    staff = [(i.id,temp[i.role],i.username) for i in admins+teachers]
     def replace_with_username(thing):
             if thing == None:return thing
             username = User.query.get(thing[1]["sender"]).username
@@ -528,7 +546,8 @@ def index():
                                     enum = enumerate,
                                     username=current_user.username,
                                     image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
-                                    people=people_learn if sessions_where_learn else None)
+                                    people=people_learn if sessions_where_learn else None,
+                                    staff=staff)
         
         sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
         if sessions_where_teach:
@@ -552,6 +571,8 @@ def index():
             last_day = next_month - timedelta(days=next_month.day)
             return [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
         dates = get_month_dates(current_year, current_month)
+
+
         return render_template('homepages/NHS.html',
                         enum = enumerate,
                         username = current_user.username,
@@ -564,7 +585,8 @@ def index():
                         sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
                         people_where_teach = people_teach if sessions_where_teach else None,
                         people_where_learn=people_learn if sessions_where_learn else None,
-                        today=datetime.today().strftime('%Y-%m-%d')
+                        today=datetime.today().strftime('%Y-%m-%d'),
+                        staff=staff
                         )
         
     
@@ -680,34 +702,22 @@ def register():
 @email_verified_required
 def terminate_session():
     id = request.args.get("identification")
+    current_user.marked = int(id)
+    db.session.commit()
     if request.method == "POST":
         cancel_reason = request.form.get("cancel_reason")
+        ##############################################################################################################################
+
         finished = int(request.form.get('had_class'))
+        cancel_reason = 4 if not cancel_reason else cancel_reason
         ##############################################################################################################################
 
                                             # for final product, there needs to be a more reliable way to tell if class happened than this #
 
         ##############################################################################################################################
-        session = Session.query.get(id)
-        session_log = SessionLog(
-            tutor = session.tutor,
-            student = session.student,
-            cancel_reason = cancel_reason,
-            start_time = session.start_time,
-            end_time = session.end_time,
-            day_of_the_week = session.day_of_the_week,
-            date = session.date,
-            start_date = session.start_date,
-            subject = session.subject,
-            period = session.period
-        )
-        db.session.add(session_log)
-        db.session.commit()
 
-        if finished:
-            params = {"form":request.form.get("fill_form"),"id":id}
-            return redirect(url_for("complete_session",**params))
-        return redirect(f"delete_session/{id}")
+        params = {"form":request.form.get("fill_form"),"id":id,"cancel_reason":cancel_reason}
+        return redirect(url_for("complete_session",**params))
     
     return render_template('terminate_session.html',id=id)
 
@@ -717,23 +727,34 @@ def terminate_session():
 def complete_session():
     id = request.args.get("id")
     session = Session.query.get(id)
+    fill_form = int(request.args.get('form'))
+
+    session_log = SessionLog(
+        tutor = session.tutor,
+        student = session.student,
+        cancel_reason = int(request.args.get("cancel_reason")),
+        start_time = session.start_time,
+        end_time = session.end_time,
+        day_of_the_week = session.day_of_the_week,
+        date = session.date,
+        start_date = session.start_date,
+        subject = session.subject,
+        period = session.period
+    )
+    db.session.add(session_log)
 
     tutor = User.query.get(session.tutor)
     student = User.query.get(session.student)
 
     feedback = Feedback(
         date = datetime.today().strftime('%Y-%m-%d'),
-        review_from = student.username,
-        exists=bool(int(request.args.get('form'))),
-        review_for = tutor.username,
+        review_from = student.id,
+        exists=bool(fill_form),
+        review_for = tutor.id,
         subject = session.subject
     )
 
-    temp = tutor.notifaction_data['deleted']
-    tutor.notifaction_data['deleted'] = temp + [f'{tutor.username} gave you feedback']
-    flag_modified(tutor,"notifaction_data")
-
-    db.session.add(feedback)
+    
     db.session.commit()
 
     # delete the session and add community service hours to the user
@@ -795,6 +816,14 @@ def completion_form():
         feedback.on_time = on_time
         feedback.understanding = understanding
         feedback.review_text = review
+
+        tutor = User.query.get(feedback.tutor)
+
+        temp = tutor.notifaction_data['deleted']
+        tutor.notifaction_data['deleted'] = temp + [f'{tutor.username} gave you feedback']
+        flag_modified(tutor,"notifaction_data")
+        db.session.add(feedback)
+
         db.session.commit()
         return redirect(f"/delete_session/{id}?post=1")
     
@@ -807,6 +836,7 @@ def one_pager():
 @app.route('/show_feedback')
 @login_required
 @email_verified_required
+@check_for_closed_session
 def show_feedback():
     reviews = Feedback.query.filter_by(review_for = current_user.id)
     return render_template('show_feedback.html', reviews = reviews)
@@ -816,6 +846,7 @@ lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/find_session',methods=['GET','POST'])
 @login_required
 @email_verified_required
+@check_for_closed_session
 def find_session():
     users,user_names = [],[]
     day, date = None, None
@@ -865,6 +896,7 @@ def find_session():
 @app.route('/scheduler',methods=['POST','GET'])
 @login_required
 @email_verified_required
+@check_for_closed_session
 def scheduler():
     if current_user.role < 1: return redirect(url_for('404'))
     if request.method == 'POST':
@@ -942,6 +974,9 @@ def delete_session(session_id):
         db.session.delete(message_history)
 
         flag_modified(user,'schedule_data')
+
+        current_user.marked = 0
+
         if request.args.get("post"):
             flash('Session completed!', 'success')
             db.session.commit()
@@ -997,6 +1032,7 @@ def book_session(id, date, period):
 
 @app.route('/profile', methods = ['POST','GET'])
 @login_required
+@check_for_closed_session
 def profile():
     if request.method == 'POST':
         user = User.query.get(current_user.id)
@@ -1069,6 +1105,7 @@ def choose_classes(id):
 @app.route('/view_appointments',methods=["GET","POST"])
 @login_required
 @email_verified_required
+@check_for_closed_session
 def view_appointments():
     if request.method == "POST":
         id = request.form["id"]
