@@ -1,9 +1,34 @@
 {% extends 'blank.html' %}
 {%set active_page='find_session'%}
 {% block content %}
+<!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+<style>
+    /* Ensure dropdown options float above other elements */
+    #dropdown {
+        position: absolute;
+        width: 100%;
+        background-color: white;
+        z-index: 1000; /* Make sure it's on top */
+        border: 1px solid #ced4da;
+    }
+    #dropdown ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    #dropdown ul li {
+        padding: 10px;
+        cursor: pointer;
+    }
+    #dropdown ul li:hover {
+        background-color: #f8f9fa;
+    }
+</style>
 <div class="container-fluid">
     <div class="row px-2 mt-3 align-items-center mb-3">
-        <form action="/find_session" method="POST" class="d-flex align-items-center" style="width:100%;">
+        <form action="/find_session" method="POST" class="d-flex align-items-center" style="width:100%;" id="search-form">
             <div class="form-group">
                 <div class="dropdown">
                   <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -47,19 +72,13 @@
                     <input type="time" class="form-control form-control-user" name="end_time">
                 </div>
             </div>
-            <div class="form-group mx-2 px-0 ml-auto">
-                <select class="form-control" id="other_id" name="subject">
-                    <option value="0">Subject</option>
-                    <option value="Math">Math</option>
-                    <option value="Algebra">Algebra</option>
-                    <option value="Science">Science</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Gym">Gym</option>
-                    <option value="Geometry">Geometry</option>
-                    <option value="Biomolecular Quatum Physics">Biomolecular Quatum Physics</option>
-                    <option value="English">English</option>
-                </select>
+            <div class="mb-3 position-relative form-group mx-2 px-0 ml-auto">
+                <input type="text" id="search-input" class="form-control" placeholder="Search Subject" autocomplete="off">
+                <div id="dropdown" class="d-none">
+                    <ul></ul>
+                </div>
             </div>
+            <input type="hidden" id="other_id" name="subject">
             <div class="form-group">
                 <button type="submit" class="btn btn-primary btn-lg py-1 px-2">Search</button>
             </div>
@@ -120,4 +139,99 @@
         </div>
     </div>
 </div>
+<!-- Custom Alert Modal -->
+<div class="modal fade" id="customAlertModal" tabindex="-1" role="dialog" aria-labelledby="customAlertLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-white">
+          <h5 class="modal-title" id="customAlertLabel">Alert</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="customAlertMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('search-input');
+        const dropdown = document.getElementById('dropdown');
+        const dropdownList = dropdown.querySelector('ul');
+        const selectedOptionInput = document.getElementById('other_id');
+        const form = document.getElementById('search-form');
+
+        const predefinedOptions = {{ options | tojson }};
+
+        // Handle search input keyup event
+        searchInput.addEventListener('keyup', () => {
+            const query = searchInput.value.toLowerCase();
+            dropdownList.innerHTML = '';  // Clear previous results
+
+            if (query === '') {
+                dropdown.classList.add('d-none');
+                return;
+            }
+
+            const matchedOptions = predefinedOptions.filter(option => 
+                option.toLowerCase().includes(query)
+            );
+            if (matchedOptions[0].toLowerCase() === query){
+                getOption(matchedOptions[0])
+            }
+            else{
+                if (matchedOptions.length > 0) {
+                    matchedOptions.forEach(option => {
+                        const li = document.createElement('li');
+                        li.textContent = option;
+                        
+                        li.addEventListener('click', () => {
+                            getOption(option)
+                        });
+                        dropdownList.appendChild(li);
+                    });
+                    dropdown.classList.remove('d-none');
+                } else {
+                    dropdown.classList.add('d-none');
+                } 
+            }
+        });
+
+        // Ensure user cannot submit without selecting a valid option
+        form.addEventListener('submit', (e) => {
+            if (!selectedOptionInput.value) {
+                e.preventDefault();  // Prevent form submission
+                customAlert("Please select a valid subject before submitting this form!")
+            }
+        });
+
+        // Hide dropdown if clicked outside
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && e.target !== searchInput) {
+                dropdown.classList.add('d-none');
+            }
+        });
+        function getOption(option){
+            searchInput.value = option;
+            selectedOptionInput.value = option;
+            dropdown.classList.add('d-none');
+        }
+    });
+
+    function customAlert(message) {
+        // Set the alert message
+        document.getElementById("customAlertMessage").innerText = message;
+
+        // Trigger the modal
+        $('#customAlertModal').modal('show');
+    }
+</script>
 {% endblock %}

@@ -62,7 +62,7 @@ def date_to_day(date):
 def load_available_classes():
     with open('static/assets/store_classlist.json', 'r') as file:
         form = json.load(file)
-    return form
+    return form["class_list"]
 
 def write_available_classes(classList):
     with open('static/assets/store_classlist.json', 'r') as file:

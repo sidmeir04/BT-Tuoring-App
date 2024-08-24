@@ -851,6 +851,7 @@ def find_session():
     users,user_names = [],[]
     day, date = None, None
     tutor_name = ''
+    options = load_available_classes()
     if request.method == 'POST':
         date = request.form.get('modal_date')
         period = request.form.get('period')
@@ -887,10 +888,13 @@ def find_session():
                         user = User.query.get(int(id))
                         [user_names.append((user.username,int(id),period,find_next_day_of_week(temp[1]),user.qualification_data))]
                         [users.append(user.schedule_data[temp[1]][str(period)])]
-        else:
-            pass
-        return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,subject=subject)
-    return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method)
+
+        return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options)
+    
+
+    
+
+    return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,options=options)
 
 
 @app.route('/scheduler',methods=['POST','GET'])
