@@ -73,7 +73,7 @@ def write_available_classes(classList):
 UNIVERSAL_CLASSLIST = load_available_classes()
 
 def current_classlist():
-    return {i:0 for i in UNIVERSAL_CLASSLIST['class_list']}
+    return {i:0 for i in UNIVERSAL_CLASSLIST}
 
 def make_square(image, size):
     width, height = image.size
