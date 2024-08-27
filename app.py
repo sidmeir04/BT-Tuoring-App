@@ -412,10 +412,6 @@ def handle_connect():
     current_user.status = request.sid
     db.session.commit()
 
-@socketio.on("disconnect")
-def handle_disconnect():
-    pass
-
 
 @socketio.on("user_join")
 def handle_user_join(user_id,history_id):
@@ -425,10 +421,6 @@ def handle_user_join(user_id,history_id):
     flag_modified(history,'people')
     db.session.commit()
 
-
-@socketio.on("notify_update")
-def handle_notify_update():
-    pass
 
 @socketio.on("new_chat_message")
 def handle_new_message(message,sending_user_id,history_id,session_id):
@@ -1202,6 +1194,25 @@ def approve_hours():
         
 
     return render_template("approve_hours.html",hours_to_approve=to_approve)
+
+@app.route('/calender')
+@login_required
+@email_verified_required
+def calender():
+    meetings = {
+        'teacher': ['2024-08-01', '2024-08-10', '2024-08-20'],
+        'peer_tutor': ['2024-08-04', '2024-08-15', '2024-08-25']
+    }
+    now = datetime.now()
+    current_year = now.year
+    current_month = now.month
+    def get_month_dates(year, month):
+        first_day = datetime(year, month, 1)
+        next_month = first_day.replace(day=28) + timedelta(days=4)
+        last_day = next_month - timedelta(days=next_month.day)
+        return [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
+    dates = get_month_dates(current_year, current_month)
+    return render_template('calender.html',username = current_user.username,meetings=meetings, dates=dates, year=current_year, month=current_month,today=datetime.today().strftime('%Y-%m-%d'))
 
 @app.route('/forgot_password')
 def forgot_password():

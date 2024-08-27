@@ -1,5 +1,5 @@
 {% extends "blank.html" %}
-{%set active_page='view_appointments'%}
+{% set active_page='view_appointments' %}
 {% block content %}
 <style>
     /* Center the card container */
@@ -33,6 +33,11 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         cursor: pointer;
         overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
 
     .card-body {
@@ -48,8 +53,6 @@
         max-height: 1000px;
         opacity: 1;
         padding: 20px;
-        padding-top: 20px;
-        padding-bottom: 20px;
     }
 
     .card-body.hide {
@@ -86,7 +89,7 @@
         <div class="no-requests">No outgoing requests found.</div>
         {% else %}
         {% for session in session_requests_where_student %}
-        <div class="card mb-3">
+        <div class="card mb-3" onclick="toggleCardBody(this)">
             <div class="card-header bg-primary p-3">
                 <div class="d-flex align-items-center">
                     <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{ session.date }}</span></h4>
@@ -109,13 +112,13 @@
         {% endfor %}
         {% endif %}
     </div>
-    
+
     <div id="learning-sessions" class="card-container d-none">
         {% if confirmed_sessions_where_student|length == 0 %}
         <div class="no-requests">No learning sessions found.</div>
         {% else %}
         {% for session in confirmed_sessions_where_student %}
-        <div class="card mb-3">
+        <div class="card mb-3" onclick="toggleCardBody(this)">
             <div class="card-header bg-primary p-3">
                 <div class="d-flex align-items-center">
                     <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{ session.date }}</span></h4>
@@ -142,7 +145,7 @@
         <div class="no-requests">No tutoring sessions found.</div>
         {% else %}
         {% for session in confirmed_sessions_where_tutor %}
-        <div class="card mb-3">
+        <div class="card mb-3" onclick="toggleCardBody(this)">
             <div class="card-header bg-primary p-3">
                 <div class="d-flex align-items-center">
                     <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{ session.date }}</span></h4>
@@ -162,13 +165,13 @@
         {% endfor %}
         {% endif %}
     </div>
-    
+
     <div id="outgoing-requests" class="card-container d-none">
         {% if session_requests_where_tutor|length == 0 %}
         <div class="no-requests">No incoming requests found.</div>
         {% else %}
         {% for session in session_requests_where_tutor %}
-        <div class="card mb-3">
+        <div class="card mb-3" onclick="toggleCardBody(this)">
             <div class="card-header bg-primary p-3">
                 <div class="d-flex align-items-center">
                     <h4 class="card-title mb-0 mr-3 text-white">Date: <span class="text-success">{{ session.date }}</span></h4>
@@ -213,5 +216,9 @@
         document.getElementById(viewId + '-btn').classList.add('active');
     }
 
+    function toggleCardBody(cardElement) {
+        let cardBody = cardElement.querySelector('.card-body');
+        cardBody.classList.toggle('show');
+    }
 </script>
 {% endblock %}
