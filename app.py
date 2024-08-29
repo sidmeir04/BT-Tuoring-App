@@ -215,9 +215,10 @@ def temp_function_for_default_user_loading():
             email_verification_token=None,
             schedule_data=json.loads('''{"monday": {"1": {"start_time": "08:30", "end_time": "08:31", "times": " 2024-06-24", "subject": null}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "tuesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "wednesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "thursday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "friday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}}'''),
             volunteer_hours=json.loads('''{"total_hours": 0, "approved_index": [0], "breakdown": [{"start_date": "June 19, 2024", "end_date": "June 30, 2024", "hours": 4.0}]}'''),
-            role = 1
-            
+            role = 1,
+            qualification_data = json.loads('''{"Math": 1, "Algebra": 0, "Science": 0, "Chemistry": 0, "Gym": 0, "Geometry": 0, "Biomolecular Quantum Physics": 0, "English": 0}''')
         )
+
         user4.set_password("s")
         period1 = Periods.query.first()
         period1.monday = " 4"
@@ -565,19 +566,27 @@ def index():
         dates = get_month_dates(current_year, current_month)
 
 
+        sessions_where_teach = sessions_where_teach
+        sessions_where_teach_MH = sessions_where_teach_MH if sessions_where_teach else []
+        sessions_where_teach_PP = sessions_where_teach_PP if sessions_where_teach else []
+        sessions_where_learn = sessions_where_learn
+        sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else []
+        sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else []
+        people_where_teach = people_teach if sessions_where_teach else []
+        people_where_learn=people_learn if sessions_where_learn else []
+
+
+
         return render_template('homepages/NHS.html',
                         enum = enumerate,
                         username = current_user.username,
                         meetings=meetings, dates=dates, year=current_year, month=current_month,
-                        sessions_where_teach = sessions_where_teach,
-                        sessions_where_teach_MH = sessions_where_teach_MH if sessions_where_teach else None,
-                        sessions_where_teach_PP = sessions_where_teach_PP if sessions_where_teach else None,
-                        sessions_where_learn = sessions_where_learn,
-                        sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
-                        sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
-                        people_where_teach = people_teach if sessions_where_teach else None,
-                        people_where_learn=people_learn if sessions_where_learn else None,
+                        sessions_where_learn = sessions_where_learn + sessions_where_teach,
+                        sessions_where_learn_MH = sessions_where_learn_MH + sessions_where_teach_MH,
+                        sessions_where_learn_PP = sessions_where_learn_PP + sessions_where_teach_PP,
+                        people_where_learn = people_where_learn + people_where_teach,
                         today=datetime.today().strftime('%Y-%m-%d'),
+                        image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
                         staff=staff
                         )
         
@@ -1199,8 +1208,10 @@ def approve_hours():
 @login_required
 @email_verified_required
 def calender():
+
+    #replace these dartes with the actual meeting dates when done
     meetings = {
-        'teacher': ['2024-08-01', '2024-08-10', '2024-08-20'],
+        'teacher': ['2024-08-01', '2024-08-30', '2024-08-20'],
         'peer_tutor': ['2024-08-04', '2024-08-15', '2024-08-25']
     }
     now = datetime.now()

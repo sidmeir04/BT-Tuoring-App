@@ -1,73 +1,139 @@
-{%extends "blank.html"%}
-{%block content%}
-    <div class="container mt-5 p-0 mb-5">
-        <h1>Student Dashboard - {{ month }}/{{ year }}</h1>
-        
-        <!-- Color Key -->
-        <div class="mb-4">
-            <div class="row">
-                <div class="col-12">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="bg-danger rounded-circle mr-2" style="width: 20px; height: 20px;"></div>
-                        <span>Teaching Sessions</span>
-                    </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="bg-success rounded-circle mr-2" style="width: 20px; height: 20px;"></div>
-                        <span>Learning Session</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <div class="bg-warning rounded-circle mr-2" style="width: 20px; height: 20px;"></div>
-                        <span>Today</span>
-                    </div>
+{% extends "blank.html" %}
+{% block content %}
+<div class="container mt-5 p-0 mb-5">
+    <h1>Student Dashboard - {{ month }}/{{ year }}</h1>
+
+    <!-- Color Key -->
+    <div class="mb-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="bg-danger rounded-circle mr-2" style="width: 20px; height: 20px;"></div>
+                    <span>Teaching Sessions</span>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <div class="bg-success rounded-circle mr-2" style="width: 20px; height: 20px;"></div>
+                    <span>Learning Session</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="bg-warning rounded-circle mr-2" style="width: 20px; height: 20px;"></div>
+                    <span>Today</span>
                 </div>
             </div>
         </div>
-        
-        <!-- Calendar -->
-        <div class="calendar p-0 mb-5">
-            <table class="table table-bordered text-center mb-5">
-                <thead>
-                    <tr>
-                        {% for day in ['M', 'T', 'W', 'H', 'F', 'S', 'S'] %}
-                            <th class="font-weight-bold p-1">{{ day }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        {% set first_day = dates[0].weekday() %}
-                        {% for _ in range(first_day) %}
-                            <td></td>
-                        {% endfor %}
-                        {% for date in dates %}
-                            {% set date_str = date.strftime('%Y-%m-%d') %}
-                            {% set bg_color = '' %}
-                            {% if date_str in meetings['teacher'] %}
-                                {% set bg_color = 'bg-danger' %}
-                            {%elif date_str in meetings['peer_tutor']%}
-                                {% set bg_color = 'bg-danger' %}
-                            {% elif date_str == today %}
-                                {% set today_bg = 'bg-warning' %}
-                            {% endif %}
-                            <td class="{{today_bg}}" style="height:20vh;">
-                                <div class="d-flex h-100 w-100 justify-content-between">
-                                    <div>
-                                        {{ date.day }}
-                                    </div>
-                                    {%if today_bg != "bg-warning"%}
-                                    <div class="rounded-circle p-3 {{ bg_color }} d-flex text-white align-items-center justify-content-center" style="width:2vw;height:2vw">
-                                        !
-                                    </div>
-                                    {%endif%}
-                                </div>
-                            </td>
-                            {% if date.weekday() == 6 %}
-                                </tr><tr>
-                            {% endif %}
-                        {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
+    </div>
+
+    <!-- Calendar -->
+    <div class="calendar p-0 mb-5">
+        <table class="table table-bordered text-center mb-5">
+            <thead>
+                <tr>
+                    {% for day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}
+                    <th class="font-weight-bold p-1">{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% set first_day = dates[0].weekday() %}
+                    {% for _ in range(first_day) %}
+                    <td></td>
+                    {% endfor %}
+                    {% for date in dates %}
+                    {% set date_str = date.strftime('%Y-%m-%d') %}
+                    {% set bg_color = '' %}
+                    {% if date_str in meetings['teacher'] %}
+                    {% set bg_color = 'bg-danger' %}
+                    {% elif date_str in meetings['peer_tutor'] %}
+                    {% set bg_color = 'bg-danger' %}
+                    {% elif date_str == today %}
+                    {% set today_bg = 'bg-warning' %}
+                    {% endif %}
+                    <td class="date-box {{today_bg}}" style="height:20vh;" data-toggle="modal" data-target="#dateModal">
+                        <div class="d-flex h-100 w-100 justify-content-between">
+                            <div>
+                                {{ date.day }}
+                            </div>
+                            {%if today_bg != "bg-warning"%}
+                            <div class="rounded-circle p-3 {{ bg_color }} d-flex text-white align-items-center justify-content-center" style="width:2vw;height:2vw">
+                                !
+                            </div>
+                            {%endif%}
+                        </div>
+                    </td>
+                    {% if date.weekday() == 6 %}
+                </tr>
+                <tr>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="dateModal" tabindex="-1" role="dialog" aria-labelledby="dateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="height: 80vh;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dateModalLabel">Sessions for {date}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="overflow:hidden;">
+<!-- THIS IS THE PART OF THE CODE I WANT YOU TO MODIFY OSCAR -->
+                <p>This is where the sessions for the day would go, along with a blue more details button</p>
+                {%for i in range(2)%}
+                    <div class="d-flex border-bottom px-3 py-2 align-itmes-center">
+                        <div class="mr-2 d-flex align-items-center">
+                            Per: 0
+                        </div>
+                        <div class="mr-2 d-flex align-items-center">
+                            {other_student}
+                        </div>
+                        <div class="mr-2 d-flex align-items-center">
+                            {type session}
+                        </div>
+                        <div class="ml-auto">
+                            <a href="/terminate_session?identification={{id}}" class="text-decoration-none text-reset">
+                                <button class="btn btn-danger text-white d-flex justify-content-center align-itmes-center py-1 px-2">
+                                    Cancel
+                                </button>
+                            </a>
+                        </div>
+                        <div class="ml-2 d-flex">
+                            <!-- INSERT THE ID HERE -->
+                            
+                            <!-- FILL IN THE LINK WITH THE SESSION ID -->
+                            <a href="/view_appointments#______" class="d-flex align-items-center w-100 h-100 text-decoration-none text-reset">
+                                <button class="btn btn-primary rounded-circle text-white d-flex justify-content-center align-itmes-center">
+                                    <i class="fa fa-ellipsis-v"></i>
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                {%endfor%}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
-{%endblock%}
+</div>
+
+<!-- Optional: Make the modal taller with custom styling -->
+<style>
+    .date-box:hover {
+        background-color: #cccccc;
+        transition: background-color 0.3s ease;
+        cursor:pointer;
+    }
+
+    .modal-content {
+        height: 80vh;
+        width: 90vw;
+        margin: auto;
+    }
+</style>
+{% endblock %}
