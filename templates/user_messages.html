@@ -3,118 +3,43 @@
 {%set active_material = 0%}
 {%block content%}
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<div class="d-flex fixed-top ml-3" style="margin-top:80px;z-index:0;">
+    <a href="/appointment_overview?identification={{session.id}}#toMessages" class="text-decoration-none text-reset">
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="rounded-circle border d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;">
+                <i class="bi bi-arrow-left"></i>
+            </div>
+        </div>
+    </a>
+</div>
 
 <div id="wrapper">
     <!-- Begin Page Content -->
     <div class="container-fluid">
-
-        <!-- Page Heading -->
-        <div class="d-flex">
-            <a href="/"><i class="fa fa-arrow-left"></i></a>    
-        </div>
-        <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <h1 class="h3 mb-0 text-gray-800">Your Message Conversation With {{recipient}}</h1>
-        </div>
-        <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <a href="" class="text-white">
-                <button class="btn mr-2 btn-primary" id="messaging_btn">
-                    Overview
-                </button>
-            </a>
-            <a href="{{ url_for('user_uploads', identification=session.id) }}" class="text-white">
-                <button class="selector btn ml-2 btn-secondary" id="materials_btn">
-                    Materials
-                </button>
-            </a>
-        </div>
-
-        <div class="row py-2 mb-4 bg-gradient-secondary px-0">
-        </div>
-
         
         <div class="d-block" id="messaging">
-            <div class="row">
-                <div class="col-3">
-                    <div class="row mb-3">
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <div class="col-12">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Date</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ session.date.strftime("%B") }} {{ session.date.strftime("%d") }}, {{ session.date.strftime("%Y") }}</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <!-- Earnings (Annual) Card Example -->
-                        <div class="col-12">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Period</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.period}}</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <!-- Tasks Card Example -->
-                        <div class="col-12">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                Subject</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{session.subject}}</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-9">
+            <div class="flex-row d-flex justify-content-center">
+                
+                <div class="col-10">
                     <div class="card shadow mb-4">
                         <!-- Card Header - Dropdown -->
-                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-primary">Message History</h6>
-                            <div class="dropdown no-arrow">
-                                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                    aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item" href="#">
-                                        Report
+                        <!-- Card Body -->
+                        <div class="card-body position relative">
+                            <div class="position-absolute" style="top: 5px; left: 5px;">
+                                <div class="dropdown no-arrow">
+                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                                     </a>
+                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                         aria-labelledby="dropdownMenuLink">
+                                        <a class="dropdown-item" href="#">
+                                            Report
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            <div id="chat-messages" class="container-fluid" style="height: 40vh; overflow-y: auto;">
+                            <div id="chat-messages" class="container-fluid" style="height: 68vh; overflow-y: auto;">
                                 <!-- Set max-height and enable vertical scrolling -->
                                 {%for message in messages%}
                                     {%if message['mine']%}

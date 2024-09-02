@@ -321,7 +321,7 @@ def send_verification_email():
         flash("Your email is already verified.", "info")
     return redirect(url_for('index'))
 
-@app.route('/appointment_details')
+@app.route('/appointment_messages')
 @login_required
 @email_verified_required
 @check_for_closed_session
@@ -354,6 +354,36 @@ def user_messages():
                            session=open_session,
                            thiss=current_user,
                            messages=messages)
+
+@app.route("/appointment_overview")
+@login_required
+@email_verified_required
+@check_for_closed_session
+def user_overview():
+    ID = request.args.get("identification")
+    if request.method == "POST":
+        id = request.form["id"]
+        return redirect(f'/terminate_session?identification={id}')
+    open_session = Session.query.get(ID)
+    other_user = User.query.get(open_session.tutor) if current_user.role == 0 else User.query.get(open_session.student)
+    other_user_image = base64.b64encode(other_user.image_data).decode('utf-8') if other_user.image_data else None
+    return render_template("user_overview.html",session=open_session,other=other_user,other_image = other_user_image)
+
+@app.route("/appointment_preview")
+@login_required
+@email_verified_required
+@check_for_closed_session
+def user_preview():
+    ID = request.args.get("identification")
+    if request.method == "POST":
+        id = request.form["id"]
+        if int(request.form.get("submit")):
+            return redirect(url_for("confirm_appointment",id=id))
+        return redirect(f'/delete_session/{id}?pre=1')
+    open_session = SessionRequest.query.get(ID)
+    other_user = User.query.get(open_session.tutor) if current_user.role == 0 else User.query.get(open_session.student)
+    other_user_image = base64.b64encode(other_user.image_data).decode('utf-8') if other_user.image_data else None
+    return render_template("user_preview.html",session=open_session,other=other_user,other_image = other_user_image,type=current_user.role)
 
 @app.route('/appointment_uploads')
 @login_required
@@ -531,16 +561,7 @@ def index():
             sessions_where_learn_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_learn_MH]
             sessions_where_learn_MH = list(map(lambda x: replace_with_username(x),sessions_where_learn_MH))
             people_learn = list(map(lambda x: User.query.get(x.tutor),sessions_where_learn ))
-        if current_user.role == 0:
-            return render_template('homepages/student.html',
-                                    sessions_where_learn = sessions_where_learn,
-                                    sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
-                                    sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
-                                    enum = enumerate,
-                                    username=current_user.username,
-                                    image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
-                                    people=people_learn if sessions_where_learn else None,
-                                    staff=staff)
+
         
         sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
         if sessions_where_teach:
@@ -577,7 +598,7 @@ def index():
 
 
 
-        return render_template('homepages/NHS.html',
+        return render_template('homepages/student.html',
                         enum = enumerate,
                         username = current_user.username,
                         meetings=meetings, dates=dates, year=current_year, month=current_month,
@@ -587,7 +608,8 @@ def index():
                         people_where_learn = people_where_learn + people_where_teach,
                         today=datetime.today().strftime('%Y-%m-%d'),
                         image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
-                        staff=staff
+                        staff=staff,
+                        role = current_user.role
                         )
         
     
@@ -1112,13 +1134,6 @@ def choose_classes(id):
 @email_verified_required
 @check_for_closed_session
 def view_appointments():
-    if request.method == "POST":
-        id = request.form["id"]
-        if int(request.form.get("submit")):
-            return redirect(url_for("confirm_appointment",id=id))
-        if int(request.form.get("pre")):
-            return redirect(f'/delete_session/{id}?pre=1')
-        return redirect(f'/terminate_session?identification={id}')
 
     session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
     session_requests_where_tutor = SessionRequest.query.filter_by(tutor=current_user.id).all()
@@ -1133,6 +1148,29 @@ def view_appointments():
                            session_requests_where_tutor=session_requests_where_tutor,
                            confirmed_sessions_where_student=confirmed_sessions_where_student,
                            confirmed_sessions_where_tutor=confirmed_sessions_where_tutor)
+
+@app.route('/view_requests',methods=["GET","POST"])
+@login_required
+@email_verified_required
+@check_for_closed_session
+def view_requests():
+    if request.method == "POST":
+        id = request.form["id"]
+        if int(request.form.get("submit")):
+            return redirect(url_for("confirm_appointment",id=id))
+        if int(request.form.get("pre")):
+            return redirect(f'/delete_session/{id}?pre=1')
+        return redirect(f'/terminate_session?identification={id}')
+
+    session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
+    session_requests_where_tutor = SessionRequest.query.filter_by(tutor=current_user.id).all()
+
+
+    return render_template("view_requests.html",
+                           type=current_user.role,
+                           len=len,
+                           session_requests_where_student=session_requests_where_student,
+                           session_requests_where_tutor=session_requests_where_tutor)
 
 @app.route('/confirm_appointment')
 @login_required
@@ -1204,10 +1242,10 @@ def approve_hours():
 
     return render_template("approve_hours.html",hours_to_approve=to_approve)
 
-@app.route('/calender')
+@app.route('/calendar')
 @login_required
 @email_verified_required
-def calender():
+def calendar():
 
     #replace these dartes with the actual meeting dates when done
     meetings = {
@@ -1223,7 +1261,7 @@ def calender():
         last_day = next_month - timedelta(days=next_month.day)
         return [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
     dates = get_month_dates(current_year, current_month)
-    return render_template('calender.html',username = current_user.username,meetings=meetings, dates=dates, year=current_year, month=current_month,today=datetime.today().strftime('%Y-%m-%d'))
+    return render_template('calendar.html',username = current_user.username,meetings=meetings, dates=dates, year=current_year, month=current_month,today=datetime.today().strftime('%Y-%m-%d'))
 
 @app.route('/forgot_password')
 def forgot_password():
