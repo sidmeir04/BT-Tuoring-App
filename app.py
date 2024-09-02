@@ -355,7 +355,7 @@ def user_messages():
                            thiss=current_user,
                            messages=messages)
 
-@app.route("/appointment_overview")
+@app.route("/appointment_overview",methods=["POST","GET"])
 @login_required
 @email_verified_required
 @check_for_closed_session
@@ -369,7 +369,7 @@ def user_overview():
     other_user_image = base64.b64encode(other_user.image_data).decode('utf-8') if other_user.image_data else None
     return render_template("user_overview.html",session=open_session,other=other_user,other_image = other_user_image)
 
-@app.route("/appointment_preview")
+@app.route("/appointment_preview",methods=["POST","GET"])
 @login_required
 @email_verified_required
 @check_for_closed_session
