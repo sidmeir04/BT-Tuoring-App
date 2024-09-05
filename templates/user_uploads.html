@@ -3,40 +3,27 @@
 {% set active_material = 0 %}
 {% block content %}
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<div class="d-flex fixed-top ml-3" style="margin-top:80px;z-index:0;">
+    <a href="/appointment_overview?identification={{session.id}}#toUploads" class="text-decoration-none text-reset">
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="rounded-circle border d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;">
+                <i class="bi bi-arrow-left"></i>
+            </div>
+        </div>
+    </a>
+</div>
 
 <div id="wrapper">
     <!-- Begin Page Content -->
     <div class="container-fluid">
-
-        <!-- Page Heading -->
-        <div class="d-flex">
-            <a href="/"><i class="fa fa-arrow-left"></i></a>
-        </div>
-        <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <h1 class="h3 mb-0 text-gray-800">Materials from Session With {{ recipient }}</h1>
-        </div>
-        <div class="d-sm-flex align-items-center justify-content-center mb-4 align-items-center">
-            <a href="{{ url_for('user_messages', identification=session.id) }}" class="text-white">
-                <button class="btn mr-2 btn-secondary" id="messaging_btn">
-                    Overview
-                </button>
-            </a>
-            <a href="" class="text-white">
-                <button class="selector btn ml-2 btn-primary" id="materials_btn">
-                    Materials
-                </button>
-            </a>
-        </div>
-
-        <div class="row py-2 mb-4 bg-gradient-secondary px-0"></div>
-
+        
         <div class="d-block" id="materials">
-            <div class="row">
-                <div class="col-12">
+            <div class="flex-row d-flex justify-content-center">
+                <div class="col-10">
                     <div class="card shadow mb-4">
                         <!-- Card Header -->
-                        <div class="card-header">
-                            <div class="h1 mb-0 header-text">
+                        <div class="card-header d-flex justify-content-center">
+                            <div class="h1 mb-0 header-text text-center font-weight-bold">
                                 {%if thiss.role == 0%}
                                 Upload New Materials
                                 {%else%}
@@ -99,6 +86,13 @@
                                             {% endif %}
                                         </div>
                                     {% endfor %}
+                                {%else%}
+                                <div style="height:57.5vh">
+                                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Recusandae totam, cum ratione voluptatem, quibusdam quasi doloremque aut atque reiciendis adipisci esse consectetur error libero iste, tenetur expedita. Non, illum odit?
+                                    Illo quas deleniti doloribus tenetur corrupti deserunt blanditiis illum corporis ad quis. Mollitia nobis perferendis impedit cum beatae dolor nulla alias reprehenderit distinctio veritatis natus quisquam debitis, blanditiis corrupti dicta?
+                                    Culpa saepe fuga deserunt? Quam iure et expedita voluptatibus alias facilis dolore! Consequuntur beatae ducimus vel enim consequatur voluptatem error recusandae est. Laudantium iste qui delectus sapiente aliquam odit et?
+                                    Laboriosam suscipit qui eius atque nam. Consequuntur quam aut doloremque quos ex commodi officiis praesentium? Beatae in veniam facilis odio et, nihil eos tempora mollitia totam accusamus repellendus numquam facere!
+                                </div>
                                 {% endif %}
                             </div>
                             
@@ -134,7 +128,7 @@
         const totalPages = pages.length;
         document.querySelector('.page-number').innerText = currentPage;
         document.querySelector('.prev-page').disabled = currentPage === 1;
-        document.querySelector('.next-page').disabled = currentPage === totalPages;
+        document.querySelector('.next-page').disabled = currentPage >= totalPages;
     }
 
     function showPage(page) {

@@ -22,7 +22,7 @@
 
     <!-- Custom styles for this template-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
-    <link href="static/assets/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="static/assets/css/sb-admin-2.css" rel="stylesheet">
     <style>
         .flash-notification-container {
             position: fixed;
@@ -80,10 +80,15 @@
     <!-- Page Wrapper -->
     <div id="wrapper">
 
+
+<!-- THE PROBLEM WITH THE SIDEBAR LIES IN THE SIDEBAR CLASS -->
+
+
+
         <!-- Sidebar -->
         
         <!-- End of Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion fixed-top" id="accordionSidebar">
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark fixed-top toggled" id="accordionSidebar2">
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
                 <!-- <div class="sidebar-brand-icon rotate-n-15">
@@ -96,7 +101,7 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item {{'active' if active_page == 'dashboard'}}">
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'dashboard'}}">
                 <a class="nav-link" href="/">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
@@ -109,69 +114,74 @@
             </div> -->
 
             {% if not current_user.is_authenticated %}
-            <li class="nav-item">
+            <li class="nav-item side-nav-item d-none">
                 <a class="nav-link" href="/login">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Login</span></a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item side-nav-item d-none">
                 <a class="nav-link" href="/register">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Register</span></a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item side-nav-item d-none">
                 <a class="nav-link" href="/forgot_password">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>forgot_password</span></a>
             </li>
             {% else %}
             {% if current_user.role <= 1 %}
-            <li class="nav-item {{'active' if active_page == 'find_session'}}">
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'find_session'}}">
                 <a class="nav-link" href="/find_session">
                     <i class="bi bi-search"></i>
                     <span>Find Tutors</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 1 %}
-            <li class="nav-item {{'active' if active_page == 'scheduler'}}">
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'scheduler'}}">
                 <a class="nav-link" href="/scheduler">
                     <i class="bi bi-calendar-fill"></i>
                     <span>Scheduler</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
-            <li class="nav-item {{'active' if active_page == 'user_managing'}}">
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'user_managing'}}">
                 <a class="nav-link" href="/user_managing">
                     <i class="bi bi-calendar-fill"></i>
                     <span>User Manager</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
-            <li class="nav-item">
+            <li class="nav-item side-nav-item d-none">
                 <a class="nav-link" href="/show_feedback">
                     <i class="bi bi-easel2-fill"></i>
                     <span>View Feedback</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
-            <li class="nav-item">
+            <li class="nav-item side-nav-item d-none">
                 <a class="nav-link" href="/approve_hours">
                     <i class="bi bi-easel2-fill"></i>
                     <span>Approve Hours</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
-            <li class="nav-item">
+            <li class="nav-item side-nav-item d-none">
                 <a class="nav-link" href="/tag_managing">
                     <i class="bi bi-easel2-fill"></i>
                     <span>Tag Managing</span></a>
             </li>
             {% endif %}
             {% endif %}
-            <li class="nav-item {{'active' if active_page == 'view_appointments'}}">
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'view_appointments'}}">
                 <a class="nav-link" href="/view_appointments">
                     <i class="bi bi-calendar-fill"></i>
                     <span>View Appointments</span></a>
+            </li>
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'view_requests'}}">
+                <a class="nav-link" href="/view_requests">
+                    <i class="bi bi-calendar-fill"></i>
+                    <span>Manage Requests</span></a>
             </li>
 
             <!-- <hr class="sidebar-divider d-none d-md-block"> -->
@@ -189,9 +199,27 @@
                 <!-- <nav class="navbar fixed-top"> -->
 
                     <!-- Sidebar Toggle (Topbar) -->
-                    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3">
+                    <button id="sidebarToggle" class="btn btn-link rounded-circle mr-3" onclick="toggleSide()">
                         <i class="fa fa-bars"></i>
                     </button>
+                    <style>
+                        #accordionSidebar2 {
+                            width: 0%;
+                            overflow-x: hidden;
+                            transition: width 0.25s ease;
+                        }
+
+                        #accordionSidebar2.show-sidebar {
+                            width: 100vw; /* Full width for small screens */
+                        }
+
+                    </style>
+                    <script>
+                        function toggleSide(){
+                            // NEED TO SELECT ALL OF THE SIDE_NAV_ITEM CLASS AND MAKE THEM D_NONE
+                            $(".side-nav-item").toggleClass("d-none")
+                        };
+                    </script>
 
 
                     <!-- Topbar Search -->
@@ -291,9 +319,9 @@
                 </nav>
             </div>
             <div class="container-fluid" style="min-height:97vh;">
-                <div class="row pt-5 mt-5 pr-3">
-                    <div class="col-4"></div>
-                    <main class="col-md-8 col-lg-8 col-sm-11 col-xs-9 pr-4" style="min-height:77vh;">
+                <div class="row pt-5 mt-5">
+                    
+                    <main class="col-md-12 col-lg-12 col-sm-11 col-xs-9" style="min-height:77vh;">
                         <div id="content">
                             <!-- End of Topbar -->
             
@@ -391,20 +419,21 @@
     <script src="static/assets/js/sb-admin-2.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-            $('.remove_notifaction').on('click', function() {
+       $(document).ready(function() {
+            $('.remove_notifaction').on('click', function(event) {
+                event.stopPropagation();
+
                 const notif = $(this).val();
                 const button = $(this);
                 
-                num_notifications = document.getElementById('notification_counter')
-                int_notifications = parseInt(num_notifications.innerText) - 1
-                if(int_notifications == 0){
-                    num_notifications.classList.add('d-none')
+                let num_notifications = document.getElementById('notification_counter');
+                let int_notifications = parseInt(num_notifications.innerText) - 1;
+                
+                if (int_notifications == 0) {
+                    num_notifications.classList.add('d-none');
+                } else {
+                    num_notifications.innerText = String(int_notifications);
                 }
-                else{
-                    num_notifications.innerText = String(int_notifications)
-                }
-
                 $.ajax({
                     type: 'POST',
                     url: '/delete_notification',
@@ -417,8 +446,10 @@
                         console.error('Error deleting notification:', error);
                     }
                 });
+
             });
         });
+
     </script>
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
 

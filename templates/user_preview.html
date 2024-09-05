@@ -1,0 +1,88 @@
+{% extends "blank.html" %}
+{% set active_page = "overview" %}
+{% block content %}
+
+<!-- text-gray-800 for bolder text -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<div class="d-flex fixed-top ml-3" style="margin-top:80px;z-index:0;">
+    <a href="/view_appointments" class="text-decoration-none text-reset">
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="rounded-circle border d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;">
+                <i class="bi bi-arrow-left"></i>
+            </div>
+        </div>
+    </a>
+</div>
+
+<div id="wrapper" class="">
+    <!-- Begin Page Content -->
+    <div class="container-fluid">
+
+        <!-- Page Heading -->
+       
+        <div class="row d-flex justify-content-center">
+            <div class="col-8 bg-white px-5 pt-4">
+                <div class="h1 font-weight-bold justify-self-center text-center mb-4">
+                    Student Info
+                </div>
+                <div class="card shadow mb-5" style="border-radius:10px;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <img src="
+                            {% if other_image %}
+                            data:image/jpeg;base64,{{ other_image }}
+                            {% else %}
+                            static/assets/img/undraw_profile.svg
+                            {% endif %}
+                            " id="image" alt="Admin" class="rounded-circle" width="130vw" height="130vw">  
+                            <div>
+                                <h1 class="mt-2 ml-4 font-weight-bold">{{other.username}}</h1>
+                                <h3 class="mt-2 ml-4">Email: {{other.email}}</h3>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="h1 font-weight-bold justify-self-center text-center mb-4">
+                    Session Details
+                </div>
+                <div class="d-flex justify-content-between flew-row mb-3">
+                    <div class="h3 col-6">
+                        First Session Date:
+                    </div>
+                    <div class="h3 col-6">
+                        Last Session Date:
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between flew-row mb-3">
+                    <div class="h3 col-6">
+                        From {{session.start_time}} to {{session.end_time}}
+                    </div>
+                    <div class="h3 col-6">
+                        Period: {{session.period}}
+                    </div>
+                </div>
+                <div class="d-flex flew-row mb-4 justify-content-between">
+                    <div class="h3 col-6">
+                        Number of Meetings: X
+                    </div>
+                    <div class="h3 col-6">
+                        Subject: {{session.subject}}
+                    </div>
+                </div>
+                <form action="/appointment_preview?identification={{session.id}}" method="POST" class="d-flex justify-content-center flew-row mb-5">
+                    <input type="hidden" value="{{session.id}}" name="id">
+                    {%if type == 1%}
+                    <button type="submit" class="btn btn-success btn-lg px-3 mx-2 col-4" style="border-radius:10px;" name="submit" value="1">Confirm</button>
+                    <button type="submit" class="btn btn-danger btn-lg px-3 mx-2 col-4" style="border-radius:10px;" name="submit" value="0">Decline</button>
+                    {%else%}
+                    <button type="submit" class="btn btn-danger btn-lg px-3 col-6" name="submit" value="0">Cancel</button>
+                    {%endif%}
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+</div>
+
+{% endblock %}
