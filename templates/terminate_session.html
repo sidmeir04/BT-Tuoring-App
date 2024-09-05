@@ -35,11 +35,10 @@
                         </div>
                         <div class="form-row mb-2 d-flex justify-content-center">
                             <div class="form-group col-9">
-                                <label for="fill_form">Would you like to fill out an optional feedback form for your tutor?</label>
-                                <select id="fill_form" name="fill_form" class="form-control" required>
-                                    <option value="" selected disabled>--Select An Option--</option>
-                                    <option value="1">Yes</option>
-                                    <option value="0">No</option>
+                                <label for="repeating_session">Would you like to make this a reapting session?</label>
+                                <select id="repeating_session" name="repeating_session" class="form-control" required>
+                                    <option value="1" {% if repeating %} selected {% endif %}>Yes</option>
+                                    <option value="0" {% if not repeating %} selected {% endif %}>No</option>
                                 </select>
                             </div>
                         </div>
