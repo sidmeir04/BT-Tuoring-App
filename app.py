@@ -120,6 +120,7 @@ class Session(db.Model):
     tutor_form_completed = db.Column(db.Boolean, default = True)
     student_form_completed = db.Column(db.Boolean, default = False)
     message_history_id = db.Column(db.Integer, db.ForeignKey('active_message_history.id'))
+    recurring = db.Column(db.Boolean, default = False)
     
     # Relationship to SessionFile
     files = db.relationship('SessionFile', back_populates='session', cascade='all, delete-orphan')
@@ -228,6 +229,60 @@ def temp_function_for_default_user_loading():
         db.session.add(user3)
         db.session.add(user4)
         db.session.commit()
+
+def add_new_session(tutor_id,student_id,date,period,request,repeating):
+    user = User.query.get(tutor_id)
+
+    day = date_to_day(date)
+    year, month, temp_day = (int(i) for i in date.split('-'))
+    dayNumber = weekday(year, month, temp_day)
+    data = user.schedule_data[day][str(period)]
+    if request:
+        new_session = SessionRequest(
+            tutor = tutor_id,
+            start_time = string_to_time(data['start_time']),
+            end_time = string_to_time(data['end_time']),
+            student = student_id,
+            period = period,
+            start_date = datetime.today(),
+            day_of_the_week = dayNumber,
+            date = datetime.strptime(date, '%Y-%m-%d').date()
+        )
+
+        db.session.add(new_session)
+
+        other_user = User.query.get(id)
+        temp = other_user.notifaction_data['deleted']
+        other_user.notifaction_data['deleted'] = temp + [f'{other_user.username} has requested a session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
+        flag_modified(other_user, 'notifaction_data')
+
+    else:
+        tutor = User.query.get(tutor_id)
+        conversation = ActiveMessageHistory(
+            people = {tutor_id:'',student_id:''},
+            missed = {'total':0,tutor_id:0,student_id:0}
+        )
+        db.session.add(conversation)
+        db.session.commit()
+
+        new_session = Session(
+            tutor = tutor_id,
+            start_time = string_to_time(data['start_time']),
+            end_time = string_to_time(data['end_time']),
+            student = student_id,
+            period = period,
+            start_date = datetime.today(),
+            day_of_the_week = dayNumber,
+            date = datetime.strptime(date, '%Y-%m-%d').date(),
+            message_history_id = conversation.id,
+            recurring = repeating
+        )
+
+        db.session.add(new_session)
+        tutor.schedule_data[date_to_day(str(new_session.date))][str(new_session.period)]['times'] += ' ' + str(new_session.date)
+        flag_modified(tutor, 'schedule_data')
+
+    db.session.commit()
 
 with app.app_context():
     db.create_all(bind_key=None)
@@ -725,6 +780,8 @@ def register():
 @email_verified_required
 def terminate_session():
     id = request.args.get("identification")
+    old_session = Session.query.get(id)
+    repeating = old_session.recurring
     current_user.marked = int(id)
     db.session.commit()
     if request.method == "POST":
@@ -739,10 +796,12 @@ def terminate_session():
 
         ##############################################################################################################################
 
-        params = {"form":request.form.get("fill_form"),"id":id,"cancel_reason":cancel_reason}
+        params = {"repeat":request.form.get("repeating_session"),"id":id,"cancel_reason":cancel_reason}
+        if request.form.get("repeating_session") == "1":
+            add_new_session(tutor_id=old_session.tutor,student_id=old_session.student,date=find_next_day_of_week(['monday','tuesday','wednesday','thursday','friday'][old_session.day_of_the_week]),period = old_session.period,request=False,repeating=True)
         return redirect(url_for("complete_session",**params))
-    
-    return render_template('terminate_session.html',id=id)
+
+    return render_template('terminate_session.html',id=id,repeating=repeating)
 
 @app.route('/complete_session')
 @login_required
@@ -750,7 +809,7 @@ def terminate_session():
 def complete_session():
     id = request.args.get("id")
     session = Session.query.get(id)
-    fill_form = int(request.args.get('form'))
+    # fill_form = int(request.args.get('form'))
 
     session_log = SessionLog(
         tutor = session.tutor,
@@ -769,13 +828,13 @@ def complete_session():
     tutor = User.query.get(session.tutor)
     student = User.query.get(session.student)
 
-    feedback = Feedback(
-        date = datetime.today().strftime('%Y-%m-%d'),
-        review_from = student.id,
-        exists=bool(fill_form),
-        review_for = tutor.id,
-        subject = session.subject
-    )
+    # feedback = Feedback(
+    #     date = datetime.today().strftime('%Y-%m-%d'),
+    #     review_from = student.id,
+    #     exists=bool(fill_form),
+    #     review_for = tutor.id,
+    #     subject = session.subject
+    # )
 
     
     db.session.commit()
@@ -819,50 +878,50 @@ def complete_session():
     # if date >= today:
     #     flash('Tutoring Session has not Happened yet', 'warning')
     #     return redirect(url_for('index'))
-    if current_user.id == session.student and int(request.args.get("form")):
-        return redirect(url_for('completion_form',sid=session.id,fid=feedback.id))
+    # if current_user.id == session.student and int(request.args.get("form")):
+    #     return redirect(url_for('completion_form',sid=session.id,fid=feedback.id))
     flash("Session completed successfully",'success')
     return redirect(f"/delete_session/{id}?post=1")
 
-@app.route('/completion_form', methods = ['GET','POST'])
-@login_required
-@email_verified_required
-def completion_form():
-    id = request.args.get('sid')
-    fid = request.args.get("fid")
-    if request.method == "POST":
-        understanding = request.form.get('personal_rating')
-        on_time = request.form.get('on_time')
-        review = request.form.get('message')
-        feedback = Feedback.query.get(fid)
+# @app.route('/completion_form', methods = ['GET','POST'])
+# @login_required
+# @email_verified_required
+# def completion_form():
+#     id = request.args.get('sid')
+#     fid = request.args.get("fid")
+#     if request.method == "POST":
+#         understanding = request.form.get('personal_rating')
+#         on_time = request.form.get('on_time')
+#         review = request.form.get('message')
+#         feedback = Feedback.query.get(fid)
 
-        feedback.on_time = on_time
-        feedback.understanding = understanding
-        feedback.review_text = review
+#         feedback.on_time = on_time
+#         feedback.understanding = understanding
+#         feedback.review_text = review
 
-        tutor = User.query.get(feedback.tutor)
+#         tutor = User.query.get(feedback.tutor)
 
-        temp = tutor.notifaction_data['deleted']
-        tutor.notifaction_data['deleted'] = temp + [f'{tutor.username} gave you feedback']
-        flag_modified(tutor,"notifaction_data")
-        db.session.add(feedback)
+#         temp = tutor.notifaction_data['deleted']
+#         tutor.notifaction_data['deleted'] = temp + [f'{tutor.username} gave you feedback']
+#         flag_modified(tutor,"notifaction_data")
+#         db.session.add(feedback)
 
-        db.session.commit()
-        return redirect(f"/delete_session/{id}?post=1")
+#         db.session.commit()
+#         return redirect(f"/delete_session/{id}?post=1")
     
-    return render_template('completion_form.html', id = id, fid=fid)
+#     return render_template('completion_form.html', id = id, fid=fid)
 
 @app.route('/one_pager')
 def one_pager():
     return render_template('one_pager.html')
 
-@app.route('/show_feedback')
-@login_required
-@email_verified_required
-@check_for_closed_session
-def show_feedback():
-    reviews = Feedback.query.filter_by(review_for = current_user.id)
-    return render_template('show_feedback.html', reviews = reviews)
+# @app.route('/show_feedback')
+# @login_required
+# @email_verified_required
+# @check_for_closed_session
+# def show_feedback():
+#     reviews = Feedback.query.filter_by(review_for = current_user.id)
+#     return render_template('show_feedback.html', reviews = reviews)
 
 days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
@@ -1056,6 +1115,7 @@ def book_session(id, date, period):
     db.session.commit()
     flash('Session requested!', 'success')
     return redirect(url_for('view_appointments'))
+    
 
 @app.route('/profile', methods = ['POST','GET'])
 @login_required
@@ -1180,35 +1240,11 @@ def confirm_appointment():
     session_request = SessionRequest.query.get(id)
     tutor = User.query.get(session_request.tutor)
     student = User.query.get(session_request.student)
+    add_new_session(tutor_id=session_request.tutor,student_id=student.id,date = session_request.date.strftime('%Y-%m-%d'),period = session_request.period,request=False,repeating=False)
 
-    current_user_id = current_user.get_id()
-    conversation = ActiveMessageHistory(
-        people = {id:'',current_user_id:''},
-        missed = {'total':0,id:0,current_user_id:0}
-    )
-
-    db.session.add(conversation)
-    db.session.commit()
-    new_session = Session(
-        tutor = session_request.tutor,
-        start_time = session_request.start_time,
-        end_time = session_request.end_time,
-        student = session_request.student,
-        period = session_request.period,
-        start_date = session_request.start_date,
-        day_of_the_week = session_request.day_of_the_week,
-        date = session_request.date,
-        message_history_id = conversation.id
-    )
-
-    db.session.add(new_session)
-
-    temp = tutor.notifaction_data['deleted']
-    student.notifaction_data['deleted'] = temp + [f'{student.username} confirmed the session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
-    flag_modified(student, 'notifaction_data')
-    tutor.schedule_data[date_to_day(str(new_session.date))][str(new_session.period)]['times'] += ' ' + str(new_session.date)
-    flag_modified(tutor, 'schedule_data')
-    db.session.add(conversation)
+    # temp = tutor.notifaction_data['deleted']
+    # student.notifaction_data['deleted'] = temp + [f'{student.username} confirmed the session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
+    # flag_modified(student, 'notifaction_data')
     db.session.delete(session_request)
     db.session.commit()
     flash("Session confirmed!","success")
