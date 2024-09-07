@@ -20,7 +20,7 @@
                 <div class="no-requests text-center h1">No sessions as a student.</div>
                 {% else %}
                 {% for session in confirmed_sessions_where_student %}
-                <a href="/appointment_overview?identification={{session.id}}" class="text-decoration-none text-reset">
+                <a href="/appointment_overview?identification={{session.id}}" class="text-decoration-none text-reset" data-transition="true" data-swup-animation="right">
                     <div class="card card-link mb-3">
                         <div class="card-body d-flex align-items-center py-2">
                             <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
@@ -53,7 +53,7 @@
                 <div class="no-requests text-center h1">No sessions as a tutor.</div>
                 {% else %}
                 {% for session in confirmed_sessions_where_tutor %}
-                <a href="/appointment_overview?identification={{session.id}}" class="text-decoration-none text-reset">
+                <a href="/appointment_overview?identification={{session.id}}" class="text-decoration-none text-reset" data-swup-animation="right" data-transition="true">
                     <div class="card card-link mb-3">
                         <div class="card-body d-flex align-items-center py-2">
                             <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
@@ -76,20 +76,20 @@
                 {% endfor %}
                 {% endif %}
             </div>
+            
             {% endif %}
-
-            {%if type == 1%}
-            <div class="fixed-bottom pb-2 bg-white pt-2" style="z-index:0;">
-                <div class="btn-group d-flex flew-row justify-content-center" role="group" aria-label=" toggle button group">
-                    <label id="learning-sessions-btn" class="btn btn-toggle btn-outline-secondary col-3 active" onclick="toggleView('learning-sessions')">Learning</label>
-                  
-                    <label id="tutoring-sessions-btn" class="btn btn-toggle btn-outline-secondary col-3" onclick="toggleView('tutoring-sessions')">Teaching</label>
-                </div>
-                
-            </div>
-            {%endif%}
         </div>
     </div>
+    {%if type == 1%}
+    <div class="fixed-bottom pb-2 bg-white pt-2 remove" style="z-index:0;">
+        <div class="btn-group d-flex flew-row justify-content-center" role="group" aria-label=" toggle button group">
+            <label id="learning-sessions-btn" class="btn btn-toggle btn-outline-secondary col-3 active" onclick="toggleView('learning-sessions')">Learning</label>
+            
+            <label id="tutoring-sessions-btn" class="btn btn-toggle btn-outline-secondary col-3" onclick="toggleView('tutoring-sessions')">Teaching</label>
+        </div>
+        
+    </div>
+    {%endif%}
 </div>
 
 <script>

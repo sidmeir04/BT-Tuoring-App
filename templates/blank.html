@@ -53,10 +53,66 @@
                 opacity: 0;
             }
         }
+        html.is-changing .transition-slide {
+        transition: transform .8s cubic-bezier(0.5, 0, 0.15, 1);
+
+        }
+
+        .transition-slide.is-next-container {
+        transform: translateX(100%);
+        }
+
+        .transition-slide.is-previous-container {
+        transform: translateX(-100%);
+
+        }
+
+        html.to-left .transition-slide.is-next-container {
+        transform: translateX(-100%);
+
+        }
+
+        html.to-left .transition-slide.is-previous-container {
+        transform: translateX(100%);
+
+        }
+        html.is-changing, body.is-changing {
+        overflow: hidden;
+        }
+        .is-changing .remove {
+            display: none;
+        }
+        /* .is-changing main {
+            position: absolute;
+        } */
+
+
+    </style>
+    <style>
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1049; /* Ensure it's on top */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
 <body id="page-top" class="shifting-gradient">
+    <div id="loading-screen">
+        <div class="spinner-grow"></div>
+    </div>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="flash-notification-container py-1">
@@ -318,37 +374,20 @@
 
                 </nav>
             </div>
-            <div class="container-fluid" style="min-height:97vh;">
-                <div class="row pt-5 mt-5">
-                    
-                    <main class="col-md-12 col-lg-12 col-sm-11 col-xs-9" style="min-height:77vh;">
-                        <div id="content">
-                            <!-- End of Topbar -->
+            <div id="swup" style="position:absolute;width:100%;height:100%" class="transition-slide">
+                <div class="container-fluid" style="min-height:97vh">
+                    <div class="row pt-5 pb-3 mt-5 bg-light">
+                        
+                        <main class="col-12" style="min-height:77vh">
+                            <div id="content">
+                                    {%block content%}
             
-                            <!-- Begin Page Content -->
-                            <!-- <div class="container-fluid pr-0"> -->
-                                {%block content%}
-        
-                                {%endblock%}
-                            <!-- </div> -->
-                            <!-- /.container-fluid -->
-            
-                        </div>
-                    </main>
-                </div>
-            </div>
-            <!-- <footer class="sticky-footer bg-white flex-row-reverse">
-                <div class="container my-auto d-flex">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Duolingo 2023</span>
+                                    {%endblock%}
+                            </div>
+                        </main>
                     </div>
                 </div>
-            </footer> -->
-            <!-- End of Main Content -->
-
-            <!-- Footer -->
-            
-            <!-- End of Footer -->
+            </div>
         </div>
         <!-- End of Content Wrapper -->
 
@@ -418,6 +457,22 @@
     <!-- Custom scripts for all pages-->
     <script src="static/assets/js/sb-admin-2.min.js"></script>
 
+    <!-- Page Swap Animations -->
+    <!-- <script src="https://unpkg.com/@swup/scroll-plugin@latest/dist/SwupScrollPlugin.min.js"></script>
+    <script type="module">
+        import Swup from 'https://unpkg.com/swup@4?module';
+        import SwupParallelPlugin from 'https://unpkg.com/@swup/parallel-plugin@0?module';
+        import SwupScrollPlugin from 'https://unpkg.com/@swup/scroll-plugin@2?module'; // Import the SwupScrollPlugin
+    
+        const swup = new Swup({
+            linkSelector: 'a[data-transition="true"]',
+            plugins: [new SwupParallelPlugin(), new SwupScrollPlugin({animateScroll:true})],
+            linkToSelf: 'navigate',
+            cache: false,
+
+        });
+    </script> -->
+
     <script>
        $(document).ready(function() {
             $('.remove_notifaction').on('click', function(event) {
@@ -469,9 +524,18 @@
             }
     });
     </script>
+    <script>
+        window.addEventListener('load', function () {
+            // Hide the loading screen
+            document.getElementById('loading-screen').style.display = 'none';
+        });
+    </script>
+    
     {%block javascriptsSocket%}
 
     {%endblock%}
 </body>
+
+
 
 </html>

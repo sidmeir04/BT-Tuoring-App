@@ -2,9 +2,9 @@
 {% set active_page = "messages" %}
 {% set active_material = 0 %}
 {% block content %}
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
 <div class="d-flex fixed-top ml-3" style="margin-top:80px;z-index:0;">
-    <a href="/appointment_overview?identification={{session.id}}#toUploads" class="text-decoration-none text-reset">
+    <a href="/appointment_overview?identification={{session.id}}" class="text-decoration-none text-reset remove" data-swup-animation="left" data-transition="true">
         <div class="d-flex justify-content-center align-items-center">
             <div class="rounded-circle border d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;">
                 <i class="bi bi-arrow-left"></i>
@@ -42,16 +42,12 @@
                                             height: auto;
                                             width: 20vw;
                                         }
-                                        #image {
-                                            height: auto;
-                                            width: 30vw;
-                                        }
                                         #image:hover {
                                             opacity: .5;
                                         }
                                     </style>
                                     <label for="material_upload" class="mb-3">
-                                        <img src="https://static.vecteezy.com/system/resources/thumbnails/023/454/938/small/important-document-upload-logo-design-vector.jpg" id="image" alt="Admin" width="130vw" height="130vw" style="cursor: pointer">
+                                        <img src="https://static.vecteezy.com/system/resources/thumbnails/023/454/938/small/important-document-upload-logo-design-vector.jpg" id="image" alt="Admin" width="130vw" height="130vw" style="cursor: pointer;height: auto;width: 30vw;">
                                     </label>
                                     <input class="d-none" id="material_upload" name="material_upload" type="file" accept='.png, .pdf' required>
                                     <button class="btn btn-primary ml-auto rounded-pill" type='submit' id="formSubmit">
