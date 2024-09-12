@@ -3,15 +3,15 @@
 {% block content %}
 
 <div class="d-flex justify-content-center">
-    <div class="h1 mb-3 font-weight-bold">
+    <div class="h1 mb-3 font-weight-bold text-center">
         View Confirmed Sessions
     </div>
 </div>
 
-<div class="container-fluid" style="min-height: 70vh;">
+<div class="container-fluid px-1 mx-0" style="min-height: 70vh;">
     <!-- Toggle Buttons -->
-    <div class="flex-row d-flex justify-content-center">
-        <div class="col-8 bg-white px-5 pt-4" style="height:70vh;overflow:auto">
+    <div class="flex-row d-flex justify-content-center px-0 mx-0">
+        <div class="col-12 col-lg-8 bg-white px-lg-5 pt-4" style="height:70vh;overflow:auto">
             <div id="learning-sessions" class="card-container">
                 {% if confirmed_sessions_where_student|length == 0 %}
                 <div class="d-flex justify-content-center mb-3">
@@ -81,11 +81,11 @@
         </div>
     </div>
     {%if type == 1%}
-    <div class="fixed-bottom pb-2 bg-white pt-2 remove" style="z-index:0;">
-        <div class="btn-group d-flex flew-row justify-content-center" role="group" aria-label=" toggle button group">
-            <label id="learning-sessions-btn" class="btn btn-toggle btn-outline-secondary col-3 active" onclick="toggleView('learning-sessions')">Learning</label>
+    <div class="fixed-bottom pb-2 bg-white pt-3 pt-lg-2 remove container" style="z-index:0;">
+        <div class="btn-group d-flex flew-row justify-content-center px-1" role="group" aria-label=" toggle button group">
+            <label id="learning-sessions-btn" class="btn btn-toggle btn-outline-secondary col-6 col-lg-3 active" onclick="toggleView('learning-sessions')">Learning</label>
             
-            <label id="tutoring-sessions-btn" class="btn btn-toggle btn-outline-secondary col-3" onclick="toggleView('tutoring-sessions')">Teaching</label>
+            <label id="tutoring-sessions-btn" class="btn btn-toggle btn-outline-secondary col-6 col-lg-3" onclick="toggleView('tutoring-sessions')">Teaching</label>
         </div>
         
     </div>
