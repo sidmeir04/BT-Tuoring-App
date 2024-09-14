@@ -229,6 +229,7 @@
             </li>
             {% endif %}
             {% endif %}
+            {%if current_user.role <= 2%}
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'view_appointments'}}">
                 <a class="nav-link" style="width:100%" href="/view_appointments">
                     <i class="bi bi-calendar-fill"></i>
@@ -239,6 +240,7 @@
                     <i class="bi bi-calendar-fill"></i>
                     <span >Manage Requests</span></a>
             </li>
+            {%endif%}
 
             <!-- <hr class="sidebar-divider d-none d-md-block"> -->
 

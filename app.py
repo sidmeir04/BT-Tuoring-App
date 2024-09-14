@@ -598,10 +598,7 @@ def index():
     #redirects if not logged
 
     if not current_user or not current_user.is_authenticated:return redirect(url_for('login'))
-    admins = User.query.filter_by(role=3).all()
-    teachers = User.query.filter_by(role=2).all()
-    temp = {2:'Teacher',3:"Admin"}
-    staff = [(i.id,temp[i.role],i.username) for i in admins+teachers]
+
     def replace_with_username(thing):
             if thing == None:return thing
             username = User.query.get(thing[1]["sender"]).username
@@ -663,38 +660,10 @@ def index():
                         people_where_learn = people_where_learn + people_where_teach,
                         today=datetime.today().strftime('%Y-%m-%d'),
                         image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
-                        staff=staff,
                         role = current_user.role
                         )
         
-    
-    sessions_where_teach = Session.query.filter_by(tutor=current_user.id).all()
-    if sessions_where_teach:
-        sessions_where_teach_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_teach]
-        sessions_where_teach_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_teach_MH))
-        sessions_where_teach_MH = [i if i != (0,None) else None for i in sessions_where_teach_MH]
-        sessions_where_teach_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_teach_MH]
-        sessions_where_teach_MH = list(map(lambda x: replace_with_username(x),sessions_where_teach_MH))
-
-
-    sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
-    if sessions_where_learn:
-        sessions_where_learn_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
-        sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
-        sessions_where_learn_MH = [i if i != (0,None) else None for i in sessions_where_learn_MH]
-        sessions_where_learn_PP = [base64.b64encode(User.query.get(i[1]['sender']).image_data).decode('utf-8') if i and User.query.get(i[1]['sender']).image_data else None for i in sessions_where_learn_MH]
-        sessions_where_learn_MH = list(map(lambda x: replace_with_username(x),sessions_where_learn_MH))
-
-    return render_template('homepages/student.html',
-                            enum = enumerate,
-                            username = current_user.username,
-                            sessions_where_teach = sessions_where_teach,
-                            sessions_where_teach_MH = sessions_where_teach_MH if sessions_where_teach else None,
-                            sessions_where_teach_PP = sessions_where_teach_PP if sessions_where_teach else None,
-                            sessions_where_learn = sessions_where_learn,
-                            sessions_where_learn_MH = sessions_where_learn_MH if sessions_where_learn else None,
-                            sessions_where_learn_PP = sessions_where_learn_PP if sessions_where_learn else None,
-                            )
+    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate)
 
 @app.route('/login',methods=['GET','POST'])
 def login():
