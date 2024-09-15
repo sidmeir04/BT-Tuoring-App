@@ -65,6 +65,7 @@ class User(db.Model, UserMixin):
     image_data = db.Column(db.LargeBinary)
     qualification_data = db.Column(JSON,default=current_classlist)
     volunteer_hours = db.Column(JSON,default=load_volunteer_hour_json_file)
+    student_teacher_data = db.Column(JSON, default = load_student_teacher_JSON)
     role = db.Column(db.Integer, default = 0)
     marked = db.Column(db.Integer,default=0)
 
@@ -858,45 +859,9 @@ def complete_session():
     flash("Session completed successfully",'success')
     return redirect(f"/delete_session/{id}?post=1")
 
-# @app.route('/completion_form', methods = ['GET','POST'])
-# @login_required
-# @email_verified_required
-# def completion_form():
-#     id = request.args.get('sid')
-#     fid = request.args.get("fid")
-#     if request.method == "POST":
-#         understanding = request.form.get('personal_rating')
-#         on_time = request.form.get('on_time')
-#         review = request.form.get('message')
-#         feedback = Feedback.query.get(fid)
-
-#         feedback.on_time = on_time
-#         feedback.understanding = understanding
-#         feedback.review_text = review
-
-#         tutor = User.query.get(feedback.tutor)
-
-#         temp = tutor.notifaction_data['deleted']
-#         tutor.notifaction_data['deleted'] = temp + [f'{tutor.username} gave you feedback']
-#         flag_modified(tutor,"notifaction_data")
-#         db.session.add(feedback)
-
-#         db.session.commit()
-#         return redirect(f"/delete_session/{id}?post=1")
-    
-#     return render_template('completion_form.html', id = id, fid=fid)
-
 @app.route('/one_pager')
 def one_pager():
     return render_template('one_pager.html')
-
-# @app.route('/show_feedback')
-# @login_required
-# @email_verified_required
-# @check_for_closed_session
-# def show_feedback():
-#     reviews = Feedback.query.filter_by(review_for = current_user.id)
-#     return render_template('show_feedback.html', reviews = reviews)
 
 days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
@@ -1091,6 +1056,47 @@ def book_session(id, date, period):
     flash('Session requested!', 'success')
     return redirect(url_for('view_requests'))
     
+
+@app.route('/teacher_dashboard', methods = ['POST','GET'])
+@login_required
+def teacher_dashboard():
+    students = [User.query.get(id) for id in current_user.student_teacher_data['students']]
+    if current_user.role != 2: return redirect(url_for('index'))
+    return render_template('teacher_dashboard.html', students = students)
+
+@app.route('/api/handle_button', methods=['POST'])
+def handle_button():
+    data = request.json
+    parameter = data.get('parameter')
+    # Process the parameter as needed
+    response = {'message': f'Received parameter: {parameter}'}
+    return jsonify(response)
+
+@app.route('/teacher_manager', methods = ['GET','POST'])
+def teacher_manager():
+    teachers = User.query.filter_by(role=2).all()    
+    return render_template('teacher_manager.html', teachers=teachers)
+
+@app.route('/upload-roster/<int:teacher_id>', methods=['POST'])
+def upload_roster(teacher_id):
+    teacher = User.query.get(teacher_id)
+    file = request.files['file']
+
+    file_content = file.read().decode('utf-8')
+    file_like_object = StringIO(file_content)
+    csv_reader = csv.reader(file_like_object)
+    header = next(csv_reader, None)
+    if header is None or 'email' not in header:
+        return jsonify({"error": "CSV file must contain an 'email' column"}), 400
+
+    emails = [row[header.index('email')] for row in csv_reader]
+    user_ids = db.session.query(User.id).filter(User.email.in_(emails)).all()
+    user_ids = [user_id[0] for user_id in user_ids]
+
+    teacher.student_teacher_data['students'] = user_ids
+    flag_modified(teacher, 'student_teacher_data')
+    db.session.commit()
+    return redirect(url_for('teacher_manager'))
 
 @app.route('/profile', methods = ['POST','GET'])
 @login_required

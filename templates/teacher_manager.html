@@ -1,0 +1,29 @@
+{% extends "blank.html" %}
+{% block content %}
+
+<table=>
+    <thead>
+        <tr>
+            <th>Teacher Name</th>
+            <th>Upload Roster</th>
+            <th>Submit Roster</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for teacher in teachers %}
+        <tr>
+            <td>{{ teacher.name }}</td>
+            <td>
+                <form id="uploadForm{{ teacher.id }}" enctype="multipart/form-data" method="post" action="/upload-roster/{{ teacher.id }}">
+                    <input type="file" id="fileInput{{ teacher.id }}" name="file" accept=".csv" required>
+                </td>
+            <td>
+                <button type="submit">Upload</button>
+            </td>
+            </form>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

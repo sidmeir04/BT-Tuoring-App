@@ -104,3 +104,8 @@ def count_weekdays_between(start_date: datetime, end_date: datetime, weekday: in
         current_date += timedelta(days=1)
     
     return weekday_count
+
+def load_student_teacher_JSON():
+    with open('static/assets/student_teacher.json', 'r') as file:
+        student_teacher_file = json.load(file)
+    return student_teacher_file
