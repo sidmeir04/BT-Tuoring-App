@@ -53,10 +53,66 @@
                 opacity: 0;
             }
         }
+        html.is-changing .transition-slide {
+        transition: transform .8s cubic-bezier(0.5, 0, 0.15, 1);
+
+        }
+
+        .transition-slide.is-next-container {
+        transform: translateX(100%);
+        }
+
+        .transition-slide.is-previous-container {
+        transform: translateX(-100%);
+
+        }
+
+        html.to-left .transition-slide.is-next-container {
+        transform: translateX(-100%);
+
+        }
+
+        html.to-left .transition-slide.is-previous-container {
+        transform: translateX(100%);
+
+        }
+        html.is-changing, body.is-changing {
+        overflow: hidden;
+        }
+        .is-changing .remove {
+            display: none;
+        }
+        /* .is-changing main {
+            position: absolute;
+        } */
+
+
+    </style>
+    <style>
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1049; /* Ensure it's on top */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
 <body id="page-top" class="shifting-gradient">
+    <div id="loading-screen">
+        <div class="spinner-grow"></div>
+    </div>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="flash-notification-container py-1">
@@ -102,9 +158,9 @@
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'dashboard'}}">
-                <a class="nav-link" href="/">
+                <a class="nav-link" style="width:100%" href="/">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
+                    <span >Dashboard</span></a>
             </li>
 
             <!-- <hr class="sidebar-divider">
@@ -115,61 +171,61 @@
 
             {% if not current_user.is_authenticated %}
             <li class="nav-item side-nav-item d-none">
-                <a class="nav-link" href="/login">
+                <a class="nav-link" style="width:100%" href="/login">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Login</span></a>
+                    <span >Login</span></a>
             </li>
             <li class="nav-item side-nav-item d-none">
-                <a class="nav-link" href="/register">
+                <a class="nav-link" style="width:100%" href="/register">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Register</span></a>
+                    <span >Register</span></a>
             </li>
             <li class="nav-item side-nav-item d-none">
-                <a class="nav-link" href="/forgot_password">
+                <a class="nav-link" style="width:100%" href="/forgot_password">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>forgot_password</span></a>
+                    <span >forgot_password</span></a>
             </li>
             {% else %}
             {% if current_user.role <= 1 %}
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'find_session'}}">
-                <a class="nav-link" href="/find_session">
+                <a class="nav-link" style="width:100%" href="/find_session">
                     <i class="bi bi-search"></i>
-                    <span>Find Tutors</span></a>
+                    <span >Find Tutors</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 1 %}
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'scheduler'}}">
-                <a class="nav-link" href="/scheduler">
+                <a class="nav-link" style="width:100%" href="/scheduler">
                     <i class="bi bi-calendar-fill"></i>
-                    <span>Scheduler</span></a>
+                    <span >Scheduler</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'user_managing'}}">
-                <a class="nav-link" href="/user_managing">
+                <a class="nav-link" style="width:100%" href="/user_managing">
                     <i class="bi bi-calendar-fill"></i>
-                    <span>User Manager</span></a>
+                    <span >User Manager</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
             <li class="nav-item side-nav-item d-none">
-                <a class="nav-link" href="/show_feedback">
+                <a class="nav-link" style="width:100%" href="/show_feedback">
                     <i class="bi bi-easel2-fill"></i>
-                    <span>View Feedback</span></a>
+                    <span >View Feedback</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
             <li class="nav-item side-nav-item d-none">
-                <a class="nav-link" href="/approve_hours">
+                <a class="nav-link" style="width:100%" href="/approve_hours">
                     <i class="bi bi-easel2-fill"></i>
-                    <span>Approve Hours</span></a>
+                    <span >Approve Hours</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
             <li class="nav-item side-nav-item d-none">
-                <a class="nav-link" href="/tag_managing">
+                <a class="nav-link" style="width:100%" href="/tag_managing">
                     <i class="bi bi-easel2-fill"></i>
-                    <span>Tag Managing</span></a>
+                    <span >Tag Managing</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 2 %}
@@ -180,16 +236,18 @@
             </li>
             {% endif %}
             {% endif %}
+            {%if current_user.role <= 2%}
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'view_appointments'}}">
-                <a class="nav-link" href="/view_appointments">
+                <a class="nav-link" style="width:100%" href="/view_appointments">
                     <i class="bi bi-calendar-fill"></i>
-                    <span>View Appointments</span></a>
+                    <span >View Appointments</span></a>
             </li>
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'view_requests'}}">
-                <a class="nav-link" href="/view_requests">
+                <a class="nav-link" style="width:100%" href="/view_requests">
                     <i class="bi bi-calendar-fill"></i>
-                    <span>Manage Requests</span></a>
+                    <span >Manage Requests</span></a>
             </li>
+            {%endif%}
 
             <!-- <hr class="sidebar-divider d-none d-md-block"> -->
 
@@ -211,21 +269,49 @@
                     </button>
                     <style>
                         #accordionSidebar2 {
-                            width: 0%;
-                            overflow-x: hidden;
+                            width: 0;
+                            overflow: hidden;
                             transition: width 0.25s ease;
                         }
 
                         #accordionSidebar2.show-sidebar {
-                            width: 100vw; /* Full width for small screens */
+                            width: 250px; /* Or your desired sidebar width */
                         }
+
+                        .side-text {
+                            opacity: 0; /* Start invisible */
+                            transform: translateX(-20px); /* Shift text to the left initially */
+                            transition: opacity 0.25s ease, transform 0.25s ease; /* Transition for smooth slide and fade */
+                        }
+
+                        /* When the sidebar is open and fully expanded */
+                        #accordionSidebar2.show-sidebar .side-text {
+                            opacity: 1; /* Fade in */
+                            transform: translateX(0); /* Slide into place */
+                        }
+
 
                     </style>
                     <script>
-                        function toggleSide(){
-                            // NEED TO SELECT ALL OF THE SIDE_NAV_ITEM CLASS AND MAKE THEM D_NONE
-                            $(".side-nav-item").toggleClass("d-none")
-                        };
+                        function toggleSide() {
+                            const sidebar = document.getElementById('accordionSidebar2');
+                            sidebar.classList.toggle('show-sidebar');
+
+                            // Delay removing d-none until the sidebar has expanded
+                            if (sidebar.classList.contains('show-sidebar')) {
+                                setTimeout(() => {
+                                    document.querySelectorAll('.side-nav-item').forEach(item => {
+                                        item.classList.remove('d-none');
+                                    });
+                                }, 125);  // Match this delay with the sidebar transition duration
+                            } else {
+                                // Immediately hide items when collapsing
+                                document.querySelectorAll('.side-nav-item').forEach(item => {
+                                    item.classList.add('d-none');
+                                });
+                            }
+                        }
+
                     </script>
 
 
@@ -325,47 +411,28 @@
 
                 </nav>
             </div>
-            <div class="container-fluid" style="min-height:97vh;">
-                <div class="row pt-5 mt-5">
-                    
-                    <main class="col-md-12 col-lg-12 col-sm-11 col-xs-9" style="min-height:77vh;">
-                        <div id="content">
-                            <!-- End of Topbar -->
+            <div id="swup" style="position:absolute;width:100%;height:100%" class="transition-slide">
+                <div class="container-fluid" style="min-height:97vh">
+                    <div class="row pt-5 pb-3 mt-5 bg-light">
+                        
+                        <main class="col-12" style="min-height:77vh">
+                            <div id="content">
+                                    {%block content%}
             
-                            <!-- Begin Page Content -->
-                            <!-- <div class="container-fluid pr-0"> -->
-                                {%block content%}
-        
-                                {%endblock%}
-                            <!-- </div> -->
-                            <!-- /.container-fluid -->
-            
-                        </div>
-                    </main>
-                </div>
-            </div>
-            <!-- <footer class="sticky-footer bg-white flex-row-reverse">
-                <div class="container my-auto d-flex">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Duolingo 2023</span>
+                                    {%endblock%}
+                            </div>
+                        </main>
                     </div>
                 </div>
-            </footer> -->
-            <!-- End of Main Content -->
-
-            <!-- Footer -->
-            
-            <!-- End of Footer -->
+            </div>
         </div>
         <!-- End of Content Wrapper -->
 
     </div>
-    <!-- End of Page Wrapper -->
 
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
+    <!-- <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
-    </a>
+    </a> -->
 
     <!-- Logout Modal-->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -425,6 +492,22 @@
     <!-- Custom scripts for all pages-->
     <script src="static/assets/js/sb-admin-2.min.js"></script>
 
+    <!-- Page Swap Animations -->
+    <!-- <script src="https://unpkg.com/@swup/scroll-plugin@latest/dist/SwupScrollPlugin.min.js"></script>
+    <script type="module">
+        import Swup from 'https://unpkg.com/swup@4?module';
+        import SwupParallelPlugin from 'https://unpkg.com/@swup/parallel-plugin@0?module';
+        import SwupScrollPlugin from 'https://unpkg.com/@swup/scroll-plugin@2?module'; // Import the SwupScrollPlugin
+    
+        const swup = new Swup({
+            linkSelector: 'a[data-transition="true"]',
+            plugins: [new SwupParallelPlugin(), new SwupScrollPlugin({animateScroll:true})],
+            linkToSelf: 'navigate',
+            cache: false,
+
+        });
+    </script> -->
+
     <script>
        $(document).ready(function() {
             $('.remove_notifaction').on('click', function(event) {
@@ -476,9 +559,18 @@
             }
     });
     </script>
+    <script>
+        window.addEventListener('load', function () {
+            // Hide the loading screen
+            document.getElementById('loading-screen').style.display = 'none';
+        });
+    </script>
+    
     {%block javascriptsSocket%}
 
     {%endblock%}
 </body>
+
+
 
 </html>

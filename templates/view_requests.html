@@ -3,22 +3,25 @@
 {% block content %}
 
 <div class="d-flex justify-content-center">
-    <div class="h1 mb-3 font-weight-bold">
+    <div class="h1 mb-3 font-weight-bold text-center">
         View Requested Sessions
     </div>
 </div>
 
-<div class="container-fluid" style="min-height: 70vh;">
+<div class="container-fluid px-1 mx-0" style="min-height: 70vh;">
     <!-- Toggle Buttons -->
-    <div class="flex-row d-flex justify-content-center">
-        <div class="col-8 bg-white px-5 pt-4" style="height:70vh;overflow:auto">
+    <div class="flex-row d-flex justify-content-center px-0 mx-0">
+        <div class="col-12 col-lg-8 bg-white px-lg-5 pt-4" style="height:70vh;overflow:auto">
 
             <div id="incoming-requests" class="card-container px-3">
                 {% if session_requests_where_tutor|length == 0 %}
-                <div class="no-requests">No incoming requests found.</div>
+                <div class="d-flex justify-content-center mb-3">
+                    <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50%" height="" class="book_session mr-3 bold-img">
+                </div>
+                <div class="no-requests text-center h1">No incoming requests found.</div>
                 {% else %}
                 {% for session in session_requests_where_tutor %}
-                <a href="/appointment_preview?identification={{session.id}}" class="text-decoration-none text-reset">
+                <a href="/appointment_preview?identification={{session.id}}" class="text-decoration-none text-reset" data-swup-animation="right" data-transition="true">
                     <div class="card card-link mb-3">
                         <div class="card-body d-flex align-items-center py-2">
                             <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
@@ -49,7 +52,7 @@
                 <div class="no-requests text-center h1">No outgoing requests found.</div>
                 {% else %}
                 {% for session in session_requests_where_student %}
-                <a href="/appointment_preview?identification={{session.id}}" class="text-decoration-none text-reset">
+                <a href="/appointment_preview?identification={{session.id}}" class="text-decoration-none text-reset" transition="true" data-swup-animation="right">
                     <div class="card card-link mb-3">
                         <div class="card-body d-flex align-items-center py-2">
                             <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
@@ -67,22 +70,23 @@
                                 </div>
                             </div>
                         </div>
+                        
                     </div>
                 </a>
                 {% endfor %}
                 {% endif %}
             </div>
-            {%if type == 1%}
-            <div class="fixed-bottom pb-2 bg-white pt-2" style="z-index:0;">
-                <div class="btn-group d-flex flew-row justify-content-center" role="group" aria-label=" toggle button group">
-                    <label id="incoming-requests-btn" class="btn btn-toggle btn-outline-secondary col-3 active" onclick="toggleView('incoming-requests')">Incoming</label>
-                  
-                    <label id="outgoing-requests-btn" class="btn btn-toggle btn-outline-secondary col-3" onclick="toggleView('outgoing-requests')">Outgoing</label>
-                </div>
-                
-            </div>
-            {%endif%}
         </div>
+        {%if type == 1%}
+        <div class="fixed-bottom pb-2 bg-white pt-3 pt-lg-2 remove container" style="z-index:0">
+            <div class="btn-group d-flex flew-row justify-content-center" role="group" aria-label=" toggle button group">
+                <label id="incoming-requests-btn" class="btn btn-toggle btn-outline-secondary col-6 col-lg-3 active" onclick="toggleView('incoming-requests')">Incoming</label>
+                
+                <label id="outgoing-requests-btn" class="btn btn-toggle btn-outline-secondary col-6 col-lg-3" onclick="toggleView('outgoing-requests')">Outgoing</label>
+            </div>
+            
+        </div>
+        {%endif%}
     </div>
 </div>
 
@@ -105,4 +109,6 @@
     document.getElementById(viewId + '-btn').classList.add('active');
     }
 </script>
+
 {% endblock %}
+

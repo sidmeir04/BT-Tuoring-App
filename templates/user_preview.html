@@ -1,11 +1,22 @@
 {% extends "blank.html" %}
 {% set active_page = "overview" %}
+
 {% block content %}
 
 <!-- text-gray-800 for bolder text -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<!-- <style>
+    html.is-changing .transition-fade {
+      transition: opacity 0.25s;
+      opacity: 1;
+    }
+    html.is-animating .transition-fade {
+      opacity: 0;
+    }
+</style> -->
+
 <div class="d-flex fixed-top ml-3" style="margin-top:80px;z-index:0;">
-    <a href="/view_appointments" class="text-decoration-none text-reset">
+    <a href="/view_requests" class="text-decoration-none text-reset remove" data-swup-animation="left" data-transition="true">
         <div class="d-flex justify-content-center align-items-center">
             <div class="rounded-circle border d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;">
                 <i class="bi bi-arrow-left"></i>
@@ -82,6 +93,9 @@
             </div>
         </div>
     </div>
+
+    
+
     <!-- /.container-fluid -->
 </div>
 
