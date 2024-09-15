@@ -1,6 +1,5 @@
 {% extends 'blank.html' %}
 {%set active_page='find_session'%}
-{%set found_sessions=False%}
 {% block content %}
 <!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
 <style>
@@ -97,14 +96,24 @@
                         <th>Schedule Session</th>
                     </tr>
                 </thead>
+                
                 {%if type == "POST"%}
+                <tbody class="" style="height:60vh;" id="alt">
+                    <tr style="height: 100%;">
+                        <td colspan="6" class="text-center align-middle h1">
+                            <div>Sorry, no results for that</div>
+                        </td>
+                    </tr>
+                </tbody>
                     {%if users%}
                         {% for num,user in enumerate(users) %}
                         {% if (not tutor_name)  or user_names[num][0].lower() == tutor_name%}
                         {% if subject == '0' or user_names[num][4][subject] == 1%}
                         {% if user_names[num][3] not in user['times'].split(' ') %}
                         {% if user_names[num][1] != current_user.id %}
-                        {%set found_sessions = True%}
+                        <script>
+                            document.getElementById("alt").classList.add("d-none")
+                        </script>
                         <tbody>
                             <tr>
                                 <td>{{user['start_time']}}</td>
@@ -119,16 +128,10 @@
                         {% endif %}
                         {% endif %}
                         {% endfor %}
+                    
                     {%endif%}
-                    {%if found_sessions == False%}
-                        <tbody style="height:60vh;">
-                            <tr style="height: 100%;">
-                                <td colspan="6" class="text-center align-middle h1">
-                                    <div>Sorry, no results for that</div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    {%endif%}
+                    
+                        
                 {%else%}
                     <tbody style="height:60vh;">
                         <tr style="height: 100%;">

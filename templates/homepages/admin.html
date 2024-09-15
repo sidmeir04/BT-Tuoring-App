@@ -62,7 +62,7 @@
                             <div>
                                 <h1 class="mt-2 ml-4 font-weight-bold">{{current_user.name}} {{current_user.last_name}}</h1>
                                 <h3 class="mt-2 ml-4">Email: {{current_user.email}}</h3>
-                                <h3 class="mt-2 ml-4">Status: {%if role==0%}Student{%else%}Peer Tutor{%endif%}</h3>
+                                <h3 class="mt-2 ml-4">Status: Admin</h3>
                             </div>
                             <div class="ml-auto"> 
                                 <div class="d-flex justify-content-center align-items-center">
@@ -87,11 +87,33 @@
             <!-- THIS IS WHERE YOU PUT THE PATH FOR THE NEW FEATURE -->
             <a href="#" class="text-decoration-none text-reset">
                 <div class="card card-link mb-2">
-                    <img src="static/assets2/img/bookAppointment.png" class="card-img-top nonbold-img">
-                    <div class="card-body">
-                        <h5 class="card-title font-weight-bold h4">Create an Appointment</h5>
-                        <p class="card-text h5 mb-5">Can't find a good time? No problem! Make a general or personal request for an appointment at a time that works for you!</p>
-                        <yes class="p-2 bg-primary text-white" style="border-radius:4px">Create now!</yes>
+                    <div class="row">
+                        <div class="position-relative d-flex align-items-center justify-content-center py-3 col-lg-6 col-md-12">
+                            <img src="static/assets2/img/notePad.png" class="img-fluid nonbold-img" width="100%" height="auto">
+                            <div class="text-danger font-weight-bold top-0 end-0 m-2" style="position:absolute;background-color:transparent;font-size:9rem" >
+                                {%if to_approve < 10%}
+                                {{to_approve}}
+                                {%else%}
+                                9+
+                                {%endif%}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-12 mt-md-2 mx-md-4 mb-md-4 m-lg-0">
+                            <div class="h1 mb-3 mt-2">
+                                Approve Hours!
+                            </div>
+                            <div class="h4 mb-4">
+                                {%if to_approve%}
+                                You currently have <b class="text-primary">{{to_approve}}</b> sessions pending your review!
+                                
+                                {%else%}
+                                There are currently no sessions that need your attention. Yay!
+                                {%endif%}
+                            </div>
+                            {%if to_approve%}
+                            <yes class="p-2 bg-primary text-white" style="border-radius:4px">Set now!</yes>
+                            {%endif%}
+                        </div>
                     </div>
                 </div>
             </a>
@@ -100,16 +122,17 @@
         <div class="col-md-12 d-lg-none">
             <hr>
         </div>
+        
 
         <div class="col-lg-5 col-md-11">
-            <a href="/find_session" class="text-decoration-none text-reset">
+            <a href="/user_managing" class="text-decoration-none text-reset">
                 <div class="card card-link mb-3 mt-2">
                     <div class="card-body d-flex align-items-center py-2">
                         <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
             
                         <div class="d-block align-self-start" style="margin-top: 10px;">
-                            <div class="h4 mb-0 font-weight-bold">Book A Session!</div>
-                            <div class="h5 mt-1">Find a time that works for you</div>
+                            <div class="h4 mb-0 font-weight-bold">Manage Users!</div>
+                            <div class="h5 mt-1">Change the statuses of teacher or student accounts</div>
                         </div>
             
                         <div class="ml-auto">
@@ -122,14 +145,14 @@
                     </div>
                 </div>
             </a>
-            <a href="/view_appointments" class="text-decoration-none text-reset">
+            <a href="/tag_managing" class="text-decoration-none text-reset">
                 <div class="card card-link mb-3">
                     <div class="card-body d-flex align-items-center py-2">
                         <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
             
                         <div class="d-block align-self-start" style="margin-top: 10px;">
-                            <div class="h4 mb-0 font-weight-bold">View Sessions</div>
-                            <div class="h5 mt-1">Check on the sessions you've booked!</div>
+                            <div class="h4 mb-0 font-weight-bold">Tag Managing</div>
+                            <div class="h5 mt-1">Change the classes NHS students are permitted to teach</div>
                         </div>
             
                         <div class="ml-auto">
@@ -143,14 +166,14 @@
                 </div>
             </a>
 
-            <a href="/calendar" class="text-decoration-none text-reset">
+            <a href="/feedback" class="text-decoration-none text-reset">
                 <div class="card card-link mb-3">
                     <div class="card-body d-flex align-items-center py-2">
                         <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
             
                         <div class="d-block align-self-start" style="margin-top: 10px;">
-                            <div class="h4 mb-0 font-weight-bold">View Schedule</div>
-                            <div class="h5 mt-1">Check for upcoming events!</div>
+                            <div class="h4 mb-0 font-weight-bold">View Feedback</div>
+                            <div class="h5 mt-1">Ensure quality by viewing feedback from students on their tutors!</div>
                         </div>
             
                         <div class="ml-auto">

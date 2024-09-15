@@ -15,9 +15,9 @@
     }
 </style> -->
 
-<div class="d-flex fixed-top ml-3" style="margin-top:80px;z-index:0;">
+<div class="d-flex fixed-top ml-3" style="margin-top:80px;z-index:10;">
     <a href="/view_requests" class="text-decoration-none text-reset remove" data-swup-animation="left" data-transition="true">
-        <div class="d-flex justify-content-center align-items-center">
+        <div class="d-flex justify-content-center align-items-center p-1 bg-light bg-md-transparent bg-lg-transparent">
             <div class="rounded-circle border d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;">
                 <i class="bi bi-arrow-left"></i>
             </div>
@@ -32,13 +32,13 @@
         <!-- Page Heading -->
        
         <div class="row d-flex justify-content-center">
-            <div class="col-8 bg-white px-5 pt-4">
+            <div class="col-md-11 col-lg-8 bg-white px-2 px-md-5 px-lg-5 pt-4">
                 <div class="h1 font-weight-bold justify-self-center text-center mb-4">
                     Student Info
                 </div>
                 <div class="card shadow mb-5" style="border-radius:10px;">
                     <div class="card-body">
-                        <div class="d-flex align-items-center">
+                        <div class="d-none d-md-flex d-lg-flex align-items-center">
                             <img src="
                             {% if other_image %}
                             data:image/jpeg;base64,{{ other_image }}
@@ -52,35 +52,49 @@
                             </div>
                             
                         </div>
+                        <div class="d-block d-md-none d-lg-none">
+                            <img src="
+                            {% if other_image %}
+                            data:image/jpeg;base64,{{ other_image }}
+                            {% else %}
+                            static/assets/img/undraw_profile.svg
+                            {% endif %}
+                            " id="image" alt="Admin" class="rounded-circle" width="100%" height="100%">
+                            <div>
+                                <h1 class="mt-2 ml-4 font-weight-bold">{{other.username}}</h1>
+                                <h3 class="mt-2 ml-4">{{other.email}}</h3>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="h1 font-weight-bold justify-self-center text-center mb-4">
                     Session Details
                 </div>
-                <div class="d-flex justify-content-between flew-row mb-3">
-                    <div class="h3 col-6">
-                        First Session Date:
+                <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
+                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
+                        Start Date:
                     </div>
-                    <div class="h3 col-6">
-                        Last Session Date:
+                    <div class="h3 col-12 col-lg-6">
+                        End Date:
                     </div>
                 </div>
-                <div class="d-flex justify-content-between flew-row mb-3">
-                    <div class="h3 col-6">
-                        From {{session.start_time}} to {{session.end_time}}
+                <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
+                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
+                        {{session.start_time}} to {{session.end_time}}
                     </div>
-                    <div class="h3 col-6">
+                    <div class="h3 col-12 col-lg-6">
                         Period: {{session.period}}
                     </div>
                 </div>
-                <div class="d-flex flew-row mb-4 justify-content-between">
-                    <div class="h3 col-6">
+                <div class="d-block d-lg-flex flew-row mb-4 justify-content-between">
+                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
                         Number of Meetings: X
                     </div>
-                    <div class="h3 col-6">
+                    <div class="h3 col-12 col-lg-6">
                         Subject: {{session.subject}}
                     </div>
                 </div>
+                <br clas="d-block d-lg-none">
                 <form action="/appointment_preview?identification={{session.id}}" method="POST" class="d-flex justify-content-center flew-row mb-5">
                     <input type="hidden" value="{{session.id}}" name="id">
                     {%if type == 1%}

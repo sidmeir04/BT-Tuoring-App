@@ -463,7 +463,7 @@ def user_uploads():
 @app.route('/material_upload/<session_id>', methods = ['POST'])
 def material_upload(session_id):
     session = Session.query.get(session_id)
-    data = request.files.get('material_upload')
+    data = request.files.get('image')
     if not data:
         flash("Attatch a file first!","danger")
         return redirect(url_for('user_uploads',identification=session_id))
@@ -662,8 +662,14 @@ def index():
                         image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
                         role = current_user.role
                         )
-        
-    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate)
+    NHS_students = User.query.filter_by(role=1).all()
+    to_approve = 0
+    for student in NHS_students:
+        approved_index = student.volunteer_hours["approved_index"]
+        for i in range(len(approved_index)):
+            if not approved_index[i]:
+                to_approve += 1
+    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate,to_approve=to_approve)
 
 @app.route('/login',methods=['GET','POST'])
 def login():
@@ -1083,7 +1089,7 @@ def book_session(id, date, period):
 
     db.session.commit()
     flash('Session requested!', 'success')
-    return redirect(url_for('view_appointments'))
+    return redirect(url_for('view_requests'))
     
 
 @app.route('/profile', methods = ['POST','GET'])
@@ -1217,7 +1223,7 @@ def confirm_appointment():
     db.session.delete(session_request)
     db.session.commit()
     flash("Session confirmed!","success")
-    return redirect(url_for("index"))
+    return redirect(url_for("view_appointments"))
 
 @app.route('/approve_hours',methods=['GET','POST'])
 @login_required
