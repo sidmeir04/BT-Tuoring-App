@@ -172,6 +172,13 @@
                     <span>Tag Managing</span></a>
             </li>
             {% endif %}
+            {% if current_user.role == 2 %}
+            <li class="nav-item side-nav-item d-none">
+                <a class="nav-link" href="/teacher_dashboard">
+                    <i class="bi bi-easel2-fill"></i>
+                    <span>Teacher Dashboard</span></a>
+            </li>
+            {% endif %}
             {% endif %}
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'view_appointments'}}">
                 <a class="nav-link" href="/view_appointments">
