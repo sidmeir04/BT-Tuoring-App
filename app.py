@@ -455,6 +455,7 @@ def user_uploads():
 
     other = other.username
     return render_template("user_uploads.html",
+                           len = len,
                            recipient = other,
                            my_image=my_image,
                            other_image = other_image,
