@@ -1,0 +1,83 @@
+{% extends 'blank.html' %}
+{%set active_page='find_session'%}
+{%set found_sessions=False%}
+{% block content %}
+<!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+<style>
+    /* Ensure dropdown options float above other elements */
+    #dropdown {
+        position: absolute;
+        width: 100%;
+        background-color: white;
+        z-index: 1000; /* Make sure it's on top */
+        border: 1px solid #ced4da;
+    }
+    #dropdown ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    #dropdown ul li {
+        padding: 10px;
+        cursor: pointer;
+    }
+    #dropdown ul li:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+<div class="container-fluid">
+    <div class="row px-2 mt-3 align-items-center mb-3">
+        <form action="/session_request" method="POST" class="d-flex align-items-center" style="width:100%;" id="search-form">
+            <div class="form-group">
+                <div class="container p-2">
+                    <div class="form-group mb-3">
+                        <label for="dateInput" class="mb-0">Date</label>
+                        <input type="date" class="form-control" id="dateInput" name="modal_date">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="start_time">Start Time</label>
+                <input type="time" class="form-control" id="start_time" name="start_time">
+            </div>
+            <div class="form-group">
+                <label for="end_time">End Time</label>
+                <input type="time" class="form-control" id="end_time" name="end_time">
+            </div>
+            
+            <div class="mb-3 position-relative form-group mx-2 px-0 ml-auto">
+                <input type="text" id="search-input" class="form-control" placeholder="Search Subject" autocomplete="off">
+                <div id="dropdown" class="d-none">
+                    <ul></ul>
+                </div>
+            </div>
+            <input type="hidden" id="other_id" name="subject">
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-lg py-1 px-2">Create Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Custom Alert Modal -->
+<div class="modal fade" id="customAlertModal" tabindex="-1" role="dialog" aria-labelledby="customAlertLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-white">
+          <h5 class="modal-title" id="customAlertLabel">Alert</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="customAlertMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -231,13 +231,14 @@ def temp_function_for_default_user_loading():
         db.session.add(user4)
         db.session.commit()
 
-def add_new_session(tutor_id,student_id,date,period,request,repeating):
+def add_new_session(tutor_id: int,student_id: int,date: str,period: int,request: bool,repeating:bool, subject = None) -> None:
     user = User.query.get(tutor_id)
 
     day = date_to_day(date)
     year, month, temp_day = (int(i) for i in date.split('-'))
     dayNumber = weekday(year, month, temp_day)
     data = user.schedule_data[day][str(period)]
+    if not subject: subject = ''
     if request:
         new_session = SessionRequest(
             tutor = tutor_id,
@@ -247,7 +248,8 @@ def add_new_session(tutor_id,student_id,date,period,request,repeating):
             period = period,
             start_date = datetime.today(),
             day_of_the_week = dayNumber,
-            date = datetime.strptime(date, '%Y-%m-%d').date()
+            date = datetime.strptime(date, '%Y-%m-%d').date(),
+            subject = subject
         )
 
         db.session.add(new_session)
@@ -276,7 +278,8 @@ def add_new_session(tutor_id,student_id,date,period,request,repeating):
             day_of_the_week = dayNumber,
             date = datetime.strptime(date, '%Y-%m-%d').date(),
             message_history_id = conversation.id,
-            recurring = repeating
+            recurring = repeating,
+            subject = subject
         )
 
         db.session.add(new_session)
@@ -773,6 +776,31 @@ def terminate_session():
 
     return render_template('terminate_session.html',id=id,repeating=repeating)
 
+@app.route('/session_request', methods = ['POST','GET'])
+def session_request():
+    if request.method == 'POST':
+        date = request.form.get('modal_date')
+        start_time = request.form.get('start_time')
+        end_time = request.form.get('end_time')
+        subject = request.form.get('subject')
+        period = int(start_time.split(':')[0]) * 60 + int(start_time.split(':')[1])
+        period -= 450
+        period = period//45
+        requested_session = SessionRequest(
+            start_time = string_to_time(start_time),
+            end_time = string_to_time(end_time),
+            day_of_the_week = date_to_day(date),
+            start_date = datetime.today(),
+            date = datetime.strptime(date, '%Y-%m-%d').date(),
+            subject = subject,
+            tutor = -1,
+            student = current_user.id,
+            period = period
+        )
+        db.session.add(requested_session)
+        db.session.commit()
+    return render_template('session_request.html')
+
 @app.route('/complete_session')
 @login_required
 @email_verified_required
@@ -907,9 +935,6 @@ def find_session():
 
         return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options)
     
-
-    
-
     return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,options=options)
 
 
@@ -1199,13 +1224,17 @@ def view_requests():
 
     session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
     session_requests_where_tutor = SessionRequest.query.filter_by(tutor=current_user.id).all()
+    open_sessions = SessionRequest.query.filter_by(tutor=-1).all()
+    print('test')
+    print(open_sessions)
 
 
     return render_template("view_requests.html",
                            type=current_user.role,
                            len=len,
                            session_requests_where_student=session_requests_where_student,
-                           session_requests_where_tutor=session_requests_where_tutor)
+                           session_requests_where_tutor=session_requests_where_tutor,
+                           open_sessions = open_sessions)
 
 @app.route('/confirm_appointment')
 @login_required
