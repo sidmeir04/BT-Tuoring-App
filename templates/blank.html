@@ -494,6 +494,7 @@
 
     <!-- Page Swap Animations -->
     <!-- <script src="https://unpkg.com/@swup/scroll-plugin@latest/dist/SwupScrollPlugin.min.js"></script>
+    <script src="https://unpkg.com/@swup/scripts-plugin@2"></script>
     <script type="module">
         import Swup from 'https://unpkg.com/swup@4?module';
         import SwupParallelPlugin from 'https://unpkg.com/@swup/parallel-plugin@0?module';
@@ -501,12 +502,31 @@
     
         const swup = new Swup({
             linkSelector: 'a[data-transition="true"]',
-            plugins: [new SwupParallelPlugin(), new SwupScrollPlugin({animateScroll:true})],
+            plugins: [new SwupParallelPlugin(), new SwupScrollPlugin({animateScroll:true}),new SwupScriptsPlugin()],
             linkToSelf: 'navigate',
             cache: false,
 
         });
+
+        function upon_init(){
+            if (document.getElementById("uploads")){
+                console.log('sss')
+                // uploads_init()
+            }
+            else if ("{{active_page}}" == "messages"){
+                console.log('s')
+            }
+        }
+
+        swup.hooks.on('page:view', () => {
+            upon_init();
+            console.log('Page view event triggered');
+            document.querySelectorAll('script[data-swup-reload-script]').forEach(script => {
+                console.log('Reloading script:', script.src);
+            });
+        });
     </script> -->
+    
 
     <script>
        $(document).ready(function() {
@@ -566,9 +586,7 @@
         });
     </script>
     
-    {%block javascriptsSocket%}
 
-    {%endblock%}
 </body>
 
 

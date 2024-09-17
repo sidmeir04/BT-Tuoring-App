@@ -870,6 +870,8 @@ lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @login_required
 @email_verified_required
 @check_for_closed_session
+# options=options,    options = load_available_classes()
+
 def find_session():
     users,user_names = [],[]
     day, date = None, None
