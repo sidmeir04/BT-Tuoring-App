@@ -33,9 +33,10 @@
                 {{check[1]["hours"]}}
             </td>
             <td>
-                <form action="/approve_hours" method="POST">
+                <form action="/approve_hours" method="POST" class="d-flex justify-content-end">
                     <input type="number" value = "{{loop.index0}}" class="d-none" name = 'index_of_approval'>
-                    <button type="submit" class="btn btn-success">Approve</button>
+                    <button type="submit" class="btn btn-success mr-2">Approve</button>
+                    <button class="btn btn-primary">Details</button>
                 </form>
             </td>
         </tr>
