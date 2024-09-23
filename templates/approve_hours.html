@@ -36,7 +36,7 @@
                 <form action="/approve_hours" method="POST" class="d-flex justify-content-end">
                     <input type="number" value = "{{loop.index0}}" class="d-none" name = 'index_of_approval'>
                     <button type="submit" class="btn btn-success mr-2">Approve</button>
-                    <button class="btn btn-primary">Details</button>
+                    <yes class="p-2 bg-primary text-white" style="border-radius:4px"><a href="/{{ url_for('view_detail', id=id) }}">Set now!</a></yes>
                 </form>
             </td>
         </tr>

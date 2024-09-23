@@ -64,7 +64,7 @@ class User(db.Model, UserMixin):
     status = db.Column(db.String, default='')
     image_data = db.Column(db.LargeBinary)
     qualification_data = db.Column(JSON,default=current_classlist)
-    volunteer_hours = db.Column(JSON,default=load_volunteer_hour_json_file)
+    volunteer_hours = db.Column(int,default=0)
     student_teacher_data = db.Column(JSON, default = load_student_teacher_JSON)
     role = db.Column(db.Integer, default = 0)
     marked = db.Column(db.Integer,default=0)
@@ -104,8 +104,6 @@ class SessionLog(db.Model):
     student = db.Column(db.Integer, nullable = False)
     period = db.Column(db.Integer)
     cancel_reason = db.Column(db.Integer)
-    tutor_form_completed = db.Column(db.Boolean, default = True)
-    student_form_completed = db.Column(db.Boolean, default = False)
 
 class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -118,9 +116,9 @@ class Session(db.Model):
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
     period = db.Column(db.Integer)
-    tutor_form_completed = db.Column(db.Boolean, default = True)
-    student_form_completed = db.Column(db.Boolean, default = False)
+    session_history = db.Column(JSON, default = load_session_history_JSON)
     message_history_id = db.Column(db.Integer, db.ForeignKey('active_message_history.id'))
+    closed = db.Column(db.Boolean, default = False)
     recurring = db.Column(db.Boolean, default = False)
     
     # Relationship to SessionFile
@@ -216,7 +214,7 @@ def temp_function_for_default_user_loading():
             email = "america@gmail.com",
             email_verification_token=None,
             schedule_data=json.loads('''{"monday": {"1": {"start_time": "08:30", "end_time": "08:31", "times": " 2024-06-24", "subject": null}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "tuesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "wednesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "thursday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "friday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}}'''),
-            volunteer_hours=json.loads('''{"total_hours": 0, "approved_index": [0], "breakdown": [{"start_date": "June 19, 2024", "end_date": "June 30, 2024", "hours": 1.5}]}'''),
+            volunteer_hours=0,
             role = 1,
             qualification_data = json.loads('''{"Math": 1, "Algebra": 0, "Science": 0, "Chemistry": 0, "Gym": 0, "Geometry": 0, "Biomolecular Quantum Physics": 0, "English": 0}''')
         )
@@ -607,7 +605,7 @@ def index():
             thing[1]["sender"] = username
             return thing
     if current_user.role == 0 or current_user.role == 1:
-        sessions_where_learn = Session.query.filter_by(student=current_user.id, student_form_completed = False).all()
+        sessions_where_learn = Session.query.filter_by(student=current_user.id).all()
         if sessions_where_learn:
             sessions_where_learn_MH = [ActiveMessageHistory.query.get(session.message_history_id) for session in sessions_where_learn]
             sessions_where_learn_MH = list(map(lambda x: (x.missed['total'] - x.missed[str(current_user.id)],x.messages['list'][-1] if x.messages['list'] else None),sessions_where_learn_MH))
@@ -664,14 +662,8 @@ def index():
                         image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
                         role = current_user.role
                         )
-    NHS_students = User.query.filter_by(role=1).all()
-    to_approve = 0
-    for student in NHS_students:
-        approved_index = student.volunteer_hours["approved_index"]
-        for i in range(len(approved_index)):
-            if not approved_index[i]:
-                to_approve += 1
-    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate,to_approve=to_approve)
+    
+    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate)
 
 @app.route('/login',methods=['GET','POST'])
 def login():
@@ -804,14 +796,6 @@ def complete_session():
 
     tutor = User.query.get(session.tutor)
     student = User.query.get(session.student)
-
-    # feedback = Feedback(
-    #     date = datetime.today().strftime('%Y-%m-%d'),
-    #     review_from = student.id,
-    #     exists=bool(fill_form),
-    #     review_for = tutor.id,
-    #     subject = session.subject
-    # )
 
     
     db.session.commit()
@@ -1235,10 +1219,15 @@ def confirm_appointment():
     return redirect(url_for("view_appointments"))
 
 
-#dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy
 @app.route("/view_details")
 def view():
-    return render_template("view.html")
+    id = request.args.get('id')
+    session = Session.query.get(id)
+    tutor_name = User.query.get(session.tutor).username
+    student_name = User.query.get(session.student).username
+    occurences = (session.start_date - session.end).date
+
+    return render_template("view.html", student_name = student_name, tutor_name = tutor_name, occuernces = occurences, session = session)
 
 @app.route("/create_request")
 def create_request():

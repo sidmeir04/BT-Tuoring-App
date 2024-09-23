@@ -27,10 +27,10 @@
                 </div>
                 <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
                     <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
-                        Tutor: NHS Student
+                        Tutor: {{tutor_name}}
                     </div>
                     <div class="h3 col-12 col-lg-6">
-                        Student: Student1
+                        Student: ((student_name))
                     </div>
                 </div>
                 
@@ -39,44 +39,40 @@
                 </div>
                 <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
                     <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
-                        Start Date: 6/19/2024
+                        Start Date: {{session.start_date}}
                     </div>
                     <div class="h3 col-12 col-lg-6">
-                        End Date: 6/30/2024
+                        End Date: {{session.date}}
                     </div>
                 </div>
                 <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
                     <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
-                        08:15 to 08:56
+                        {{session.start_time}} to {{session.end_time}}
                     </div>
                     <div class="h3 col-12 col-lg-6">
-                        Period: 1
+                        Period: {{session.period}}
                     </div>
                 </div>
                 <div class="d-block d-lg-flex flew-row mb-4 justify-content-between">
                     <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
-                        Number of Meetings: 2
+                        Number of Meetings: {{occuernces}}
                     </div>
                     <div class="h3 col-12 col-lg-6">
-                        Subject: Math
+                        Subject: {{subject.session}}
                     </div>
                 </div>
                 <div class="h1 font-weight-bold justify-self-center text-center mb-4">
                     Breakdown
                 </div>
                 <div class="d-block justify-content-between flew-row mb-3 bg-light p-2" style="height:50vh;">
+                    {% for i in range(session.session_history['sessions'])%}
                     <div class="card mb-3">
                         <div class="card-body">
-                            <div class="h2 mb-2">Lesson 1</div>
-                            This is where the description for what was worked on during the lesson usually goes. This section is written up by the tutor.
+                            <div class="h2 mb-2">Lesson {{i}}</div>
+                            {{session.session_history['descriptions'][i]}}
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="h2 mb-2">Lesson 2</div>
-                            This is where the description for what was worked on during the lesson usually goes. This section is written up by the tutor.
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
                 <a href="/appointment_uploads?identification={{session.id}}" class="text-decoration-none text-reset" data-swup-animation="right" data-transition="true">
                     <div class="card card-link mb-4" id="toUploads">
