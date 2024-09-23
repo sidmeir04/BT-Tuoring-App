@@ -1266,13 +1266,50 @@ def session_hindsight():
 @app.route("/admin_temp_route",methods=["POST","GET"])
 def admin_temp_route():
     if request.method == "POST":
+        from random import randint, sample
+
         number = int(request.form.get("number"))
         if number <= 0:
             flash("The number has to be above 0","danger")
             return render_template("admin_temp_route.html")
         
         if int(request.form.get("submit")):
-            print("Add Sessions")
+            for _ in range(number):
+                tutor,student = sample([i.id for i in User.query.all()])
+
+                user = User.query.get(tutor)
+                period = randint(1,8)
+                day = date_to_day(date)
+                year, month, temp_day = (int(i) for i in date.split('-'))
+                dayNumber = weekday(year, month, temp_day)
+                data = user.schedule_data[day][str(period)]
+                date=find_next_day_of_week(sample(['monday','tuesday','wednesday','thursday','friday'])[0])
+                tutor = User.query.get(tutor)
+                conversation = ActiveMessageHistory(
+                    people = {tutor:'',student:''},
+                    missed = {'total':0,tutor:0,student:0}
+                )
+                db.session.add(conversation)
+                db.session.commit()
+
+                new_session = Session(
+                    tutor = tutor,
+                    start_time = string_to_time(data['start_time']),
+                    end_time = string_to_time(data['end_time']),
+                    student = student,
+                    period = period,
+                    start_date = datetime.today(),
+                    day_of_the_week = dayNumber,
+                    date = datetime.strptime(date, '%Y-%m-%d').date(),
+                    message_history_id = conversation.id,
+                    recurring = False
+                )
+
+                db.session.add(new_session)
+                tutor.schedule_data[date_to_day(str(new_session.date))][str(new_session.period)]['times'] += ' ' + str(new_session.date)
+                flag_modified(tutor, 'schedule_data')
+            db.session.commit()
+            
         else:
             first_names = [
                 "Maria",     # Spanish/Latin
@@ -1302,14 +1339,15 @@ def admin_temp_route():
             for i in range(number):
                 user = User(
                     username = "User" + str(num_users + i + 1),
-                    name = "",
-                    last_name = "Lasanga",
-                    email = "stuema@gmail.com",
+                    name = first_names[randint(0,9)],
+                    last_name = last_names[randint(0,9)],
+                    email = f"student{str(num_users + i + 1)}@gmail.com",
                     email_verification_token=None,
-                    role = 2
+                    role = 0
                 )
                 user.set_password("s")
-                db.session.commit(user)
+                db.session.add(user)
+                db.session.commit()
             print("Add Students")
     return render_template("admin_temp_route.html")
 #dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy
