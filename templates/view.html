@@ -47,7 +47,7 @@
                 </div>
                 <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
                     <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
-                        {{session.start_time}} to {{session.end_time}}
+                        Times: {{session.start_time}} to {{session.end_time}}
                     </div>
                     <div class="h3 col-12 col-lg-6">
                         Period: {{session.period}}
@@ -55,7 +55,7 @@
                 </div>
                 <div class="d-block d-lg-flex flew-row mb-4 justify-content-between">
                     <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
-                        Number of Meetings: {{occuernces}}
+                        Number of Meetings: {{session.session_history['sessions']}}
                     </div>
                     <div class="h3 col-12 col-lg-6">
                         Subject: subject.session
