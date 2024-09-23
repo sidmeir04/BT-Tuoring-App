@@ -7,8 +7,8 @@ from PIL import Image
 
 user_type_key = {0:'student', 1:'teacher', 2:'administrator', 3:'developer'}
 
-def load_volunteer_hour_json_file():
-    with open('static/assets/volunteer_hours.json', 'r') as file:
+def load_session_history_JSON():
+    with open('static/assets/session_history_JSON.json', 'r') as file:
         form = json.load(file)
     return form
 
