@@ -64,10 +64,10 @@ class User(db.Model, UserMixin):
     status = db.Column(db.String, default='')
     image_data = db.Column(db.LargeBinary)
     qualification_data = db.Column(JSON,default=current_classlist)
-    volunteer_hours = db.Column(int,default=0)
+    volunteer_hours = db.Column(db.Integer,default=0)
     student_teacher_data = db.Column(JSON, default = load_student_teacher_JSON)
     role = db.Column(db.Integer, default = 0)
-    marked = db.Column(db.Integer,default=0)
+    marked = db.Column(db.Integer, default = 0)
 
 
     def set_password(self, password):
@@ -663,7 +663,7 @@ def index():
                         role = current_user.role
                         )
     
-    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate)
+    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate, sessions = Session.query.filter_by(closed = True))
 
 @app.route('/login',methods=['GET','POST'])
 def login():
@@ -1168,8 +1168,8 @@ def view_appointments():
     session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
     session_requests_where_tutor = SessionRequest.query.filter_by(tutor=current_user.id).all()
 
-    confirmed_sessions_where_student = Session.query.filter_by(student=current_user.id).all()
-    confirmed_sessions_where_tutor = Session.query.filter_by(tutor=current_user.id).all()
+    confirmed_sessions_where_student = Session.query.filter_by(student=current_user.id, closed = False).all()
+    confirmed_sessions_where_tutor = Session.query.filter_by(tutor=current_user.id, closed = False).all()
 
     return render_template("view_appointments.html",
                            type=current_user.role,
@@ -1227,9 +1227,8 @@ def view():
     session = Session.query.get(id)
     tutor_name = User.query.get(session.tutor).username
     student_name = User.query.get(session.student).username
-    occurences = (session.start_date - session.end).date
 
-    return render_template("view.html", student_name = student_name, tutor_name = tutor_name, occuernces = occurences, session = session)
+    return render_template("view.html", student_name = student_name, tutor_name = tutor_name, session = session)
 
 @app.route("/create_request")
 def create_request():
@@ -1238,18 +1237,22 @@ def create_request():
 @app.route("/session_hindsight",methods=["GET","POST"])
 def session_hindsight():
     id = request.args.get("identification")
-    print(id)
     if request.method == "POST":
         feedback = request.form.get("feedback_text")
-        #insert your feedback code here
+        repeating = int(request.form.get("repeating_session"))
+        session = Session.query.get(id)
+        session.session_history['sessions'] += 1
+        session.session_history['descriptions'].append(feedback)
+        print(repeating, type(repeating))
+        flag_modified(session, 'session_history')
 
-        if int(request.form.get("repeating_session")):
-            #insert your repeating session code here
+        if repeating:
             pass
         else:
-            return redirect(f'/terminate_session?identification={id}')
-
-
+            session.closed = True
+            
+        db.session.commit()
+        return redirect(url_for('index'))
     return render_template("session_hindsight.html",id=id)
 
 @app.route("/admin_temp_route",methods=["POST","GET"])

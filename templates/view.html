@@ -30,7 +30,7 @@
                         Tutor: {{tutor_name}}
                     </div>
                     <div class="h3 col-12 col-lg-6">
-                        Student: ((student_name))
+                        Student: {{student_name}}
                     </div>
                 </div>
                 
@@ -58,7 +58,7 @@
                         Number of Meetings: {{occuernces}}
                     </div>
                     <div class="h3 col-12 col-lg-6">
-                        Subject: {{subject.session}}
+                        Subject: subject.session
                     </div>
                 </div>
                 <div class="h1 font-weight-bold justify-self-center text-center mb-4">
@@ -68,7 +68,7 @@
                     {% for i in range(session.session_history['sessions'])%}
                     <div class="card mb-3">
                         <div class="card-body">
-                            <div class="h2 mb-2">Lesson {{i}}</div>
+                            <div class="h2 mb-2">Lesson {{i+1}}</div>
                             {{session.session_history['descriptions'][i]}}
                         </div>
                     </div>
