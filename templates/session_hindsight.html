@@ -1,0 +1,41 @@
+{%extends "blank.html"%}
+{%set active_material = 0%}
+{%block content%}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <h1 class="h2">Mandatory Post-Session Review</h1>
+                <p>This option will only appear on the day the actual tutoring session has occured, and close when this form is filled out.
+                    It will then save this information to the database to displayed to the teacher end when they review the sessions.
+                    <span style="color:red;">This functionality has not been implemented yet.</span> Good luck Oscar :>
+                </p>
+            </div>
+            <div class="card shadow-lg p-4">
+                <div class="card-body text-center d-flex justify-content-center">
+                    <form id="contact-form" role="form" action="/session_hindsight?identification={{id}}" method="POST">
+                        <div class="form-group">
+                            <label for="feedback_text">What did you work on?</label>
+                            <textarea id="feedback_text" name="feedback_text" class="form-control" placeholder="Give a brief (2-3 sentence) description of what you worked on this session" rows="5" required></textarea>
+                        </div>
+                        <div class="form-row mb-2 d-flex justify-content-center">
+                            <div class="form-group col-9">
+                                <label for="repeating_session">Will you be meeting next week?</label>
+                                <select id="repeating_session" name="repeating_session" class="form-control" required>
+                                    <option value="1">Yes</option>
+                                    <option value="0" selected>No</option>
+                                </select>
+                            </div>
+                        </div>
+                       
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

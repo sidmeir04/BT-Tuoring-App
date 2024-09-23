@@ -201,17 +201,17 @@
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'scheduler'}}">
+                <a class="nav-link" style="width:100%" href="/admin_temp_route">
+                    <i class="bi bi-calendar-fill"></i>
+                    <span class="font-weight-bold" style="color:palevioletred;">(Dev) Click me!</span></a>
+            </li>
+            {% endif %}
+            {% if current_user.role == 3 %}
             <li class="nav-item side-nav-item d-none {{'active' if active_page == 'user_managing'}}">
                 <a class="nav-link" style="width:100%" href="/user_managing">
                     <i class="bi bi-calendar-fill"></i>
                     <span >User Manager</span></a>
-            </li>
-            {% endif %}
-            {% if current_user.role == 3 %}
-            <li class="nav-item side-nav-item d-none">
-                <a class="nav-link" style="width:100%" href="/show_feedback">
-                    <i class="bi bi-easel2-fill"></i>
-                    <span >View Feedback</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 3 %}

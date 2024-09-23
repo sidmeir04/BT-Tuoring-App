@@ -421,7 +421,7 @@ def user_overview():
     open_session = Session.query.get(ID)
     other_user = User.query.get(open_session.tutor) if current_user.role == 0 else User.query.get(open_session.student)
     other_user_image = base64.b64encode(other_user.image_data).decode('utf-8') if other_user.image_data else None
-    return render_template("user_overview.html",session=open_session,other=other_user,other_image = other_user_image)
+    return render_template("user_overview.html",session=open_session,other=other_user,other_image = other_user_image,role=current_user.role)
 
 @app.route("/appointment_preview",methods=["POST","GET"])
 @login_required
@@ -752,8 +752,10 @@ def terminate_session():
     old_session = Session.query.get(id)
     repeating = old_session.recurring
     current_user.marked = int(id)
+
     db.session.commit()
     if request.method == "POST":
+
         cancel_reason = request.form.get("cancel_reason")
         ##############################################################################################################################
 
@@ -1232,6 +1234,74 @@ def view():
 @app.route("/create_request")
 def create_request():
     return render_template("create_request.html")
+
+@app.route("/session_hindsight",methods=["GET","POST"])
+def session_hindsight():
+    id = request.args.get("identification")
+    print(id)
+    if request.method == "POST":
+        feedback = request.form.get("feedback_text")
+        #insert your feedback code here
+
+        if int(request.form.get("repeating_session")):
+            #insert your repeating session code here
+            pass
+        else:
+            return redirect(f'/terminate_session?identification={id}')
+
+
+    return render_template("session_hindsight.html",id=id)
+
+@app.route("/admin_temp_route",methods=["POST","GET"])
+def admin_temp_route():
+    if request.method == "POST":
+        number = int(request.form.get("number"))
+        if number <= 0:
+            flash("The number has to be above 0","danger")
+            return render_template("admin_temp_route.html")
+        
+        if int(request.form.get("submit")):
+            print("Add Sessions")
+        else:
+            first_names = [
+                "Maria",     # Spanish/Latin
+                "James",     # English
+                "Sakura",    # Japanese
+                "Amit",      # Indian
+                "Liam",      # Irish
+                "Fatima",    # Arabic
+                "Chen",      # Chinese
+                "Olga",      # Russian
+                "Zara",      # Persian
+                "David"      # Hebrew
+            ]
+            last_names = [
+                "Garcia",    # Spanish
+                "Smith",     # English
+                "Nguyen",    # Vietnamese
+                "Patel",     # Indian
+                "Kowalski",  # Polish
+                "Alvarez",   # Spanish
+                "Olsen",     # Scandinavian
+                "Kim",       # Korean
+                "Hassan",    # Arabic
+                "Ivanov"     # Russian
+            ]
+            num_users = len(User.query.all())
+            for i in range(number):
+                user = User(
+                    username = "User" + str(num_users + i + 1),
+                    name = "",
+                    last_name = "Lasanga",
+                    email = "stuema@gmail.com",
+                    email_verification_token=None,
+                    role = 2
+                )
+                user.set_password("s")
+                db.session.commit(user)
+            print("Add Students")
+    return render_template("admin_temp_route.html")
+#dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy
 
 
 @app.route('/approve_hours',methods=['GET','POST'])

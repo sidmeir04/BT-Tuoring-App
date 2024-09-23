@@ -1,0 +1,47 @@
+{%extends "blank.html"%}
+{%set active_material = 0%}
+{%block content%}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <h1 class="h2">Temporary Controls</h1>
+                <p class="">Hello! As we have not released this product yet and want to familiarize you with it, 
+                    we thought it would be a good idea to grant you some perimissions in generating users. The accounts and sessions generated
+                    here are fake. This is just a way to populate the system without the addition of actual users. 
+                    <span style="color:red">This will not be a feature in the final product.</span>
+                </p>
+            </div>
+            <div class="card shadow-lg p-4">
+                <div class="card-body">
+                    <div class="d-flex flex-row justify-content-between">
+                        <div class="col-4">
+                            <form role="form" action="/admin_temp_route" method="POST">
+                                <div class="form-group">
+                                    <label for="add_students">Add Mock Students</label>
+                                    <input id="add_students" name="number" class="form-control" type="number" value="0" required>
+                                </div>
+                                <div class="d-flex mt-4">
+                                    <button type="submit" name="submit" value="0" class="btn btn-primary btn-lg">Confirm</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-4">
+                            <form role="form" action="/admin_temp_route" method="POST">
+                                <div class="form-group">
+                                    <label for="add_sessions">Add Mock Sessions</label>
+                                    <input id="add_sessions" name="number" class="form-control" type="number" value="0" required>
+                                </div>
+                                <div class="d-flex mt-4">
+                                    <button type="submit" name="submit" value="1" class="btn btn-primary btn-lg">Confirm</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
