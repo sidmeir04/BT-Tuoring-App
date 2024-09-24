@@ -84,29 +84,40 @@
     <div class="row mb-3 d-flex justify-content-center align-content-between">
 
         <div class="col-lg-7 col-md-11">
-            <div class="card card-link mb-2">
-                <div class="row">
-                    <div class="position-relative d-flex align-items-center justify-content-center py-3 col-lg-6 col-md-12">
-                        <img src="static/assets2/img/notePad.png" class="img-fluid nonbold-img" width="100%" height="auto">
-                    </div>
-                    <div class="col-lg-6 col-md-12 mt-md-2 mx-md-4 mb-md-4 m-lg-0">
-                        <div class="h1 mb-3 mt-2">
-                            Approve Hours!
+            <!-- THIS IS WHERE YOU PUT THE PATH FOR THE NEW FEATURE -->
+            <a href="#" class="text-decoration-none text-reset">
+            <a href="/approve_hours" class="text-decoration-none text-reset">
+                <div class="card card-link mb-2">
+                    <div class="row">
+                        <div class="position-relative d-flex align-items-center justify-content-center py-3 col-lg-6 col-md-12">
+                            <img src="static/assets2/img/notePad.png" class="img-fluid nonbold-img" width="100%" height="auto">
+                            <div class="text-danger font-weight-bold top-0 end-0 m-2" style="position:absolute;background-color:transparent;font-size:9rem" >
+                                {%if to_approve < 10%}
+                                {{to_approve}}
+                                {%else%}
+                                9+
+                                {%endif%}
+                            </div>
                         </div>
-                        <div class="h4 mb-4">
-                            {%if sessions%}
-                            {% for session in sessions %}
-                            <yes class="p-2 bg-primary text-white" style="border-radius:4px">
-                                <a href="{{ url_for('view', id=session.id) }}">Set now!</a>
-                            </yes>
-                            {% endfor %}
-                            {%else%}
-                            There are currently no sessions that need your attention. Yay!
+                        <div class="col-lg-6 col-md-12 mt-md-2 mx-md-4 mb-md-4 m-lg-0">
+                            <div class="h1 mb-3 mt-2">
+                                Approve Hours!
+                            </div>
+                            <div class="h4 mb-4">
+                                {%if to_approve%}
+                                You currently have <b class="text-primary">{{to_approve}}</b> sessions pending your review!
+
+                                {%else%}
+                                There are currently no sessions that need your attention. Yay!
+                                {%endif%}
+                            </div>
+                            {%if to_approve%}
+                            <yes class="p-2 bg-primary text-white" style="border-radius:4px">Set now!</yes>
                             {%endif%}
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-12 d-lg-none">

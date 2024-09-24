@@ -24,20 +24,18 @@
         {% for check in hours_to_approve %}
         <tr>
             <td>
-                {{check[0].username}}
+                {{tutors[loop.index0]}}
             </td>
             <td>
-                {{check[1]["start_date"]}} to {{check[1]["end_date"]}}
+                {{check.start_date}} to {{check.end_date}}
             </td>
             <td>
-                {{check[1]["hours"]}}
+                {{hours_worth[loop.index0]}}
             </td>
             <td>
-                <form action="/approve_hours" method="POST" class="d-flex justify-content-end">
-                    <input type="number" value = "{{loop.index0}}" class="d-none" name = 'index_of_approval'>
-                    <button type="submit" class="btn btn-success mr-2">Approve</button>
-                    <yes class="p-2 bg-primary text-white" style="border-radius:4px"><a href="/{{ url_for('view_detail', id=id) }}">Set now!</a></yes>
-                </form>
+                <yes class="p-2 bg-primary" style="border-radius:4px">
+                    <a href="{{ url_for('view', id=check.id) }}" class="text-white text-decoration-none">Set now!</a>
+                </yes>
             </td>
         </tr>
         {% endfor %}

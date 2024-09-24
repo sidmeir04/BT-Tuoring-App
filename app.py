@@ -661,8 +661,8 @@ def index():
                         image_data = base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
                         role = current_user.role
                         )
-    
-    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate, sessions = Session.query.filter_by(closed = True))
+    to_approve = Session.query.filter_by(closed = True).all()
+    return render_template("homepages/admin.html",username=current_user.username,enum=enumerate, to_approve = len(to_approve))
 
 @app.route('/login',methods=['GET','POST'])
 def login():
@@ -1347,33 +1347,17 @@ def admin_temp_route():
 #dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy
 
 
-# @app.route('/approve_hours',methods=['GET','POST'])
-# @login_required
-# @email_verified_required
-# @admin_only
-# def approve_hours():
-#     NHS_students = User.query.filter_by(role=1).all()
-#     to_approve = []
-#     for student in NHS_students:
-#         break_down = student.volunteer_hours["breakdown"]
-#         approved_index = student.volunteer_hours["approved_index"]
-#         for i in range(len(approved_index)):
-#             if not approved_index[i]:
-#                 to_approve.append([student,break_down[i],i])
-    
-#     if request.method == "POST":
-#         index_of_student = request.form.get("index_of_approval")
-#         student,_,index = to_approve[int(index_of_student)]
-#         student.volunteer_hours["approved_index"][int(index)] = 1
-#         student.volunteer_hours["total_hours"] += student.volunteer_hours["breakdown"][int(index)]["hours"]
-#         flag_modified(student,"volunteer_hours")
-#         db.session.commit()
-#         flash("Successfully Approved!","success")
-
-#         to_approve.pop(int(index_of_student))
+@app.route('/approve_hours')
+@login_required
+@email_verified_required
+@admin_only
+def approve_hours():
+    to_approve = Session.query.filter_by(closed = True).all()
+    tutors = [User.query.get(i.tutor).username for i in to_approve]
+    hours_worth = [((datetime.combine(datetime.today(), i.end_time) - datetime.combine(datetime.today(), i.start_time)).total_seconds() / 3600) * 5 for i in to_approve]
         
 
-#     return render_template("approve_hours.html",hours_to_approve=to_approve)
+    return render_template("approve_hours.html",hours_to_approve=to_approve,hours_worth = hours_worth, tutors=tutors)
 
 @app.route('/calendar')
 @login_required
