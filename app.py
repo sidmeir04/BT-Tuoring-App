@@ -58,8 +58,6 @@ class User(db.Model, UserMixin):
     email_verification_token = db.Column(db.String(255))
     schedule_data = db.Column(JSON, default=load_default_schedule)
     notifaction_data = db.Column(JSON, default=load_default_notifactions)
-    sessions = db.relationship('Session', backref='user', lazy = True)
-    feedbacks = db.relationship('Feedback', backref='user', lazy = True)
     hours_of_service = db.Column(db.Float, default = 0.0)
     status = db.Column(db.String, default='')
     image_data = db.Column(db.LargeBinary)
@@ -68,7 +66,8 @@ class User(db.Model, UserMixin):
     student_teacher_data = db.Column(JSON, default = load_student_teacher_JSON)
     role = db.Column(db.Integer, default = 0)
     marked = db.Column(db.Integer, default = 0)
-
+    sessions = db.relationship('Session', backref='user', lazy = True)
+    feedbacks = db.relationship('Feedback', backref='user', lazy = True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -1221,7 +1220,7 @@ def confirm_appointment():
     return redirect(url_for("view_appointments"))
 
 
-@app.route("/view_details")
+@app.route("/view_details", methods = ['POST','GET'])
 def view():
     id = request.args.get('id')
     session = Session.query.get(id)
@@ -1344,33 +1343,33 @@ def admin_temp_route():
 #dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy
 
 
-@app.route('/approve_hours',methods=['GET','POST'])
-@login_required
-@email_verified_required
-@admin_only
-def approve_hours():
-    NHS_students = User.query.filter_by(role=1).all()
-    to_approve = []
-    for student in NHS_students:
-        break_down = student.volunteer_hours["breakdown"]
-        approved_index = student.volunteer_hours["approved_index"]
-        for i in range(len(approved_index)):
-            if not approved_index[i]:
-                to_approve.append([student,break_down[i],i])
+# @app.route('/approve_hours',methods=['GET','POST'])
+# @login_required
+# @email_verified_required
+# @admin_only
+# def approve_hours():
+#     NHS_students = User.query.filter_by(role=1).all()
+#     to_approve = []
+#     for student in NHS_students:
+#         break_down = student.volunteer_hours["breakdown"]
+#         approved_index = student.volunteer_hours["approved_index"]
+#         for i in range(len(approved_index)):
+#             if not approved_index[i]:
+#                 to_approve.append([student,break_down[i],i])
     
-    if request.method == "POST":
-        index_of_student = request.form.get("index_of_approval")
-        student,_,index = to_approve[int(index_of_student)]
-        student.volunteer_hours["approved_index"][int(index)] = 1
-        student.volunteer_hours["total_hours"] += student.volunteer_hours["breakdown"][int(index)]["hours"]
-        flag_modified(student,"volunteer_hours")
-        db.session.commit()
-        flash("Successfully Approved!","success")
+#     if request.method == "POST":
+#         index_of_student = request.form.get("index_of_approval")
+#         student,_,index = to_approve[int(index_of_student)]
+#         student.volunteer_hours["approved_index"][int(index)] = 1
+#         student.volunteer_hours["total_hours"] += student.volunteer_hours["breakdown"][int(index)]["hours"]
+#         flag_modified(student,"volunteer_hours")
+#         db.session.commit()
+#         flash("Successfully Approved!","success")
 
-        to_approve.pop(int(index_of_student))
+#         to_approve.pop(int(index_of_student))
         
 
-    return render_template("approve_hours.html",hours_to_approve=to_approve)
+#     return render_template("approve_hours.html",hours_to_approve=to_approve)
 
 @app.route('/calendar')
 @login_required
@@ -1404,4 +1403,4 @@ def not_found(e):
 if __name__ == '__main__':
     app.secret_key = 'ben_does_not_suck'
     #add a host="" to run on capcitor with flask-socketio
-    socketio.run(app)
+    socketio.run(app, port = 5000)
