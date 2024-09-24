@@ -21,6 +21,19 @@
                                     <label for="add_students">Add Mock Students</label>
                                     <input id="add_students" name="number" class="form-control" type="number" value="0" required>
                                 </div>
+                                <input type="hidden" name="role" value="0">
+                                <div class="d-flex mt-4">
+                                    <button type="submit" name="submit" value="0" class="btn btn-primary btn-lg">Confirm</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-4">
+                            <form role="form" action="/admin_temp_route" method="POST">
+                                <div class="form-group">
+                                    <label for="add_students">Add Mock Tutors</label>
+                                    <input id="add_students" name="number" class="form-control" type="number" value="0" required>
+                                </div>
+                                <input type="hidden" name="role" value="1">
                                 <div class="d-flex mt-4">
                                     <button type="submit" name="submit" value="0" class="btn btn-primary btn-lg">Confirm</button>
                                 </div>
