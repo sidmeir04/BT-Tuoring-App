@@ -1267,27 +1267,25 @@ def admin_temp_route():
         
         if int(request.form.get("submit")):
             for _ in range(number):
-                tutor,student = sample([i.id for i in User.query.all()])
+                tutor = sample(User.query.filter_by(role=1).all(),1)[0].id
+                student = sample(User.query.filter_by(role=0).all(),1)[0].id
 
                 user = User.query.get(tutor)
-                period = randint(1,8)
-                day = date_to_day(date)
+                date=find_next_day_of_week(sample(['monday','tuesday','wednesday','thursday','friday'],1)[0])
+
+                period = 1
                 year, month, temp_day = (int(i) for i in date.split('-'))
                 dayNumber = weekday(year, month, temp_day)
-                data = user.schedule_data[day][str(period)]
-                date=find_next_day_of_week(sample(['monday','tuesday','wednesday','thursday','friday'])[0])
-                tutor = User.query.get(tutor)
                 conversation = ActiveMessageHistory(
                     people = {tutor:'',student:''},
                     missed = {'total':0,tutor:0,student:0}
                 )
                 db.session.add(conversation)
                 db.session.commit()
-
                 new_session = Session(
                     tutor = tutor,
-                    start_time = string_to_time(data['start_time']),
-                    end_time = string_to_time(data['end_time']),
+                    start_time = string_to_time("08:30"),
+                    end_time = string_to_time("08:45"),
                     student = student,
                     period = period,
                     start_date = datetime.today(),
@@ -1298,11 +1296,13 @@ def admin_temp_route():
                 )
 
                 db.session.add(new_session)
+                tutor = User.query.get(tutor)
                 tutor.schedule_data[date_to_day(str(new_session.date))][str(new_session.period)]['times'] += ' ' + str(new_session.date)
                 flag_modified(tutor, 'schedule_data')
             db.session.commit()
             
         else:
+            role = request.form.get("role")
             first_names = [
                 "Maria",     # Spanish/Latin
                 "James",     # English
@@ -1335,12 +1335,11 @@ def admin_temp_route():
                     last_name = last_names[randint(0,9)],
                     email = f"student{str(num_users + i + 1)}@gmail.com",
                     email_verification_token=None,
-                    role = 0
+                    role = int(role)
                 )
                 user.set_password("s")
                 db.session.add(user)
-                db.session.commit()
-            print("Add Students")
+            db.session.commit()
     return render_template("admin_temp_route.html")
 #dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy
 
