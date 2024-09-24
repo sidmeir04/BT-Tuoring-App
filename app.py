@@ -282,6 +282,18 @@ def add_new_session(tutor_id,student_id,date,period,request,repeating):
 
     db.session.commit()
 
+def remove_session(session_id):
+    session = Session.query.get(session_id)
+    session_files = SessionFile.query.filter_by(session_id = session_id).all()
+    message_history = ActiveMessageHistory.query.get(session.message_history_id)
+    print(message_history)
+    for files in session_files:
+        db.session.delete(files)
+    db.session.delete(message_history)
+    db.session.delete(session)
+    db.session.commit()
+
+
 with app.app_context():
     db.create_all(bind_key=None)
     db.create_all(bind_key="records_db")
@@ -1227,10 +1239,18 @@ def view():
     tutor_name = User.query.get(session.tutor).username
     student_name = User.query.get(session.student).username
     if request.method == 'POST':
-        tutor = User.quuery.get(session.tutor)
-        tutor.volenteer_hours += (session.endtime - session.start_time).minutes() * session.session_history['sessions']
-        db.session.commit()
-        return redirect(url_for('index'))
+        if request.form.get('action') == 'button1':
+            tutor = User.query.get(session.tutor)
+            tutor.volunteer_hours += ((datetime.combine(datetime.today(), session.end_time) - datetime.combine(datetime.today(), session.start_time)).total_seconds() / 60) * session.session_history['sessions']
+            db.session.commit()
+        remove_session(session.id)
+        next_session = Session.query.filter_by(closed=True).all()
+        if len(next_session) < 1:
+            flash('All Hours Reviewed', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Student Hours Reviewed', 'success')
+            return redirect(url_for('view', id = Session.query.filter_by(closed=True).all()[0].id))
     return render_template("view.html", student_name = student_name, tutor_name = tutor_name, session = session)
 
 @app.route("/create_request")
@@ -1246,7 +1266,6 @@ def session_hindsight():
         session = Session.query.get(id)
         session.session_history['sessions'] += 1
         session.session_history['descriptions'].append(feedback)
-        print(repeating, type(repeating))
         flag_modified(session, 'session_history')
 
         if repeating:

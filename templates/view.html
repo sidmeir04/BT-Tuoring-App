@@ -94,6 +94,10 @@
                     </div>
                 </a>
                 <br clas="d-block d-lg-none">
+                <form action="{{ url_for('view', id=session.id) }}", method = 'post'>
+                    <button type="submit" name="action" value="button1">Comfirm Hours</button>
+                    <button type="submit" name="action" value="button2">Remove Hours</button>
+                </form>
 
             </div>
         </div>
