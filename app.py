@@ -1226,7 +1226,11 @@ def view():
     session = Session.query.get(id)
     tutor_name = User.query.get(session.tutor).username
     student_name = User.query.get(session.student).username
-
+    if request.method == 'POST':
+        tutor = User.quuery.get(session.tutor)
+        tutor.volenteer_hours += (session.endtime - session.start_time).minutes() * session.session_history['sessions']
+        db.session.commit()
+        return redirect(url_for('index'))
     return render_template("view.html", student_name = student_name, tutor_name = tutor_name, session = session)
 
 @app.route("/create_request")
