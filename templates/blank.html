@@ -201,7 +201,7 @@
             </li>
             {% endif %}
             {% if current_user.role == 3 %}
-            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'scheduler'}}">
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'dev'}}">
                 <a class="nav-link" style="width:100%" href="/admin_temp_route">
                     <i class="bi bi-calendar-fill"></i>
                     <span class="font-weight-bold" style="color:palevioletred;">(Dev) Click me!</span></a>
@@ -214,18 +214,16 @@
                     <span >User Manager</span></a>
             </li>
             {% endif %}
-            <!-- {% if current_user.role == 3 %}
-            <li class="nav-item side-nav-item d-none">
-                <a class="nav-link" style="width:100%" href="/approve_hours">
-                    <i class="bi bi-easel2-fill"></i>
-                    <span >Approve Hours</span></a>
-            </li>
-            {% endif %} -->
             {% if current_user.role == 3 %}
-            <li class="nav-item side-nav-item d-none">
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'tag_managing'}}">
                 <a class="nav-link" style="width:100%" href="/tag_managing">
                     <i class="bi bi-easel2-fill"></i>
                     <span >Tag Managing</span></a>
+            </li>
+            <li class="nav-item side-nav-item d-none {{'active' if active_page == 'approve_hours'}}">
+                <a class="nav-link" style="width:100%" href="/approve_hours">
+                    <i class="bi bi-easel2-fill"></i>
+                    <span >Approve Hours</span></a>
             </li>
             {% endif %}
             {% if current_user.role == 2 %}
@@ -391,14 +389,14 @@
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                <a class="dropdown-item" href="#">
+                                <!-- <a class="dropdown-item" href="#">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Settings
                                 </a>
                                 <a class="dropdown-item" href="#">
                                     <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Activity Log
-                                </a>
+                                </a> -->
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>

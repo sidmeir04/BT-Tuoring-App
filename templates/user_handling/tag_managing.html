@@ -1,6 +1,6 @@
 {% extends 'blank.html' %}
 {%set user_name = username%}
-{%set active_page='user_managing'%}
+{%set active_page='tag_managing'%}
 {% block content %}
 
 <table class = 'col-12 table'>
@@ -21,7 +21,7 @@
         {% for NHS in NHSs %}
         <tr>
             <td>
-                {{NHS.username}}
+                {{NHS.name}} {{NHS.last_name}}
             </td>
             <!-- make this td expand through multible tds -->
             <td>   

@@ -21,7 +21,7 @@
         {% for user in people %}
         <tr>
             <td>
-            {{ user.username}}
+            {{ user.name}} {{user.last_name}}
             </td>
             <form action="/user_managing" method = 'POST'>
                 <input type="number" value = {{user.id}} style = 'display:none' name = 'promoted_user' id = 'promoted_user'>

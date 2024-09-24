@@ -228,6 +228,56 @@ def temp_function_for_default_user_loading():
         db.session.add(user4)
         db.session.commit()
 
+def temp_admin_loading_delete_later():
+    if not User.query.first():
+        user1 = User(
+            username = "Ms. Genicoff",
+            name = "Sharon",
+            last_name = "Genicoff",
+            email = "shagen@bergen.org",
+            email_verification_token=None,
+            role = 3
+        )
+        user1.set_password("Demo1")
+        db.session.add(user1)
+        db.session.commit()
+
+        user2 = User(
+            username = "Mr. Pena",
+            name = "Carlos",
+            last_name = "Pena",
+            email = "carpen@bergen.org",
+            email_verification_token=None,
+            role = 3
+        )
+        user2.set_password("Demo1")
+
+        user3 = User(
+            username = "Ms. Kendall",
+            name = "Monet",
+            last_name = "Kendall",
+            email = "monken@bergen.org",
+            email_verification_token=None,
+            role = 3
+        )
+        user3.set_password("Demo1")
+
+        user4 = User(
+            username = "Ms. Mak",
+            name = "Cynthia",
+            last_name = "Mak",
+            email = "cynmak@bergen.org",
+            email_verification_token=None,
+            role = 3,
+        )
+
+        user4.set_password("Demo1")
+
+        db.session.add(user2)
+        db.session.add(user3)
+        db.session.add(user4)
+        db.session.commit()
+
 def add_new_session(tutor_id,student_id,date,period,request,repeating):
     user = User.query.get(tutor_id)
 
@@ -298,7 +348,8 @@ with app.app_context():
     db.create_all(bind_key=None)
     db.create_all(bind_key="records_db")
     initialize_period_data()
-    temp_function_for_default_user_loading()
+    temp_admin_loading_delete_later()
+    # temp_function_for_default_user_loading()
 
 
 def generate_verification_token():
@@ -319,7 +370,7 @@ def load_user(user_id):
 
 @app.context_processor
 def inject_profile_image():
-    included_endpoints = ['index','find_session','user_messages','scheduler','profile']
+    included_endpoints = ['index','find_session','user_messages','scheduler','profile',"admin_temp_route","tag_managing","user_managing","approve_hours","view","user_uploads"]
 
     # Get the current endpoint
     current_endpoint = request.endpoint
@@ -1236,8 +1287,10 @@ def confirm_appointment():
 def view():
     id = request.args.get('id')
     session = Session.query.get(id)
-    tutor_name = User.query.get(session.tutor).username
-    student_name = User.query.get(session.student).username
+    tutor_name = User.query.get(session.tutor)
+    tutor_name = f"{tutor_name.name} {tutor_name.last_name}"
+    student_name = User.query.get(session.student)
+    student_name = f"{student_name.name} {student_name.last_name}"
     if request.method == 'POST':
         if request.form.get('action') == 'button1':
             tutor = User.query.get(session.tutor)
@@ -1251,7 +1304,7 @@ def view():
         else:
             flash('Student Hours Reviewed', 'success')
             return redirect(url_for('view', id = Session.query.filter_by(closed=True).all()[0].id))
-    return render_template("view.html", student_name = student_name, tutor_name = tutor_name, session = session)
+    return render_template("view.html", student_name = student_name, tutor_name = tutor_name, session = session, hours = round(((datetime.combine(datetime.today(), session.end_time) - datetime.combine(datetime.today(), session.start_time)).total_seconds() / 3600) * session.session_history["sessions"],2))
 
 @app.route("/create_request")
 def create_request():
@@ -1288,14 +1341,52 @@ def admin_temp_route():
             return render_template("admin_temp_route.html")
         
         if int(request.form.get("submit")):
+            if len(User.query.filter_by(role=1).all()) == 0 or len(User.query.filter_by(role=0).all()) == 0:
+                flash("Insert some students and tutors first","warning")
+                return redirect(url_for("admin_temp_route"))
+            available_filepaths = [
+                "static/assets2/img/deleteTempImages/ec3b11a9e61917ff610aaf38a3b3a08f_18-02s06.png",
+                "static/assets2/img/deleteTempImages/I3UzM.png",
+                "static/assets2/img/deleteTempImages/Linear-function-example-sol-1.png",
+                "static/assets2/img/deleteTempImages/material-U2f5naP5-thumb.png",
+                "static/assets2/img/deleteTempImages/png-clipart-linear-subspace-linear-algebra-space-linear-map-system-of-linear-equations-a-linear-design-angle-rectangle-thumbnail.png",
+                "static/assets2/img/deleteTempImages/Screen-Shot-2020-04-15-at-6.36.08-PM.png"
+            ]
+            session_reports = [
+                "We covered the foundational concepts of calculus, specifically focusing on understanding derivatives and their applications. The student initially struggled with differentiating more complex functions, but after walking through several examples, they showed significant improvement. We also briefly touched on integration to preview what’s coming next.",
+                "In today's session, we concentrated on solving linear equations and graphing them accurately. The student had a few misunderstandings regarding slope-intercept form, so we spent time clarifying that. We finished with some graphing exercises to reinforce the concepts and improve speed and accuracy.",
+                "We discussed the structure of a strong argumentative essay, starting with crafting a compelling thesis statement. The student practiced outlining their ideas to support their thesis, and we went over how to transition between paragraphs. By the end of the session, they felt more confident in organizing their essays logically.",
+                "We worked through quadratic equations, focusing on both the factorization and completing the square methods. Initially, the student found it hard to recognize when factorization was possible, but we broke it down step-by-step. After several practice problems, they became more comfortable identifying the correct method and solving efficiently.",
+                "Today's session focused on study habits and time management skills. The student has been having difficulty balancing homework and upcoming tests, so we created a study schedule. We also discussed prioritization techniques and strategies for managing distractions."
+            ]
+
+            time_sets = [
+                ("08:30","08:45",1),
+                ("13:00","13:25",7),
+                ("10:00","10:25",3),
+                ("09:30","09:40",2),
+                ("14:15","14:50",9)
+            ]
+            subjects = [
+                "Mathematics",
+                "English Literature",
+                "Biology",
+                "Chemistry",
+                "Physics",
+                "History",
+                "Geography",
+                "Foreign Language",
+                "Physical Education",
+                "Computer Science"
+            ]
+
+
             for _ in range(number):
                 tutor = sample(User.query.filter_by(role=1).all(),1)[0].id
                 student = sample(User.query.filter_by(role=0).all(),1)[0].id
 
                 user = User.query.get(tutor)
                 date=find_next_day_of_week(sample(['monday','tuesday','wednesday','thursday','friday'],1)[0])
-
-                period = 1
                 year, month, temp_day = (int(i) for i in date.split('-'))
                 dayNumber = weekday(year, month, temp_day)
                 conversation = ActiveMessageHistory(
@@ -1304,24 +1395,50 @@ def admin_temp_route():
                 )
                 db.session.add(conversation)
                 db.session.commit()
+
+                num_sessions = randint(1,3)
+                fake_history = {"descriptions": [session_reports[randint(0,4)] for _ in range(num_sessions)], "sessions": num_sessions}
+
+                start_time,end_time,period = time_sets[randint(0,4)]
+
                 new_session = Session(
                     tutor = tutor,
-                    start_time = string_to_time("08:30"),
-                    end_time = string_to_time("08:45"),
+                    subject = subjects[randint(0,9)],
+                    start_time = string_to_time(start_time),
+                    end_time = string_to_time(end_time),
+                    session_history = fake_history,
                     student = student,
                     period = period,
                     start_date = datetime.today(),
                     day_of_the_week = dayNumber,
                     date = datetime.strptime(date, '%Y-%m-%d').date(),
                     message_history_id = conversation.id,
-                    recurring = False
+                    recurring = False,
+                    closed=True
                 )
 
                 db.session.add(new_session)
                 tutor = User.query.get(tutor)
                 tutor.schedule_data[date_to_day(str(new_session.date))][str(new_session.period)]['times'] += ' ' + str(new_session.date)
                 flag_modified(tutor, 'schedule_data')
-            db.session.commit()
+                db.session.commit()
+
+                
+
+                for _ in range(randint(1,8)):
+                    relative_path = available_filepaths[randint(0,5)]
+
+                    file_path = os.path.join(os.getcwd(), relative_path)
+
+
+                    with open(file_path, 'rb') as file:
+                        file_data = file.read()
+
+                    filename = os.path.basename(file_path)
+
+                    new_file = SessionFile(filename=filename, file_data=file_data, session=new_session)
+                    db.session.add(new_file)
+                    db.session.commit()
             
         else:
             role = request.form.get("role")
@@ -1351,18 +1468,22 @@ def admin_temp_route():
             ]
             num_users = len(User.query.all())
             for i in range(number):
+                name = first_names[randint(0,9)]
+                last_name = last_names[randint(0,9)]
+                qual_data = {"Math": randint(0,1), "Algebra": randint(0,1), "Science": randint(0,1), "Chemistry": randint(0,1), "Gym": randint(0,1), "Geometry": randint(0,1), "Biomolecular Quantum Physics": randint(0,1), "English": randint(0,1)} if int(role) else {"Math": 0, "Algebra": 0, "Science": 0, "Chemistry": 0, "Gym": 0, "Geometry": 0, "Biomolecular Quantum Physics": 0, "English": 0}
                 user = User(
                     username = "User" + str(num_users + i + 1),
-                    name = first_names[randint(0,9)],
-                    last_name = last_names[randint(0,9)],
-                    email = f"student{str(num_users + i + 1)}@gmail.com",
+                    name = name,
+                    last_name = last_name,
+                    email = f"{name[:3]}{last_name[:3]}{str(num_users + i + 1)}@bergen.org",
                     email_verification_token=None,
-                    role = int(role)
+                    role = int(role),
+                    qualification_data = qual_data
                 )
-                user.set_password("s")
+                user.set_password("TotallyRandomPassword")
                 db.session.add(user)
-            db.session.commit()
-    return render_template("admin_temp_route.html")
+                db.session.commit()
+    return render_template("admin_temp_route.html",student_num = len(User.query.filter_by(role=0).all()),tutor_num = len(User.query.filter_by(role=1).all()),session_num = len(Session.query.all()))
 #dummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummydummy
 
 
@@ -1372,8 +1493,8 @@ def admin_temp_route():
 @admin_only
 def approve_hours():
     to_approve = Session.query.filter_by(closed = True).all()
-    tutors = [User.query.get(i.tutor).username for i in to_approve]
-    hours_worth = [((datetime.combine(datetime.today(), i.end_time) - datetime.combine(datetime.today(), i.start_time)).total_seconds() / 3600) * 5 for i in to_approve]
+    tutors = [User.query.get(i.tutor).name + ' ' + User.query.get(i.tutor).last_name for i in to_approve]
+    hours_worth = [round(((datetime.combine(datetime.today(), i.end_time) - datetime.combine(datetime.today(), i.start_time)).total_seconds() / 3600) * i.session_history["sessions"],2) for i in to_approve]
         
 
     return render_template("approve_hours.html",hours_to_approve=to_approve,hours_worth = hours_worth, tutors=tutors)

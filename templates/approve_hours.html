@@ -1,13 +1,13 @@
 {% extends 'blank.html' %}
 {%set user_name = username%}
-{%set active_page='user_managing'%}
+{%set active_page='approve_hours'%}
 {% block content %}
 
 <table class = 'col-12 table'>
     <thead>
         <tr>
             <th>
-                Username
+                Tutor Name
             </th>
             <th>
                 Dates
@@ -27,14 +27,14 @@
                 {{tutors[loop.index0]}}
             </td>
             <td>
-                {{check.start_date}} to {{check.end_date}}
+                {{check.start_date.strftime('%D')}} to {{check.date.strftime('%D')}}
             </td>
             <td>
                 {{hours_worth[loop.index0]}}
             </td>
             <td>
                 <yes class="p-2 bg-primary" style="border-radius:4px">
-                    <a href="{{ url_for('view', id=check.id) }}" class="text-white text-decoration-none">Set now!</a>
+                    <a href="{{ url_for('view', id=check.id) }}" class="text-white text-decoration-none">Review!</a>
                 </yes>
             </td>
         </tr>
