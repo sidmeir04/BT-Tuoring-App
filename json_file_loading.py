@@ -39,7 +39,7 @@ def string_to_time(time_str):
     return result_time
 
 lower_days = ['monday','tuesday','wednesday','thursday','friday']
-def find_next_day_of_week(day_of_week):
+def find_next_day_of_week(day_of_week : str):
     day_index = lower_days.index(day_of_week.lower())
     today = datetime.now().weekday()
     days_ahead = (day_index - today) % 7
