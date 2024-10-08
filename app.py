@@ -56,7 +56,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     email_verification_token = db.Column(db.String(255))
-    schedule_data = db.Column(JSON, default=load_default_schedule)
+    schedule_data = db.Column(db.LargeBinary(8), default=b'\x00' * 8)
     notifaction_data = db.Column(JSON, default=load_default_notifactions)
     hours_of_service = db.Column(db.Float, default = 0.0)
     status = db.Column(db.String, default='')
@@ -165,9 +165,58 @@ class Periods(db.Model):
     thursday = db.Column(db.String(256), default = '')
     friday = db.Column(db.String(256), default = '')
 
+'''
+Period Key
+0 = Before School
+1 = Period 4
+2 = Period 5
+3 = Period 6
+4 = Period 7
+5 = After School
+'''
+period_converter = {
+    0:0,
+    1:4,
+    2:5,
+    3:6,
+    4:7,
+    5:-1
+}
+
+# Convert an integer to a 64-bit binary string
+def int_to_64bit_binary_string(value):
+    return struct.pack('Q', value)  # 'Q' is for 64-bit unsigned integer
+
+# Convert a 64-bit binary string back to an integer
+def binary_string_to_int(binary_string):
+    return struct.unpack('Q', binary_string)[0]
+
+# Flip the bit at position `bit_position` in the 64-bit binary string
+def flip_bit(user_id:int, day:str, period:int):
+    '''
+    Changes users Schedule at specified position.
+    Returns value of flipped bit.\n
+    Day should be an int where Monday = 0\n
+    Period should be a value from 0 to 5\n
+    0 = Before School\n
+    1 = Period 4\n
+    2 = Period 5\n
+    3 = Period 6\n
+    4 = Period 7\n
+    5 = After School
+    '''
+    user = User.query.get(user_id)
+    pos = 8*day + period
+    binary_string = user.schedule_data
+    value = binary_string_to_int(binary_string)
+    mask = 1 << pos
+    flipped_value = value ^ mask
+    user.schedule_data = flipped_value
+    return (flipped_value >> pos) & 1
+
 def initialize_period_data():
     if not Periods.query.first():
-        for _ in range(1,10):
+        for _ in range(0,6):
             newThing = Periods()
             db.session.add(newThing)
         db.session.commit()
@@ -212,7 +261,7 @@ def temp_function_for_default_user_loading():
             last_name = "Burrido",
             email = "america@gmail.com",
             email_verification_token=None,
-            schedule_data=json.loads('''{"monday": {"1": {"start_time": "08:30", "end_time": "08:31", "times": " 2024-06-24", "subject": null}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "tuesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "wednesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "thursday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "friday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}}'''),
+            # schedule_data=json.loads('''{"monday": {"1": {"start_time": "08:30", "end_time": "08:31", "times": " 2024-06-24", "subject": null}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "tuesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "wednesday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "thursday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}, "friday": {"1": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "2": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "3": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "4": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "5": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "6": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "7": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "8": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "9": {"start_time": "00:00", "end_time": "00:00", "times": ""}, "subject": ""}}'''),
             volunteer_hours=0,
             role = 1,
             qualification_data = json.loads('''{"Math": 1, "Algebra": 0, "Science": 0, "Chemistry": 0, "Gym": 0, "Geometry": 0, "Biomolecular Quantum Physics": 0, "English": 0}''')
@@ -236,7 +285,7 @@ def temp_admin_loading_delete_later():
             last_name = "Genicoff",
             email = "shagen@bergen.org",
             email_verification_token=None,
-            role = 3
+            role = 1
         )
         user1.set_password("Demo1")
         db.session.add(user1)
@@ -270,26 +319,22 @@ def temp_admin_loading_delete_later():
             email_verification_token=None,
             role = 3,
         )
-
         user4.set_password("Demo1")
+
 
         db.session.add(user2)
         db.session.add(user3)
         db.session.add(user4)
         db.session.commit()
 
-def add_new_session(tutor_id,student_id,date,period,request,repeating):
-    user = User.query.get(tutor_id)
-
-    day = date_to_day(date)
+def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request,repeating):
     year, month, temp_day = (int(i) for i in date.split('-'))
     dayNumber = weekday(year, month, temp_day)
-    data = user.schedule_data[day][str(period)]
     if request:
         new_session = SessionRequest(
             tutor = tutor_id,
-            start_time = string_to_time(data['start_time']),
-            end_time = string_to_time(data['end_time']),
+            start_time = start_time,
+            end_time = end_time,
             student = student_id,
             period = period,
             start_date = datetime.today(),
@@ -315,8 +360,8 @@ def add_new_session(tutor_id,student_id,date,period,request,repeating):
 
         new_session = Session(
             tutor = tutor_id,
-            start_time = string_to_time(data['start_time']),
-            end_time = string_to_time(data['end_time']),
+            start_time = start_time,
+            end_time = end_time,
             student = student_id,
             period = period,
             start_date = datetime.today(),
@@ -327,8 +372,6 @@ def add_new_session(tutor_id,student_id,date,period,request,repeating):
         )
 
         db.session.add(new_session)
-        tutor.schedule_data[date_to_day(str(new_session.date))][str(new_session.period)]['times'] += ' ' + str(new_session.date)
-        flag_modified(tutor, 'schedule_data')
 
     db.session.commit()
 
@@ -921,7 +964,6 @@ lower_days = ['monday','tuesday','wednesday','thursday','friday']
 # options=options,    options = load_available_classes()
 
 def find_session():
-    users,user_names = [],[]
     day, date = None, None
     tutor_name = ''
     options = load_available_classes()
@@ -930,44 +972,72 @@ def find_session():
         period = request.form.get('period')
         tutor_name = request.form.get('specific_tutor')
         subject = request.form.get('subject')
-        # send to the front end, use jinja if to only show the session if that tutor is assigned
+        results = []
         if period != '-1':
-            # if the period is not specified
-            data = Periods.query.get(int(period))
+            data = Periods.query.get(period)
             if date:
                 day = date_to_day(date)
                 data = getattr(data, day, 'defualt')
-                user_names = [(User.query.get(int(id)).username,int(id),period,date,User.query.get(int(id)).qualification_data) for id in data.split(' ')[1:]]
-                users = [User.query.get(int(id)).schedule_data[day][period] for id in data.split(' ')[1:]]
+                for user_id in data.split(' '):
+                    user = User.query.get(user_id)
+                    if user.qualification_data[subject]:
+                        results.append([user.username],period,date,user_id)
             else:
                 for day in lower_days:
                     day_data = getattr(data, day, 'defualt')
-                    # adding data to existing lists, could probably be done with map
-                    [user_names.append((User.query.get(int(id)).username,int(id),period,find_next_day_of_week(day),User.query.get(int(id)).qualification_data)) for id in day_data.split(' ')[1:]]
-                    [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
+                    for user_id in day_data.split(' '):
+                        user = User.query.get(user_id)
+                        if user.qualification_data[subject]:
+                            results.append([user.username],period,find_next_day_of_week(day),user_id)
+        # if period is not specified
+        else:
+            if date:
+                day = date_to_day(date)
+                for period in range(1,7):
+                    for user_id in getattr(Periods.query.get(period), day, 'defualt').split(' '):
+                        user = User.query.get(user_id)
+                        if user.qualification_data[subject]:
+                            results.append([user.username],period,find_next_day_of_week(day),user_id)
+            else:
+                pass
+                # Send message saying that you need to specify either date or time
+        # send to the front end, use jinja if to only show the session if that tutor is assigned
+        # if period != '-1':
+        #     data = Periods.query.get(int(period))
+        #     if date:
+        #         day = date_to_day(date)
+        #         data = getattr(data, day, 'defualt')
+        #         user_names = [(User.query.get(int(id)).username,int(id),period,date,User.query.get(int(id)).qualification_data) for id in data.split(' ')[1:]]
+        #         users = [User.query.get(int(id)).schedule_data[day][period] for id in data.split(' ')[1:]]
+        #     else:
+        #         for day in lower_days:
+        #             day_data = getattr(data, day, 'defualt')
+        #             # adding data to existing lists, could probably be done with map
+        #             [user_names.append((User.query.get(int(id)).username,int(id),period,find_next_day_of_week(day),User.query.get(int(id)).qualification_data)) for id in day_data.split(' ')[1:]]
+        #             [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
 
-        elif date:
-            day = date_to_day(date)
-            day_data = [getattr(Periods.query.get(i),day) for i in range(1,10)]
-            for period,period_data in enumerate(day_data):
-                if period_data:
-                    # adding data to existing lists, could probably be done with map
-                    [user_names.append((User.query.get(int(id)).username,int(id),period+1,date,User.query.get(int(id)).qualification_data)) for id in period_data.split(' ')[1:]]
-                    [users.append(User.query.get(int(id)).schedule_data[day][str(period+1)]) for id in period_data.split(' ')[1:]]
-        elif subject or tutor_name:
-            for period in range(1,10):
-                for temp in [(getattr(Periods.query.get(period), day, 'default'),day) for day in lower_days]:
-                    for id in temp[0].split(' ')[1:]:
-                        user = User.query.get(int(id))
-                        [user_names.append((user.username,int(id),period,find_next_day_of_week(temp[1]),user.qualification_data))]
-                        [users.append(user.schedule_data[temp[1]][str(period)])]
+        # elif date:
+        #     day = date_to_day(date)
+        #     day_data = [getattr(Periods.query.get(i),day) for i in range(1,10)]
+        #     for period,period_data in enumerate(day_data):
+        #         if period_data:
+        #             # adding data to existing lists, could probably be done with map
+        #             [user_names.append((User.query.get(int(id)).username,int(id),period+1,date,User.query.get(int(id)).qualification_data)) for id in period_data.split(' ')[1:]]
+        #             [users.append(User.query.get(int(id)).schedule_data[day][str(period+1)]) for id in period_data.split(' ')[1:]]
+        # elif subject or tutor_name:
+        #     for period in range(1,10):
+        #         for temp in [(getattr(Periods.query.get(period), day, 'default'),day) for day in lower_days]:
+        #             for id in temp[0].split(' ')[1:]:
+        #                 user = User.query.get(int(id))
+        #                 [user_names.append((user.username,int(id),period,find_next_day_of_week(temp[1]),user.qualification_data))]
+        #                 [users.append(user.schedule_data[temp[1]][str(period)])]
 
-        return render_template('find_session.html', users = users, user_names = user_names, enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options)
+        return render_template('find_session.html', results = results,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options)
     
 
     
 
-    return render_template('find_session.html', enumerate = enumerate,tutor_name=tutor_name.lower(),type=request.method,options=options)
+    return render_template('find_session.html', tutor_name=tutor_name.lower(),type=request.method,options=options)
 
 
 @app.route('/scheduler',methods=['POST','GET'])
@@ -978,34 +1048,17 @@ def scheduler():
     if current_user.role < 1: return redirect(url_for('404'))
     if request.method == 'POST':
         thing = request.form.get('modalPass').split(',')
-        period,day = int(thing[0])+1,thing[1]
+        period,day = int(thing[0]),thing[1]
         day = int(day)
         period_data = Periods.query.get(period)
         data = getattr(period_data, lower_days[day], 'default')
+        bits = flip_bit(current_user.id,day,period)
+        current_user.schedule_data = bits
         if ('delete', '') not in request.form.items():
-            start_time = request.form.get('start_time')
-            end_time = request.form.get('end_time')
-            subject = request.form.get('subject')
-            period_start = 450 + int(period)*45
-            period_end = period_start + 41
-            start_min = time_to_min(start_time)
-            end_min = time_to_min(end_time)
-
-            if (start_min < period_start or end_min > period_end or start_min > end_min):
-                flash('invalid times', 'warning')
-                return redirect(url_for('scheduler'))
-            current_user.schedule_data[lower_days[day]][str(period)]['start_time'] = start_time
-            current_user.schedule_data[lower_days[day]][str(period)]['end_time'] = end_time
-            current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
-            current_user.schedule_data[lower_days[day]][str(period)]['subject'] = subject
             if str(current_user.id) not in getattr(period_data, lower_days[day], 'default').split(' '):
                 setattr(period_data, lower_days[day], data + ' ' + str(current_user.id))
 
         else:
-            current_user.schedule_data[lower_days[day]][str(period)]['start_time'] = "00:00"
-            current_user.schedule_data[lower_days[day]][str(period)]['end_time'] = "00:00"
-            current_user.schedule_data[lower_days[day]][str(period)]['times'] = ''
-            current_user.schedule_data[lower_days[day]][str(period)]['subject'] = ''
             data = data.split(' ')
             data.remove(' ' + str(current_user.id))
             setattr(period_data, lower_days[day], ' '.join(data))
@@ -1013,22 +1066,12 @@ def scheduler():
         flag_modified(current_user,'schedule_data')
         db.session.commit()
         redirect(url_for('scheduler'))
-    #reads the schedule data from the db
-    schedule = current_user.schedule_data
-    periods = [[0 for _ in range(9)] for _ in range(5)]
-    period_data = {495 + i*45:i for i in range(1,10)}
-    for j,day in enumerate(lower_days):
-        for period in range(1,10):
-            current = schedule[day][str(period)]
-            start1,end1 = current['start_time'],current['end_time']
-            start,end = current['start_time'].split(':'),current['end_time'].split(':')
-            start = int(start[0]) * 60 + int(start[1])
-            end = int(end[0]) * 60 + int(end[1])
-            if not end or not start:continue
-            for period in period_data.keys():
-                if period >= end:
-                    periods[j][period_data[period] - 1] = (start1,end1)
-                    break
+    num = int.from_bytes(current_user.schedule_data, byteorder='big')
+    binary_str = f'{num:064b}'
+    periods = []
+    for i in range(0, 64, 8):
+        row = [int(bit) for bit in binary_str[i:i+8]]
+        periods.append(row)
 
     return render_template('scheduler.html',booked_periods=periods)
 
@@ -1040,8 +1083,6 @@ def delete_session(session_id):
         session = Session.query.get(session_id)
 
         user = User.query.get(session.tutor)
-        date = date_to_day(session.date.strftime('%Y-%m-%d'))
-        user.schedule_data[date][str(session.period)]['times'] = user.schedule_data[date][str(session.period)]['times'].replace(session.date.strftime('%Y-%m-%d'), "")
         
         db.session.delete(session)
 
@@ -1049,8 +1090,6 @@ def delete_session(session_id):
         message_history = ActiveMessageHistory.query.get(session.message_history_id)
 
         db.session.delete(message_history)
-
-        flag_modified(user,'schedule_data')
 
         current_user.marked = 0
 
@@ -1419,8 +1458,6 @@ def admin_temp_route():
 
                 db.session.add(new_session)
                 tutor = User.query.get(tutor)
-                tutor.schedule_data[date_to_day(str(new_session.date))][str(new_session.period)]['times'] += ' ' + str(new_session.date)
-                flag_modified(tutor, 'schedule_data')
                 db.session.commit()
 
                 

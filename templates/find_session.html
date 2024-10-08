@@ -52,16 +52,13 @@
             
             <div class="form-group mx-2 px-0">
                 <select class="form-control" id="exampleDropdown" name="period">
-                    <option value="-1">Period</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
+                    <option value="-1">Any Period</option>
+                    <option value="0">Before School</option>
+                    <option value="1">4</option>
+                    <option value="2">5</option>
+                    <option value="3">6</option>
+                    <option value="4">7</option>
+                    <option value="5">After School</option>
                 </select>
             </div>
             <div id="showme" style="display: none">
@@ -89,10 +86,9 @@
             <table class="table" id="dataTable">
                 <thead>
                     <tr>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Tutor Name</th>
                         <th>Date</th>
+                        <th>Period</th>
+                        <th>Tutor Name</th>
                         <th>Schedule Session</th>
                     </tr>
                 </thead>
@@ -105,33 +101,24 @@
                         </td>
                     </tr>
                 </tbody>
-                    {%if users%}
-                        {% for num,user in enumerate(users) %}
-                        {% if (not tutor_name)  or user_names[num][0].lower() == tutor_name%}
-                        {% if subject == '0' or user_names[num][4][subject] == 1%}
-                        {% if user_names[num][3] not in user['times'].split(' ') %}
-                        {% if user_names[num][1] != current_user.id %}
+                    {%if results%}
+                        {% for result in results %}
+                        {% if (not tutor_name)  or results[0] == tutor_name%}
                         <script>
                             document.getElementById("alt").classList.add("d-none")
                         </script>
                         <tbody>
                             <tr>
-                                <td>{{user['start_time']}}</td>
-                                <td>{{user['end_time']}}</td>
-                                <td>{{user_names[num][0]}}</td>
-                                <td>{{user_names[num][3]}}</td>
-                                <td><a href="/book_session/{{user_names[num][1]}}/{{user_names[num][3]}}/{{user_names[num][2]}}">Book Session</a></td>
+                                <td>{{result[2]}}</td>
+                                <td>{{result[1]}}</td>
+                                <td>{{result[0]}}</td>
+                                <td><a href="/book_session/{{result[3]}}/{{result[2]}}/{{result[0]}}">Book Session</a></td>
                             </tr>
                         </tbody>
-                        {% endif %}
-                        {% endif %}
-                        {% endif %}
                         {% endif %}
                         {% endfor %}
                     
                     {%endif%}
-                    
-                        
                 {%else%}
                     <tbody style="height:60vh;">
                         <tr style="height: 100%;">
