@@ -191,6 +191,9 @@ def int_to_64bit_binary_string(value):
 def binary_string_to_int(binary_string):
     return struct.unpack('Q', binary_string)[0]
 
+def int_to_byte_string(value):
+    return value.to_bytes(8, byteorder='big')
+
 # Flip the bit at position `bit_position` in the 64-bit binary string
 def flip_bit(user_id:int, day:str, period:int):
     '''
@@ -205,13 +208,17 @@ def flip_bit(user_id:int, day:str, period:int):
     4 = Period 7\n
     5 = After School
     '''
+    print(day,period)
     user = User.query.get(user_id)
     pos = 8*day + period
+    print(pos)
     binary_string = user.schedule_data
     value = binary_string_to_int(binary_string)
     mask = 1 << pos
     flipped_value = value ^ mask
-    user.schedule_data = flipped_value
+    print(int_to_byte_string(flipped_value))
+    user.schedule_data = int_to_byte_string(flipped_value)
+    db.session.commit()
     return (flipped_value >> pos) & 1
 
 def initialize_period_data():
@@ -1050,10 +1057,11 @@ def scheduler():
         thing = request.form.get('modalPass').split(',')
         period,day = int(thing[0]),thing[1]
         day = int(day)
-        period_data = Periods.query.get(period)
+        print('Scheduler:')
+        print(period,day)
+        period_data = Periods.query.get(period+1)
         data = getattr(period_data, lower_days[day], 'default')
-        bits = flip_bit(current_user.id,day,period)
-        current_user.schedule_data = bits
+        flip_bit(current_user.id,day,period)
         if ('delete', '') not in request.form.items():
             if str(current_user.id) not in getattr(period_data, lower_days[day], 'default').split(' '):
                 setattr(period_data, lower_days[day], data + ' ' + str(current_user.id))
@@ -1063,7 +1071,6 @@ def scheduler():
             data.remove(' ' + str(current_user.id))
             setattr(period_data, lower_days[day], ' '.join(data))
 
-        flag_modified(current_user,'schedule_data')
         db.session.commit()
         redirect(url_for('scheduler'))
     num = int.from_bytes(current_user.schedule_data, byteorder='big')
@@ -1073,6 +1080,7 @@ def scheduler():
         row = [int(bit) for bit in binary_str[i:i+8]]
         periods.append(row)
 
+    print(periods)
     return render_template('scheduler.html',booked_periods=periods)
 
 @app.route('/delete_session/<session_id>')
