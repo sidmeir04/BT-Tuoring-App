@@ -984,27 +984,29 @@ def find_session():
             data = Periods.query.get(period)
             if date:
                 day = date_to_day(date)
-                data = getattr(data, day, 'defualt')
-                for user_id in data.split(' '):
-                    user = User.query.get(user_id)
-                    if user.qualification_data[subject]:
-                        results.append([user.username],period,date,user_id)
-            else:
-                for day in lower_days:
-                    day_data = getattr(data, day, 'defualt')
-                    for user_id in day_data.split(' '):
+                data = getattr(data, day, 'defualt').strip()
+                if data:
+                    for user_id in data.split(' '):
                         user = User.query.get(user_id)
                         if user.qualification_data[subject]:
-                            results.append([user.username],period,find_next_day_of_week(day),user_id)
+                            results.append([user.username,period,date,user_id])
+            else:
+                for day in lower_days:
+                    day_data = getattr(data, day, 'defualt').strip()
+                    if day_data:
+                        for user_id in day_data.split(' '):
+                            user = User.query.get(user_id)
+                            if user.qualification_data[subject]:
+                                results.append([user.username,period,find_next_day_of_week(day),user_id])
         # if period is not specified
         else:
             if date:
                 day = date_to_day(date)
                 for period in range(1,7):
-                    for user_id in getattr(Periods.query.get(period), day, 'defualt').split(' '):
+                    for user_id in getattr(Periods.query.get(period), day, 'defualt').strip().split(' '):
                         user = User.query.get(user_id)
                         if user.qualification_data[subject]:
-                            results.append([user.username],period,find_next_day_of_week(day),user_id)
+                            results.append([user.username,period,find_next_day_of_week(day),user_id])
             else:
                 pass
                 # Send message saying that you need to specify either date or time
@@ -1128,14 +1130,12 @@ def book_session(id, date, period):
     day = date_to_day(date)
     year, month, temp_day = (int(i) for i in date.split('-'))
     dayNumber = weekday(year, month, temp_day)
-
-    data = user.schedule_data[day][period]
     current_user_id = current_user.get_id()
 
     new_session = SessionRequest(
         tutor = id,
-        start_time = string_to_time(data['start_time']),
-        end_time = string_to_time(data['end_time']),
+        start_time = string_to_time('00:00'),
+        end_time = string_to_time('00:00'),
         student = current_user_id,
         period = period,
         start_date = datetime.today(),
