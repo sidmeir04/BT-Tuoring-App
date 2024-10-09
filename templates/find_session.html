@@ -8,7 +8,7 @@
         position: absolute;
         width: 100%;
         background-color: white;
-        z-index: 1000; /* Make sure it's on top */
+        z-index: 1000000000; /* Make sure it's on top */
         border: 1px solid #ced4da;
     }
     #dropdown ul {
@@ -30,24 +30,35 @@
     <div class="row px-2 mt-3 align-items-center mb-3">
         <form action="/find_session" method="POST" class="d-flex align-items-center" style="width:100%;" id="search-form">
             <div class="form-group">
+                <style>
+                    .sdfs {
+                    position: absolute;
+                    }
+                </style>
                 <div class="dropdown">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Filter By
-                  </button>
-
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <div class="container p-2">
-                            <div class="form-group mb-3">
-                                <label for="dateInput" class="mb-0">Date</label>
-                                <input type="date" class="form-control" id="dateInput" name="modal_date">
-                            </div>
-                            <div class="form-group mb-0">
-                                <label for="specific_tutorInput" class="mb-0">Specific Tutor</label>
-                                <input type="text" class="form-control" id="specific_tutorInput" name="specific_tutor" placeholder="Tutor Name">
-                            </div>
+                    <button class="btn btn-secondary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Filter By
+                    </button>
+                
+                    <div class="dropdown-menu sdfs p-3" aria-labelledby="dropdownMenuButton">
+                        <!-- Filter by Date -->
+                        <div class="form-group mb-3">
+                            <label for="dateInput" class="mb-0">Date</label>
+                            <input type="date" class="form-control" id="dateInput" name="modal_date">
                         </div>
+                
+                        <!-- Filter by Specific Tutor -->
+                        <div class="form-group mb-3">
+                            <label for="specific_tutorInput" class="mb-0">Specific Tutor</label>
+                            <input type="text" class="form-control" id="specific_tutorInput" name="specific_tutor" placeholder="Tutor Name">
+                        </div>
+                
+                        <!-- Apply Filter Button -->
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
                     </div>
                 </div>
+                         
+                
             </div>
             
             <div class="form-group mx-2 px-0">
@@ -227,4 +238,5 @@
         $('#customAlertModal').modal('show');
     }
 </script>
+
 {% endblock %}

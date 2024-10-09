@@ -8,7 +8,7 @@
             <button class="btn btn-primary dropdown-toggle" type="button" id="ToggleView" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               View
             </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <div class="dropdown-menu position-absolute" aria-labelledby="dropdownMenuButton">
               <a class="dropdown-item" href="#" onclick="handleSelection('View')">View</a>
               <a class="dropdown-item" href="#" onclick="handleSelection('Add')">Add</a>
               <a class="dropdown-item" href="#" onclick="handleSelection('Edit')">Edit</a>
@@ -75,22 +75,13 @@
                         <div class="text-center h2 mb-3" id="modalText">
                             Default Text Go Brrr
                         </div>
-                        <div class="d-flex justify-content-around">
-                            <div class="form-group">
-                                <label for="start_time">Start Time</label>
-                                <input type="time" class="form-control" id="start_time" name="start_time">
-                            </div>
-                            <div class="form-group">
-                                <label for="end_time">End Time</label>
-                                <input type="time" class="form-control" id="end_time" name="end_time">
-                            </div>
-                        </div>
+                       
                         <div class="form-group d-none">
                             <input type="hidden" class="form-control" id="modalPass" name="modalPass">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Set Schedule</button>
+                        <button type="submit" class="btn btn-primary">Confirm</button>
                         <button type="submit" class="btn d-none btn-danger" id="delete" name="delete">Delete</button>
                         <button type="button" class="btn" data-dismiss="modal">Cancel</button>
                     </div>                  
@@ -136,9 +127,7 @@
         addEventListeners = [];
         editEventListeners = [];
 
-        // Reset modal values and hide it
-        document.getElementById('start_time').value = null;
-        document.getElementById('end_time').value = null;
+
         $('#addModal').modal('hide');
     }
 
@@ -207,8 +196,7 @@
                 choose[0] = parseInt(choose[0]) + 1;
                 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
                 const day = days[choose[1]];
-                document.getElementById('start_time').value = choose[2];
-                document.getElementById('end_time').value = choose[3];
+
                 document.getElementById('delete').classList.add('d-flex');
                 document.getElementById('delete').classList.remove('d-none');
                 document.getElementById('modalText').textContent = "Available on " + day + " during Period " + choose[0];
