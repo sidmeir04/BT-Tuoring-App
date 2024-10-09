@@ -191,6 +191,9 @@ def int_to_64bit_binary_string(value):
 def binary_string_to_int(binary_string):
     return struct.unpack('Q', binary_string)[0]
 
+def int_to_byte_string(value):
+    return value.to_bytes(8, byteorder='big')
+
 # Flip the bit at position `bit_position` in the 64-bit binary string
 def flip_bit(user_id:int, day:str, period:int):
     '''
@@ -205,13 +208,17 @@ def flip_bit(user_id:int, day:str, period:int):
     4 = Period 7\n
     5 = After School
     '''
+    print(day,period)
     user = User.query.get(user_id)
     pos = 8*day + period
+    print(pos)
     binary_string = user.schedule_data
     value = binary_string_to_int(binary_string)
     mask = 1 << pos
     flipped_value = value ^ mask
-    user.schedule_data = flipped_value
+    print(int_to_byte_string(flipped_value))
+    user.schedule_data = int_to_byte_string(flipped_value)
+    db.session.commit()
     return (flipped_value >> pos) & 1
 
 def initialize_period_data():
@@ -977,27 +984,29 @@ def find_session():
             data = Periods.query.get(period)
             if date:
                 day = date_to_day(date)
-                data = getattr(data, day, 'defualt')
-                for user_id in data.split(' '):
-                    user = User.query.get(user_id)
-                    if user.qualification_data[subject]:
-                        results.append([user.username],period,date,user_id)
-            else:
-                for day in lower_days:
-                    day_data = getattr(data, day, 'defualt')
-                    for user_id in day_data.split(' '):
+                data = getattr(data, day, 'defualt').strip()
+                if data:
+                    for user_id in data.split(' '):
                         user = User.query.get(user_id)
                         if user.qualification_data[subject]:
-                            results.append([user.username],period,find_next_day_of_week(day),user_id)
+                            results.append([user.username,period,date,user_id])
+            else:
+                for day in lower_days:
+                    day_data = getattr(data, day, 'defualt').strip()
+                    if day_data:
+                        for user_id in day_data.split(' '):
+                            user = User.query.get(user_id)
+                            if user.qualification_data[subject]:
+                                results.append([user.username,period,find_next_day_of_week(day),user_id])
         # if period is not specified
         else:
             if date:
                 day = date_to_day(date)
                 for period in range(1,7):
-                    for user_id in getattr(Periods.query.get(period), day, 'defualt').split(' '):
+                    for user_id in getattr(Periods.query.get(period), day, 'defualt').strip().split(' '):
                         user = User.query.get(user_id)
                         if user.qualification_data[subject]:
-                            results.append([user.username],period,find_next_day_of_week(day),user_id)
+                            results.append([user.username,period,find_next_day_of_week(day),user_id])
             else:
                 pass
                 # Send message saying that you need to specify either date or time
@@ -1050,10 +1059,11 @@ def scheduler():
         thing = request.form.get('modalPass').split(',')
         period,day = int(thing[0]),thing[1]
         day = int(day)
-        period_data = Periods.query.get(period)
+        print('Scheduler:')
+        print(period,day)
+        period_data = Periods.query.get(period+1)
         data = getattr(period_data, lower_days[day], 'default')
-        bits = flip_bit(current_user.id,day,period)
-        current_user.schedule_data = bits
+        flip_bit(current_user.id,day,period)
         if ('delete', '') not in request.form.items():
             if str(current_user.id) not in getattr(period_data, lower_days[day], 'default').split(' '):
                 setattr(period_data, lower_days[day], data + ' ' + str(current_user.id))
@@ -1063,7 +1073,6 @@ def scheduler():
             data.remove(' ' + str(current_user.id))
             setattr(period_data, lower_days[day], ' '.join(data))
 
-        flag_modified(current_user,'schedule_data')
         db.session.commit()
         redirect(url_for('scheduler'))
     num = int.from_bytes(current_user.schedule_data, byteorder='big')
@@ -1073,6 +1082,7 @@ def scheduler():
         row = [int(bit) for bit in binary_str[i:i+8]]
         periods.append(row)
 
+    print(periods)
     return render_template('scheduler.html',booked_periods=periods)
 
 @app.route('/delete_session/<session_id>')
@@ -1120,14 +1130,12 @@ def book_session(id, date, period):
     day = date_to_day(date)
     year, month, temp_day = (int(i) for i in date.split('-'))
     dayNumber = weekday(year, month, temp_day)
-
-    data = user.schedule_data[day][period]
     current_user_id = current_user.get_id()
 
     new_session = SessionRequest(
         tutor = id,
-        start_time = string_to_time(data['start_time']),
-        end_time = string_to_time(data['end_time']),
+        start_time = string_to_time('00:00'),
+        end_time = string_to_time('00:00'),
         student = current_user_id,
         period = period,
         start_date = datetime.today(),
