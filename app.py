@@ -175,27 +175,16 @@ Period Key
 5 = After School
 '''
 period_converter = {
-    0:0,
-    1:4,
-    2:5,
-    3:6,
-    4:7,
-    5:-1
+    0:'After School',
+    1:"4",
+    2:'5',
+    3:'6',
+    4:'7',
+    5:'Before Schoo;'
 }
 
-# Convert an integer to a 64-bit binary string
-def int_to_64bit_binary_string(value):
-    return struct.pack('Q', value)  # 'Q' is for 64-bit unsigned integer
-
-# Convert a 64-bit binary string back to an integer
-def binary_string_to_int(binary_string):
-    return struct.unpack('Q', binary_string)[0]
-
-def int_to_byte_string(value):
-    return value.to_bytes(8, byteorder='big')
-
 # Flip the bit at position `bit_position` in the 64-bit binary string
-def flip_bit(user_id:int, day:str, period:int):
+def flip_bit(user_id:int, day:int, period:int):
     '''
     Changes users Schedule at specified position.
     Returns value of flipped bit.\n
@@ -208,18 +197,23 @@ def flip_bit(user_id:int, day:str, period:int):
     4 = Period 7\n
     5 = After School
     '''
-    print(day,period)
     user = User.query.get(user_id)
-    pos = 8*day + period
-    print(pos)
-    binary_string = user.schedule_data
-    value = binary_string_to_int(binary_string)
-    mask = 1 << pos
-    flipped_value = value ^ mask
-    print(int_to_byte_string(flipped_value))
-    user.schedule_data = int_to_byte_string(flipped_value)
+    binary_data = user.schedule_data
+    position = day*8 + period
+    byte_array = bytearray(binary_data)
+
+    # Calculate which byte and which bit to flip
+    byte_index = position // 8
+    bit_index = 7-position % 8
+
+    # Flip the bit using XOR
+    byte_array[byte_index] ^= (1 << bit_index)
+
+    byte_data = bytes(byte_array)
+    user.schedule_data = byte_data
     db.session.commit()
-    return (flipped_value >> pos) & 1
+    return 1
+
 
 def initialize_period_data():
     if not Periods.query.first():
@@ -351,13 +345,7 @@ def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request
 
         db.session.add(new_session)
 
-        other_user = User.query.get(id)
-        temp = other_user.notifaction_data['deleted']
-        other_user.notifaction_data['deleted'] = temp + [f'{other_user.username} has requested a session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
-        flag_modified(other_user, 'notifaction_data')
-
     else:
-        tutor = User.query.get(tutor_id)
         conversation = ActiveMessageHistory(
             people = {tutor_id:'',student_id:''},
             missed = {'total':0,tutor_id:0,student_id:0}
@@ -549,7 +537,8 @@ def user_preview():
     open_session = SessionRequest.query.get(ID)
     other_user = User.query.get(open_session.tutor) if current_user.role == 0 else User.query.get(open_session.student)
     other_user_image = base64.b64encode(other_user.image_data).decode('utf-8') if other_user.image_data else None
-    return render_template("user_preview.html",session=open_session,other=other_user,other_image = other_user_image,type=current_user.role)
+    period = period_converter[open_session.period]
+    return render_template("user_preview.html",session=open_session,other=other_user,other_image = other_user_image,type=current_user.role,period=period)
 
 @app.route('/appointment_uploads')
 @login_required
@@ -1059,8 +1048,6 @@ def scheduler():
         thing = request.form.get('modalPass').split(',')
         period,day = int(thing[0]),thing[1]
         day = int(day)
-        print('Scheduler:')
-        print(period,day)
         period_data = Periods.query.get(period+1)
         data = getattr(period_data, lower_days[day], 'default')
         flip_bit(current_user.id,day,period)
@@ -1082,7 +1069,6 @@ def scheduler():
         row = [int(bit) for bit in binary_str[i:i+8]]
         periods.append(row)
 
-    print(periods)
     return render_template('scheduler.html',booked_periods=periods)
 
 @app.route('/delete_session/<session_id>')
@@ -1125,32 +1111,7 @@ def delete_session(session_id):
 @login_required
 @email_verified_required
 def book_session(id, date, period):
-    user = User.query.get(id)
-
-    day = date_to_day(date)
-    year, month, temp_day = (int(i) for i in date.split('-'))
-    dayNumber = weekday(year, month, temp_day)
-    current_user_id = current_user.get_id()
-
-    new_session = SessionRequest(
-        tutor = id,
-        start_time = string_to_time('00:00'),
-        end_time = string_to_time('00:00'),
-        student = current_user_id,
-        period = period,
-        start_date = datetime.today(),
-        day_of_the_week = dayNumber,
-        date = datetime.strptime(date, '%Y-%m-%d').date()
-    )
-
-    db.session.add(new_session)
-
-    other_user = User.query.get(id)
-    temp = other_user.notifaction_data['deleted']
-    other_user.notifaction_data['deleted'] = temp + [f'{other_user.username} has requested a session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
-    flag_modified(other_user, 'notifaction_data')
-
-    db.session.commit()
+    add_new_session(id,current_user.id,date,period,string_to_time('00:00'),string_to_time('00:00'),True,False)
     flash('Session requested!', 'success')
     return redirect(url_for('view_requests'))
     

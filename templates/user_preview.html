@@ -72,27 +72,24 @@
                 </div>
                 <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
                     <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
-                        Start Date:
-                    </div>
-                    <div class="h3 col-12 col-lg-6">
-                        End Date:
+                        Start Date: {{session.date}}
                     </div>
                 </div>
                 <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
-                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
+                    {% if session.start_time == '00:00' and session.end_time == '00:00'%}
+                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1"></div>
+                        Start and end time not decided
+                    </div>
+                    {%else%}
+                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1"></div>
                         {{session.start_time}} to {{session.end_time}}
                     </div>
+                    {%endif%}
                     <div class="h3 col-12 col-lg-6">
-                        Period: {{session.period}}
+                        Period: {{period}}
                     </div>
                 </div>
                 <div class="d-block d-lg-flex flew-row mb-4 justify-content-between">
-                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
-                        Number of Meetings: X
-                    </div>
-                    <div class="h3 col-12 col-lg-6">
-                        Subject: {{session.subject}}
-                    </div>
                 </div>
                 <br clas="d-block d-lg-none">
                 <form action="/appointment_preview?identification={{session.id}}" method="POST" class="d-flex justify-content-center flew-row mb-5">
