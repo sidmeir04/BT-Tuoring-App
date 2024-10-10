@@ -964,6 +964,11 @@ def find_session():
     tutor_name = ''
     options = load_available_classes()
     if request.method == 'POST':
+        if not int(request.form['submit']):
+            _,period,start_date,tutor_id = request.form.get("modalPass").split(',')
+            start_time = request.form.get("start_time")
+            end_time = request.form.get("end_time")
+            return redirect(f"/book_session/{tutor_id}/{start_date}/{period}/{start_time}/{end_time}")
         date = request.form.get('modal_date')
         period = request.form.get('period')
         tutor_name = request.form.get('specific_tutor')
@@ -1107,11 +1112,11 @@ def delete_session(session_id):
     db.session.commit()
     return redirect(url_for('view_appointments'))
 
-@app.route('/book_session/<id>/<date>/<period>')
+@app.route('/book_session/<id>/<date>/<period>/<start>/<end>')
 @login_required
 @email_verified_required
-def book_session(id, date, period):
-    add_new_session(id,current_user.id,date,period,string_to_time('00:00'),string_to_time('00:00'),True,False)
+def book_session(id, date, period,start,end):
+    add_new_session(id,current_user.id,date,period,string_to_time(start),string_to_time(end),True,False)
     flash('Session requested!', 'success')
     return redirect(url_for('view_requests'))
     
