@@ -370,15 +370,38 @@ def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request
 
     db.session.commit()
 
-def remove_session(session_id):
+def remove_session(session_id : int, close : bool,recur : bool,new_session_day : int = -1):
     session = Session.query.get(session_id)
-    session_files = SessionFile.query.filter_by(session_id = session_id).all()
-    message_history = ActiveMessageHistory.query.get(session.message_history_id)
-    print(message_history)
-    for files in session_files:
-        db.session.delete(files)
-    db.session.delete(message_history)
-    db.session.delete(session)
+    if close:
+        session.closed = True
+        return session.id
+    elif recur:
+        if new_session_day != -1:
+            day = new_session_day
+        else:
+            day = session.day_of_the_week
+        new_session = Session(
+            start_time = session.start_time,
+            end_time = session.end_time,
+            day_of_the_week = day,
+            date = find_next_day_of_week(day),
+            start_date = session.start_date,
+            tutor = session.tutor,
+            student = session.student,
+            period = session.period,
+            message_history_id = session.message_history_id,
+            recurring = True
+        )
+        db.session.add(new_session)
+        for file in SessionFile.query.filter_by(session_id = session_id).all():
+            file.session_id = new_session
+    else:
+        session_files = SessionFile.query.filter_by(session_id = session_id).all()
+        message_history = ActiveMessageHistory.query.get(session.message_history_id)
+        for files in session_files:
+            db.session.delete(files)
+        db.session.delete(message_history)
+        db.session.delete(session)
     db.session.commit()
 
 
@@ -1004,36 +1027,6 @@ def find_session():
             else:
                 pass
                 # Send message saying that you need to specify either date or time
-        # send to the front end, use jinja if to only show the session if that tutor is assigned
-        # if period != '-1':
-        #     data = Periods.query.get(int(period))
-        #     if date:
-        #         day = date_to_day(date)
-        #         data = getattr(data, day, 'defualt')
-        #         user_names = [(User.query.get(int(id)).username,int(id),period,date,User.query.get(int(id)).qualification_data) for id in data.split(' ')[1:]]
-        #         users = [User.query.get(int(id)).schedule_data[day][period] for id in data.split(' ')[1:]]
-        #     else:
-        #         for day in lower_days:
-        #             day_data = getattr(data, day, 'defualt')
-        #             # adding data to existing lists, could probably be done with map
-        #             [user_names.append((User.query.get(int(id)).username,int(id),period,find_next_day_of_week(day),User.query.get(int(id)).qualification_data)) for id in day_data.split(' ')[1:]]
-        #             [users.append(User.query.get(int(id)).schedule_data[day][period]) for id in day_data.split(' ')[1:]]
-
-        # elif date:
-        #     day = date_to_day(date)
-        #     day_data = [getattr(Periods.query.get(i),day) for i in range(1,10)]
-        #     for period,period_data in enumerate(day_data):
-        #         if period_data:
-        #             # adding data to existing lists, could probably be done with map
-        #             [user_names.append((User.query.get(int(id)).username,int(id),period+1,date,User.query.get(int(id)).qualification_data)) for id in period_data.split(' ')[1:]]
-        #             [users.append(User.query.get(int(id)).schedule_data[day][str(period+1)]) for id in period_data.split(' ')[1:]]
-        # elif subject or tutor_name:
-        #     for period in range(1,10):
-        #         for temp in [(getattr(Periods.query.get(period), day, 'default'),day) for day in lower_days]:
-        #             for id in temp[0].split(' ')[1:]:
-        #                 user = User.query.get(int(id))
-        #                 [user_names.append((user.username,int(id),period,find_next_day_of_week(temp[1]),user.qualification_data))]
-        #                 [users.append(user.schedule_data[temp[1]][str(period)])]
 
         return render_template('find_session.html', results = results,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options)
     
@@ -1285,7 +1278,7 @@ def confirm_appointment():
     session_request = SessionRequest.query.get(id)
     tutor = User.query.get(session_request.tutor)
     student = User.query.get(session_request.student)
-    add_new_session(tutor_id=session_request.tutor,student_id=student.id,date = session_request.date.strftime('%Y-%m-%d'),period = session_request.period,request=False,repeating=False)
+    add_new_session(tutor_id=session_request.tutor,student_id=student.id,date = session_request.date.strftime('%Y-%m-%d'),period = session_request.period,request=False,repeating=False,start_time=session_request.start_time,end_time=session_request.end_time)
 
     # temp = tutor.notifaction_data['deleted']
     # student.notifaction_data['deleted'] = temp + [f'{student.username} confirmed the session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']

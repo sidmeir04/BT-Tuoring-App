@@ -18,4 +18,3 @@ from flask_mail import Mail, Message
 import secrets
 from functools import wraps
 import os
-import struct
