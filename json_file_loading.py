@@ -109,3 +109,15 @@ def load_student_teacher_JSON():
     with open('static/assets/student_teacher.json', 'r') as file:
         student_teacher_file = json.load(file)
     return student_teacher_file
+
+
+days_map = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5, "Sunday": 6}
+def find_next_day(selected_days):
+    days_list = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    current_day = datetime.today().weekday()
+    
+    # Loop through the days in order, starting from the day after the current day
+    for i in range(7):
+        day_index = (current_day + 1 + i) % 7  # Wrap around the week using modulo
+        if selected_days[day_index] == '1':
+            return days_list[day_index]

@@ -117,6 +117,7 @@ class Session(db.Model):
     period = db.Column(db.Integer)
     session_history = db.Column(JSON, default = load_session_history_JSON)
     message_history_id = db.Column(db.Integer, db.ForeignKey('active_message_history.id'))
+    days = db.Column(db.String(8), default = '00000000')
     closed = db.Column(db.Boolean, default = False)
     recurring = db.Column(db.Boolean, default = False)
     
@@ -365,38 +366,19 @@ def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request
             day_of_the_week = dayNumber,
             date = datetime.strptime(date, '%Y-%m-%d').date(),
             message_history_id = conversation.id,
-            recurring = repeating
+            recurring = repeating,
+            days = '0'*dayNumber + '1' + '0'*(8-dayNumber)
         )
 
         db.session.add(new_session)
 
     db.session.commit()
 
-def remove_session(session_id : int, close : bool,recur : bool,new_session_day : int = -1):
+def remove_session(session_id : int, close : bool):
     session = Session.query.get(session_id)
     if close:
         session.closed = True
         return session.id
-    elif recur:
-        if new_session_day != -1:
-            day = new_session_day
-        else:
-            day = session.day_of_the_week
-        new_session = Session(
-            start_time = session.start_time,
-            end_time = session.end_time,
-            day_of_the_week = day,
-            date = find_next_day_of_week(day),
-            start_date = session.start_date,
-            tutor = session.tutor,
-            student = session.student,
-            period = session.period,
-            message_history_id = session.message_history_id,
-            recurring = True
-        )
-        db.session.add(new_session)
-        for file in SessionFile.query.filter_by(session_id = session_id).all():
-            file.session_id = new_session
     else:
         session_files = SessionFile.query.filter_by(session_id = session_id).all()
         message_history = ActiveMessageHistory.query.get(session.message_history_id)
@@ -406,6 +388,34 @@ def remove_session(session_id : int, close : bool,recur : bool,new_session_day :
         db.session.delete(session)
     db.session.commit()
 
+def recurSession(session_id : int,description : str,session_days):
+    session = Session.query.get(session_id)
+    binary_rep = ['0'] * 7
+    for day in session_days:
+        binary_rep[days_map[day]] = '1'
+    session_days = ''.join(binary_rep) + '0'
+    day = find_next_day(session_days)
+    new_session = Session(
+        start_time = session.start_time,
+        end_time = session.end_time,
+        day_of_the_week = lower_days.index(day.lower()),
+        date = datetime.strptime(find_next_day_of_week(day.lower()), "%Y-%m-%d"),
+        start_date = session.start_date,
+        tutor = session.tutor,
+        student = session.student,
+        period = session.period,
+        message_history_id = session.message_history_id,
+        recurring = True,
+        days=session_days,
+        session_history = session.session_history
+    )
+    new_session.session_history['descriptions'] = session.session_history['descriptions'] + [description]
+    new_session.session_history['sessions'] = session.session_history['sessions'] + 1
+    flag_modified(new_session,"session_history")
+    db.session.remove(session)
+    db.session.add(new_session)
+    for file in SessionFile.query.filter_by(session_id = session_id).all():
+        file.session_id = new_session
 
 with app.app_context():
     db.create_all(bind_key=None)
@@ -683,7 +693,6 @@ def handle_new_message(message,sending_user_id,history_id,session_id):
 @socketio.on('recieved_chat_message')
 def handle_recieved_chat_message(other_id,history_id):
     history = ActiveMessageHistory.query.get(history_id)
-    print(history.missed)
     history.missed[other_id] += 1
     # history.missed[str(current_user.id)] = history.missed['total']
     flag_modified(history,'missed')
@@ -1029,7 +1038,7 @@ def find_session():
                     for user_id in data.split(' '):
                         user = User.query.get(user_id)
                         if user.qualification_data[subject]:
-                            results.append([user.username,period,date,user_id])
+                            results.append([user.username,int(period),date,user_id])
             else:
                 for day in lower_days:
                     day_data = getattr(data, day, 'defualt').strip()
@@ -1037,7 +1046,7 @@ def find_session():
                         for user_id in day_data.split(' '):
                             user = User.query.get(user_id)
                             if user.qualification_data[subject]:
-                                results.append([user.username,period,find_next_day_of_week(day),user_id])
+                                results.append([user.username,int(period),find_next_day_of_week(day),user_id])
         # if period is not specified
         else:
             if date:
@@ -1046,12 +1055,12 @@ def find_session():
                     for user_id in getattr(Periods.query.get(period), day, 'defualt').strip().split(' '):
                         user = User.query.get(user_id)
                         if user.qualification_data[subject]:
-                            results.append([user.username,period,find_next_day_of_week(day),user_id])
+                            results.append([user.username,int(period),find_next_day_of_week(day),user_id])
             else:
-                pass
+                flash('Please enter a period of date!','warning')
                 # Send message saying that you need to specify either date or time
 
-        return render_template('find_session.html', results = results,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options)
+        return render_template('find_session.html', results = results,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options,period_converter=period_converter)
     
 
     
@@ -1345,19 +1354,20 @@ def session_hindsight():
     if request.method == "POST":
         feedback = request.form.get("feedback_text")
         repeating = int(request.form.get("repeating_session"))
+        days = request.form.getlist('days')
         session = Session.query.get(id)
-        session.session_history['sessions'] += 1
-        session.session_history['descriptions'].append(feedback)
-        flag_modified(session, 'session_history')
-
         if repeating:
-            pass
+            recurSession(session_id=session.id,description=feedback,session_days=days)
         else:
+            session.session_history['sessions'] += 1
+            session.session_history['descriptions'].append(feedback)
+            flag_modified(session, 'session_history')
             session.closed = True
             
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template("session_hindsight.html",id=id)
+    session_days = Session.query.get(id).days
+    return render_template("session_hindsight.html",id=id,session_days=session_days,day_list=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
 
 @app.route("/admin_temp_route",methods=["POST","GET"])
 def admin_temp_route():
