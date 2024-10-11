@@ -134,6 +134,7 @@ class SessionRequest(db.Model):
     tutor = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) # Tutor's ID number
     student = db.Column(db.Integer, nullable = False)
     period = db.Column(db.Integer)
+    time_confirmation_pending = db.Column(db.Integer, nullable=False) #ID of person who has not confirmed time
 
 class SessionFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -340,7 +341,8 @@ def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request
             period = period,
             start_date = datetime.today(),
             day_of_the_week = dayNumber,
-            date = datetime.strptime(date, '%Y-%m-%d').date()
+            date = datetime.strptime(date, '%Y-%m-%d').date(),
+            time_confirmation_pending = tutor_id
         )
 
         db.session.add(new_session)
@@ -551,17 +553,38 @@ def user_overview():
 @email_verified_required
 @check_for_closed_session
 def user_preview():
+    
     ID = request.args.get("identification")
-    if request.method == "POST":
-        id = request.form["id"]
-        if int(request.form.get("submit")):
-            return redirect(url_for("confirm_appointment",id=id))
-        return redirect(f'/delete_session/{id}?pre=1')
     open_session = SessionRequest.query.get(ID)
     other_user = User.query.get(open_session.tutor) if current_user.role == 0 else User.query.get(open_session.student)
     other_user_image = base64.b64encode(other_user.image_data).decode('utf-8') if other_user.image_data else None
     period = period_converter[open_session.period]
-    return render_template("user_preview.html",session=open_session,other=other_user,other_image = other_user_image,type=current_user.role,period=period)
+    if request.method == "POST":
+        id = request.form["id"]
+        submit = int(request.form["submit"])
+
+        if submit == 1:
+            return redirect(url_for("confirm_appointment",id=id))
+        if submit == 0:
+            return redirect(f'/delete_session/{id}?pre=1')
+        start_time = request.form.get("start_time").split(":")
+        end_time = request.form.get("end_time").split(':')
+        start_time = f"{start_time[0]}:{start_time[1]}"
+        end_time = f"{end_time[0]}:{end_time[1]}"
+        start_time = string_to_time(start_time)
+        end_time = string_to_time(end_time)
+
+        if open_session.start_time == start_time and open_session.end_time == end_time:
+            open_session.time_confirmation_pending = -1
+        else:
+            open_session.time_confirmation_pending = other_user.id
+            open_session.start_time = start_time
+            open_session.end_time = end_time
+
+        db.session.commit()
+
+
+    return render_template("user_preview.html",session=open_session,other=other_user,other_image = other_user_image,type=current_user.role,period=period, confirm = open_session.time_confirmation_pending == current_user.id,confirmed = open_session.time_confirmation_pending == -1)
 
 @app.route('/appointment_uploads')
 @login_required
@@ -987,7 +1010,7 @@ def find_session():
     tutor_name = ''
     options = load_available_classes()
     if request.method == 'POST':
-        if not int(request.form['submit']):
+        if not int(request.form.get("submit")):
             _,period,start_date,tutor_id = request.form.get("modalPass").split(',')
             start_time = request.form.get("start_time")
             end_time = request.form.get("end_time")

@@ -71,22 +71,50 @@
                     Session Details
                 </div>
                 <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
-                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1">
+                    <div class="h3 col-12 col-lg-6 mb-5 mb-lg-1">
                         Start Date: {{session.date}}
                     </div>
-                </div>
-                <div class="d-block d-lg-flex justify-content-between flew-row mb-3">
-                    {% if session.start_time == '00:00' and session.end_time == '00:00'%}
-                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1"></div>
-                        Start and end time not decided
-                    </div>
-                    {%else%}
-                    <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1"></div>
-                        {{session.start_time}} to {{session.end_time}}
-                    </div>
-                    {%endif%}
                     <div class="h3 col-12 col-lg-6">
                         Period: {{period}}
+                    </div>
+                </div>
+                <div class="h1 font-weight-bold justify-self-center text-center mb-3 mt-2">
+                    Finalize Time
+                </div>
+                <div class="d-block d-lg-flex justify-content-center flew-row mb-3">
+
+                    {% if session.start_time == '00:00' and session.end_time == '00:00'%}
+                        <div class="h3 col-12 col-lg-6 mb-3 mb-lg-1 text-center"></div>
+                            Suggest a time!
+                        </div>
+                    {%endif%}
+                </div>
+                <div class="d-block d-lg-flex justify-content-center flew-row mb-3">
+                    <div class="h3 col-12">
+                        <form action="/appointment_preview?identification={{session.id}}" method="POST">
+                            <div class="d-flex align-items-center">
+                                <div class="form-group mr-4">
+                                    <input type="hidden" value="{{session.id}}" name="id">
+
+                                    <label for="start_time">Start Time</label>
+                                    <input type="time" {% if confirmed %}disabled{% endif %} class="form-control" id="start_time" name="start_time" value="{{ session.start_time }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="end_time">End Time</label>
+                                    <input type="time" {% if confirmed %}disabled{% endif %} class="form-control" id="end_time" name="end_time" value="{{session.end_time}}">
+                                </div>
+                                
+                                <div class="form-group ml-auto">
+                                    {%if confirm%}
+                                    <button type="submit" class="btn btn-success" name="submit" value="2">Confirm</button>
+                                    {%elif confirmed%}
+                                    <span class="text-success">Time Finalized!</span>
+                                    {%else%}
+                                    <span class="text-warning">Pending Approval</span>
+                                    {%endif%}
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
                 <div class="d-block d-lg-flex flew-row mb-4 justify-content-between">
