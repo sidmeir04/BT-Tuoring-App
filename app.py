@@ -177,12 +177,12 @@ Period Key
 5 = After School
 '''
 period_converter = {
-    0:'After School',
+    0:'Before School',
     1:"4",
     2:'5',
     3:'6',
     4:'7',
-    5:'Before Schoo;'
+    5:'After School'
 }
 
 # Flip the bit at position `bit_position` in the 64-bit binary string
@@ -310,7 +310,7 @@ def temp_admin_loading_delete_later():
             last_name = "Kendall",
             email = "monken@bergen.org",
             email_verification_token=None,
-            role = 3
+            role = 0
         )
         user3.set_password("Demo1")
 
@@ -330,7 +330,7 @@ def temp_admin_loading_delete_later():
         db.session.add(user4)
         db.session.commit()
 
-def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request,repeating):
+def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request,repeating,subject=''):
     year, month, temp_day = (int(i) for i in date.split('-'))
     dayNumber = weekday(year, month, temp_day)
     if request:
@@ -343,7 +343,8 @@ def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request
             start_date = datetime.today(),
             day_of_the_week = dayNumber,
             date = datetime.strptime(date, '%Y-%m-%d').date(),
-            time_confirmation_pending = tutor_id
+            time_confirmation_pending = tutor_id,
+            subject=subject
         )
 
         db.session.add(new_session)
@@ -421,8 +422,8 @@ with app.app_context():
     db.create_all(bind_key=None)
     db.create_all(bind_key="records_db")
     initialize_period_data()
-    # temp_admin_loading_delete_later()
-    temp_function_for_default_user_loading()
+    temp_admin_loading_delete_later()
+    # temp_function_for_default_user_loading()
 
 
 def generate_verification_token():
@@ -701,6 +702,44 @@ def handle_recieved_chat_message(other_id,history_id):
 @app.route('/welcome')
 def welcome():
     return render_template('welcome.html')
+
+@app.route('/student_requests', methods=['GET', 'POST'])
+@login_required  # Ensure user is logged in
+def student_requests():
+    if request.method == 'POST':
+        # Retrieve form data
+        period = request.form.get('period')
+        start_time = request.form.get('start_time')
+        end_time = request.form.get('end_time')
+        date = request.form.get('date')
+        subject = request.form.get('subject')
+
+        start_time = datetime.strptime(start_time, "%H:%M").time()
+        end_time = datetime.strptime(end_time, "%H:%M").time()
+
+        # Call add_new_session with required parameters
+        tutor_id = -1  # As per your requirement
+        student_id = current_user.id  # Assuming the current logged-in user is the student
+        request_flag = True  # This is set to True as per your instructions
+        repeating = False  # Non-recurring session
+
+        # Call the function to add the new session
+        add_new_session(
+            tutor_id=tutor_id,
+            student_id=student_id,
+            date=date,
+            period=period,
+            start_time=start_time,
+            end_time=end_time,
+            request=request_flag,
+            repeating=repeating,
+            subject=subject
+        )
+
+        flash("Tutoring session scheduled successfully!", "success")
+        return redirect(url_for('index'))
+
+    return render_template('student_requests.html')
 
 @app.route('/delete_notification', methods=['POST'])
 @login_required
@@ -1025,11 +1064,12 @@ def find_session():
             end_time = request.form.get("end_time")
             return redirect(f"/book_session/{tutor_id}/{start_date}/{period}/{start_time}/{end_time}")
         date = request.form.get('modal_date')
-        period = request.form.get('period')
+        period = int(request.form.get('period'))
         tutor_name = request.form.get('specific_tutor')
         subject = request.form.get('subject')
         results = []
         if period != '-1':
+            print(period)
             data = Periods.query.get(period)
             if date:
                 day = date_to_day(date)
@@ -1037,15 +1077,18 @@ def find_session():
                 if data:
                     for user_id in data.split(' '):
                         user = User.query.get(user_id)
-                        if user.qualification_data[subject]:
+                        if user and user.qualification_data[subject]:
                             results.append([user.username,int(period),date,user_id])
             else:
                 for day in lower_days:
                     day_data = getattr(data, day, 'defualt').strip()
+                    print(day_data)
                     if day_data:
                         for user_id in day_data.split(' '):
                             user = User.query.get(user_id)
-                            if user.qualification_data[subject]:
+                            print(user.id,user.username)
+                            if user and user.qualification_data[subject]:
+                                print('Add to result')
                                 results.append([user.username,int(period),find_next_day_of_week(day),user_id])
         # if period is not specified
         else:
@@ -1054,12 +1097,12 @@ def find_session():
                 for period in range(1,7):
                     for user_id in getattr(Periods.query.get(period), day, 'defualt').strip().split(' '):
                         user = User.query.get(user_id)
-                        if user.qualification_data[subject]:
+                        if user and user.qualification_data[subject]:
                             results.append([user.username,int(period),find_next_day_of_week(day),user_id])
             else:
                 flash('Please enter a period of date!','warning')
                 # Send message saying that you need to specify either date or time
-
+        print(results)
         return render_template('find_session.html', results = results,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options,period_converter=period_converter)
     
 
@@ -1099,7 +1142,7 @@ def scheduler():
         row = [int(bit) for bit in binary_str[i:i+8]]
         periods.append(row)
 
-    return render_template('scheduler.html',booked_periods=periods)
+    return render_template('scheduler.html',booked_periods=periods,period_converter=period_converter)
 
 @app.route('/delete_session/<session_id>')
 @login_required
@@ -1294,13 +1337,15 @@ def view_requests():
 
     session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
     session_requests_where_tutor = SessionRequest.query.filter_by(tutor=current_user.id).all()
-
+    student_requests = SessionRequest.query.filter_by(tutor = -1).all()
+    student_requests = [request for request in student_requests if request.student != current_user.id]
 
     return render_template("view_requests.html",
                            type=current_user.role,
                            len=len,
                            session_requests_where_student=session_requests_where_student,
-                           session_requests_where_tutor=session_requests_where_tutor)
+                           session_requests_where_tutor=session_requests_where_tutor,
+                           student_requests = student_requests)
 
 @app.route('/confirm_appointment')
 @login_required

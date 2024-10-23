@@ -1,0 +1,46 @@
+{% extends "blank.html" %}
+{% set active_page='student_requests' %}
+{% block content %}
+<form method = 'POST'>
+    <!-- Period Selection -->
+    <div class="mb-3">
+        <label for="period" class="form-label">Select Tutoring Period</label>
+        <select class="form-select" id="period" name="period" required>
+        <option value="" selected>Select Period</option>
+        <option value="1">Before School</option>
+        <option value="2">4th Period</option>
+        <option value="3">5th Period</option>
+        <option value="4">6th Period</option>
+        <option value="5">7th Period</option>
+        <option value="6">After School</option>
+        </select>
+    </div>
+
+    <!-- Start Time -->
+    <div class="mb-3">
+        <label for="startTime" class="form-label">Start Time</label>
+        <input type="time" class="form-control" id="startTime" name="start_time" required>
+    </div>
+
+    <!-- End Time -->
+    <div class="mb-3">
+        <label for="endTime" class="form-label">End Time</label>
+        <input type="time" class="form-control" id="endTime" name="end_time" required>
+    </div>
+
+    <!-- Date -->
+    <div class="mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" class="form-control" id="date" name="date" required>
+    </div>
+
+    <!-- Subject -->
+    <div class="mb-3">
+        <label for="subject" class="form-label">Subject</label>
+        <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter Subject" required>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}
