@@ -90,6 +90,7 @@
                 {%if results%}
                     {% for result in results %}
                     {% if (not tutor_name)  or results[0] == tutor_name%}
+                    {% if not result[1] == current_user.username %}
                     <script>
                         document.getElementById("alt").classList.add("d-none")
                     </script>
@@ -106,6 +107,7 @@
                             </td>
                         </tr>
                     </tbody>
+                    {% endif %}
                     {% endif %}
                     {% endfor %}
                 {%endif%}

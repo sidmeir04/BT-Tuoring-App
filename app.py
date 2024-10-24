@@ -577,7 +577,10 @@ def user_preview():
         if submit == 1:
             return redirect(url_for("confirm_appointment",id=id))
         if submit == 0:
-            return redirect(f'/delete_session/{id}?pre=1')
+            session_request = SessionRequest.query.get(id)
+            db.session.delete(session_request)
+            db.session.commit()
+            return redirect(url_for('view_requests'))
         start_time = request.form.get("start_time").split(":")
         end_time = request.form.get("end_time").split(':')
         start_time = f"{start_time[0]}:{start_time[1]}"
@@ -1022,9 +1025,6 @@ def complete_session():
     # if total_days > 0:
     if True:
         tutor.hours_of_service += round(float(difference),2)
-        tutor.volunteer_hours["approved_index"].append(0)
-        tutor.volunteer_hours["breakdown"].append({"start_date":session.start_date.strftime("%B %d, %Y"), "end_date":datetime.today().strftime("%B %d, %Y"),"hours":round(float(difference) * total_days,2)})
-        flag_modified(tutor,"volunteer_hours")
         db.session.commit()
     ##############################################################################################################################
 
@@ -1039,7 +1039,8 @@ def complete_session():
     # if current_user.id == session.student and int(request.args.get("form")):
     #     return redirect(url_for('completion_form',sid=session.id,fid=feedback.id))
     flash("Session completed successfully",'success')
-    return redirect(f"/delete_session/{id}?post=1")
+
+    return redirect(url_for('index'))
 
 @app.route('/one_pager')
 def one_pager():
@@ -1130,7 +1131,7 @@ def scheduler():
 
         else:
             data = data.split(' ')
-            data.remove(' ' + str(current_user.id))
+            data.remove(str(current_user.id))
             setattr(period_data, lower_days[day], ' '.join(data))
 
         db.session.commit()
@@ -1143,42 +1144,6 @@ def scheduler():
         periods.append(row)
 
     return render_template('scheduler.html',booked_periods=periods,period_converter=period_converter)
-
-@app.route('/delete_session/<session_id>')
-@login_required
-@email_verified_required
-def delete_session(session_id):
-    if not request.args.get("pre"):
-        session = Session.query.get(session_id)
-
-        user = User.query.get(session.tutor)
-        
-        db.session.delete(session)
-
-        #this deletes the message history. If you want to save it for later, we can do that
-        message_history = ActiveMessageHistory.query.get(session.message_history_id)
-
-        db.session.delete(message_history)
-
-        current_user.marked = 0
-
-        if request.args.get("post"):
-            flash('Session completed!', 'success')
-            db.session.commit()
-            return redirect(url_for("index"))
-        if session.tutor == current_user.id: other_user = User.query.get(session.student)
-        else: other_user = User.query.get(session.tutor)
-        other_user.notifaction_data['deleted'] = other_user.notifaction_data['deleted'] + [f'{user.username} canceled their session with you on {session.date} at {str(session.start_time)[:-3]}']
-        flag_modified(other_user, "notifaction_data")
-        flash('Session cancelled!', 'success')
-    else:
-        session = SessionRequest.query.get(session_id)
-        db.session.delete(session)
-        db.session.commit()
-        flash('Request Cancelled',"success")
-
-    db.session.commit()
-    return redirect(url_for('view_appointments'))
 
 @app.route('/book_session/<id>/<date>/<period>/<start>/<end>')
 @login_required
@@ -1332,7 +1297,10 @@ def view_requests():
         if int(request.form.get("submit")):
             return redirect(url_for("confirm_appointment",id=id))
         if int(request.form.get("pre")):
-            return redirect(f'/delete_session/{id}?pre=1')
+            session_request = SessionRequest.query.get(id)
+            db.session.delete(session_request)
+            db.session.commit()
+            return redirect(url_for('view_requests'))
         return redirect(f'/terminate_session?identification={id}')
 
     session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
@@ -1356,7 +1324,9 @@ def confirm_appointment():
     tutor = User.query.get(session_request.tutor)
     student = User.query.get(session_request.student)
     add_new_session(tutor_id=session_request.tutor,student_id=student.id,date = session_request.date.strftime('%Y-%m-%d'),period = session_request.period,request=False,repeating=False,start_time=session_request.start_time,end_time=session_request.end_time)
-
+    sessions = SessionRequest.query.filter_by(tutor = session_request.tutor,period = session_request.period,date = session_request.date).all()
+    for session in sessions:
+        db.session.delete(session)
     # temp = tutor.notifaction_data['deleted']
     # student.notifaction_data['deleted'] = temp + [f'{student.username} confirmed the session with you on {new_session.date} at {str(new_session.start_time)[:-3]}']
     # flag_modified(student, 'notifaction_data')
