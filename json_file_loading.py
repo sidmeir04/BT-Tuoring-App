@@ -121,3 +121,32 @@ def find_next_day(selected_days):
         day_index = (current_day + 1 + i) % 7  # Wrap around the week using modulo
         if selected_days[day_index] == '1':
             return days_list[day_index]
+        
+
+
+from datetime import datetime, timedelta, time
+
+def time_difference(time1, time2):
+    """
+    Calculates the time difference between two datetime.time objects.
+    
+    Arguments:
+    - time1, time2: Both should be of type datetime.time.
+    
+    Returns:
+    The difference as a timedelta object and as total seconds.
+    """
+    # Convert time objects to datetime objects on the same arbitrary date
+    today = datetime.today()  # Use today's date to create full datetime objects
+    dt1 = datetime.combine(today, time1)
+    dt2 = datetime.combine(today, time2)
+    
+    # Find the difference between the two datetime objects
+    diff = dt2 - dt1
+    
+    # Handle cases where time2 is earlier than time1 (time crossing midnight)
+    if diff < timedelta(0):
+        diff += timedelta(days=1)
+    
+    # Return the timedelta object and total seconds
+    return diff.total_seconds() / 3600

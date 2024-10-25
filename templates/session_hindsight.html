@@ -31,7 +31,7 @@
                             <div class="form-group col-9">
                                 <label for="repeating_session">What days of the week will you be meeting?</label><br>
                                 {% for i in range(0,5)%}
-                                <label><input type="checkbox" name="days" value="{{day_list[i]}}" {% if session_days[i]%}checked{%endif%}> {{day_list[i]}}</label>
+                                <label><input type="checkbox" name="days" value="{{day_list[i]}}" {% if session_days[i] == "1" %}checked{%endif%}> {{day_list[i]}}</label>
                                 {% endfor %}
                             </div>
                         </div>

@@ -379,6 +379,7 @@ def remove_session(session_id : int, close : bool):
     session = Session.query.get(session_id)
     if close:
         session.closed = True
+        db.session.commit()
         return session.id
     else:
         session_files = SessionFile.query.filter_by(session_id = session_id).all()
@@ -390,30 +391,32 @@ def remove_session(session_id : int, close : bool):
     db.session.commit()
 
 def recurSession(session_id : int,description : str,session_days):
-    session = Session.query.get(session_id)
+    old_session = Session.query.get(session_id)
     binary_rep = ['0'] * 7
     for day in session_days:
         binary_rep[days_map[day]] = '1'
     session_days = ''.join(binary_rep) + '0'
     day = find_next_day(session_days)
     new_session = Session(
-        start_time = session.start_time,
-        end_time = session.end_time,
+        start_time = old_session.start_time,
+        end_time = old_session.end_time,
         day_of_the_week = lower_days.index(day.lower()),
         date = datetime.strptime(find_next_day_of_week(day.lower()), "%Y-%m-%d"),
-        start_date = session.start_date,
-        tutor = session.tutor,
-        student = session.student,
-        period = session.period,
-        message_history_id = session.message_history_id,
+        start_date = old_session.start_date,
+        tutor = old_session.tutor,
+        student = old_session.student,
+        period = old_session.period,
+        message_history_id = old_session.message_history_id,
         recurring = True,
         days=session_days,
-        session_history = session.session_history
+        session_history = old_session.session_history
     )
-    new_session.session_history['descriptions'] = session.session_history['descriptions'] + [description]
-    new_session.session_history['sessions'] = session.session_history['sessions'] + 1
+    new_session.session_history['descriptions'] = old_session.session_history['descriptions'] + [description]
+    new_session.session_history['dates'] = old_session.session_history['dates'] + [old_session.date]
+    new_session.session_history['hours'] = old_session.session_history['hours'] + [time_difference(old_session.start_time,old_session.end_time)]
+    new_session.session_history['sessions'] = old_session.session_history['sessions'] + 1
     flag_modified(new_session,"session_history")
-    db.session.remove(session)
+    db.session.delete(old_session)
     db.session.add(new_session)
     for file in SessionFile.query.filter_by(session_id = session_id).all():
         file.session_id = new_session
@@ -467,16 +470,6 @@ def email_verified_required(f):
             return redirect(url_for('profile'))
     return decorated_function
 
-def check_for_closed_session(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if current_user.marked:
-            params = {"id":current_user.marked,"form":"0","cancel_reason":"4"}
-            return redirect(url_for("complete_session",**params))
-        return f(*args,**kwargs)
-    return decorated_function
-
-
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -514,7 +507,6 @@ def send_verification_email():
 @app.route('/appointment_messages')
 @login_required
 @email_verified_required
-@check_for_closed_session
 def user_messages():
     #gets the session currently being viewed
     ID = request.args.get('identification')
@@ -548,7 +540,6 @@ def user_messages():
 @app.route("/appointment_overview",methods=["POST","GET"])
 @login_required
 @email_verified_required
-@check_for_closed_session
 def user_overview():
     ID = request.args.get("identification")
     if request.method == "POST":
@@ -562,7 +553,6 @@ def user_overview():
 @app.route("/appointment_preview",methods=["POST","GET"])
 @login_required
 @email_verified_required
-@check_for_closed_session
 def user_preview():
     
     ID = request.args.get("identification")
@@ -603,7 +593,6 @@ def user_preview():
 @app.route('/appointment_uploads')
 @login_required
 @email_verified_required
-@check_for_closed_session
 def user_uploads():
     ID = request.args.get("identification")
     open_session = Session.query.get(ID)
@@ -766,7 +755,6 @@ def reroute_user():
 @login_required
 @email_verified_required
 @admin_only
-@check_for_closed_session
 def user_managing():
     if request.method == 'POST':
         promoted_user = request.form.get('promoted_user')
@@ -783,7 +771,6 @@ def user_managing():
 @login_required
 @email_verified_required
 @admin_only
-@check_for_closed_session
 def tag_managing():
     NHS_students = User.query.filter_by(role=1).all()
     return render_template('user_handling/tag_managing.html', NHSs=NHS_students)
@@ -791,7 +778,6 @@ def tag_managing():
 @app.route("/")
 @login_required
 @email_verified_required
-@check_for_closed_session
 def index():
     #redirects if not logged
 
@@ -953,22 +939,11 @@ def terminate_session():
 
     db.session.commit()
     if request.method == "POST":
-
-        cancel_reason = request.form.get("cancel_reason")
-        ##############################################################################################################################
-
         finished = int(request.form.get('had_class'))
-        cancel_reason = 4 if not cancel_reason else cancel_reason
-        ##############################################################################################################################
-
-                                            # for final product, there needs to be a more reliable way to tell if class happened than this #
-
-        ##############################################################################################################################
-
-        params = {"repeat":request.form.get("repeating_session"),"id":id,"cancel_reason":cancel_reason}
-        if request.form.get("repeating_session") == "1":
-            add_new_session(tutor_id=old_session.tutor,student_id=old_session.student,date=find_next_day_of_week(['monday','tuesday','wednesday','thursday','friday'][old_session.day_of_the_week]),period = old_session.period,request=False,repeating=True)
-        return redirect(url_for("complete_session",**params))
+        print(finished)
+        if finished: remove_session(id,True)
+        else: remove_session(id,False)
+        return redirect(url_for('index'))
 
     return render_template('terminate_session.html',id=id,repeating=repeating)
 
@@ -979,7 +954,6 @@ def complete_session():
     id = request.args.get("id")
     session = Session.query.get(id)
     # fill_form = int(request.args.get('form'))
-
     session_log = SessionLog(
         tutor = session.tutor,
         student = session.student,
@@ -993,13 +967,10 @@ def complete_session():
         period = session.period
     )
     db.session.add(session_log)
-
     tutor = User.query.get(session.tutor)
     student = User.query.get(session.student)
-
     
     db.session.commit()
-
     # delete the session and add community service hours to the user
 
 ########################################################################################################################
@@ -1013,19 +984,7 @@ def complete_session():
     datetime2 = datetime.combine(datetime.today(), session.start_time)
     difference =  datetime1 - datetime2
     difference = difference.total_seconds()/3600
-
     total_days = count_weekdays_between(session.start_date,datetime.today(),session.day_of_the_week)
-
-##########################################################################################
-
-        # Put in the if statement in the final product
-
-##########################################################################################
-
-    # if total_days > 0:
-    if True:
-        tutor.hours_of_service += round(float(difference),2)
-        db.session.commit()
     ##############################################################################################################################
 
                                         # add for final product #
@@ -1039,8 +998,7 @@ def complete_session():
     # if current_user.id == session.student and int(request.args.get("form")):
     #     return redirect(url_for('completion_form',sid=session.id,fid=feedback.id))
     flash("Session completed successfully",'success')
-
-    return redirect(url_for('index'))
+    return redirect(url_for('scheduler'))
 
 @app.route('/one_pager')
 def one_pager():
@@ -1051,7 +1009,6 @@ lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @app.route('/find_session',methods=['GET','POST'])
 @login_required
 @email_verified_required
-@check_for_closed_session
 # options=options,    options = load_available_classes()
 
 def find_session():
@@ -1115,7 +1072,6 @@ def find_session():
 @app.route('/scheduler',methods=['POST','GET'])
 @login_required
 @email_verified_required
-@check_for_closed_session
 def scheduler():
     if current_user.role < 1: return redirect(url_for('404'))
     if request.method == 'POST':
@@ -1197,7 +1153,6 @@ def upload_roster(teacher_id):
 
 @app.route('/profile', methods = ['POST','GET'])
 @login_required
-@check_for_closed_session
 def profile():
     if request.method == 'POST':
         user = User.query.get(current_user.id)
@@ -1270,7 +1225,6 @@ def choose_classes(id):
 @app.route('/view_appointments',methods=["GET","POST"])
 @login_required
 @email_verified_required
-@check_for_closed_session
 def view_appointments():
 
     session_requests_where_student = SessionRequest.query.filter_by(student=current_user.id).all()
@@ -1290,7 +1244,6 @@ def view_appointments():
 @app.route('/view_requests',methods=["GET","POST"])
 @login_required
 @email_verified_required
-@check_for_closed_session
 def view_requests():
     if request.method == "POST":
         id = request.form["id"]
@@ -1382,6 +1335,10 @@ def session_hindsight():
         db.session.commit()
         return redirect(url_for('index'))
     session_days = Session.query.get(id).days
+    print(session_days)
+    print(type(session_days))
+    print(type(session_days[2]))
+    print(session_days[2])
     return render_template("session_hindsight.html",id=id,session_days=session_days,day_list=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
 
 @app.route("/admin_temp_route",methods=["POST","GET"])
