@@ -82,6 +82,26 @@
                         </div>
                     </div>
                 </div>
+                {%else%}
+                    {%if user.role == 1%}
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            Qualifications
+                        </div>
+                        <div class="card-body d-flex flex-wrap overflow-auto">
+                            <!-- <div class="" id="remove"> -->
+                                {% for badge, val in user.qualification_data.items() %}
+                                    {% if val %}
+                                        <span class="badge badge-primary m-1 d-flex align-items-center py-1">
+                                            <span class="badge-text">{{ badge }}</span>
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            <!-- </div>  -->
+                        </div>
+                    </div>
+                    
+                    {%endif%}
                 {%endif%}
             </div>
             <div class="col-md-8">
