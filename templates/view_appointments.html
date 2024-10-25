@@ -26,12 +26,12 @@
                             <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
                 
                             <div class="d-none d-md-block d-lg-block align-self-start" style="margin-top: 10px;">
-                                <div class="h4 mb-0 font-weight-bold">Session for {{session.date}}</div>
-                                <div class="h5 mt-1">Click here to view session!</div>
+                                <div class="h4 mb-0 font-weight-bold">Session for {{convert(session.date)}}</div>
+                                <div class="h5 mt-1">{{session.start_time}} - {{session.end_time}}</div>
                             </div>
                             <div class="d-block d-md-none d-lg-none align-self-start" style="margin-top: 10px;">
-                                <div class="h4 mb-0 font-weight-bold">{{session.date}}</div>
-                                <div class="h5 mt-1">Click to view!</div>
+                                <div class="h4 mb-0 font-weight-bold">{{convert(session.date)}}</div>
+                                <div class="h5 mt-1">{{session.start_time}} - {{session.end_time}}</div>
                             </div>               
                             <div class="ml-auto">
                                 <div class="d-flex justify-content-center align-items-center">
@@ -62,12 +62,12 @@
                             <img src="static/assets2/img/bookSessionIcon.png" alt="" width="50vw" height="50vw" class="book_session mr-3 bold-img">
                 
                             <div class="d-none d-md-block d-lg-block align-self-start" style="margin-top: 10px;">
-                                <div class="h4 mb-0 font-weight-bold">Session for {{session.date}}</div>
-                                <div class="h5 mt-1">Click here to view session!</div>
+                                <div class="h4 mb-0 font-weight-bold">Session for {{convert(session.date)}}</div>
+                                <div class="h5 mt-1">{{session.start_time}} - {{session.end_time}}</div>
                             </div>
                             <div class="d-block d-md-none d-lg-none align-self-start" style="margin-top: 10px;">
-                                <div class="h4 mb-0 font-weight-bold">{{session.date}}</div>
-                                <div class="h5 mt-1">Click to view!</div>
+                                <div class="h4 mb-0 font-weight-bold">{{convert(session.date)}}</div>
+                                <div class="h5 mt-1">{{session.start_time}} - {{session.end_time}}</div>
                             </div>
                 
                             <div class="ml-auto">

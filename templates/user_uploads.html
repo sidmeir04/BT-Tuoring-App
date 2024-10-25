@@ -110,12 +110,9 @@
                                 {%else%}
                                 <div style="height:57.5vh;overflow:scroll;" class="d-flex align-items-center justify-content-center">
                                     <div class="h1 text-center">
-                                        {%if thiss.role == 0%}
-                                        No files yet! Waiting on student to upload files
-                                        {%elif thiss.role == 1%}
+                                        {%if thiss.role == 0 or thiss.role == 1%}
                                         No files yet! Upload some files to get started!
                                         {%else%}
-                                        
                                             There are not files associated with this session.
                                         {%endif%}
                                     </div>
@@ -134,7 +131,7 @@
                                 <span class="page-number btn btn-primary py-1">1</span>
                                 <button class="btn btn-secondary p-1 next-page">>></button>
                             </div>
-                            {%if thiss.role == 0%}
+                            {%if thiss.role == 0 or thiss.role == 1%}
                             <button class="btn btn-primary ml-auto" data-toggle="modal" data-target="#exampleModal">+</button>
                             {%endif%}
                         </div>

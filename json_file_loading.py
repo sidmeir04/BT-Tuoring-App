@@ -71,7 +71,6 @@ def write_available_classes(classList):
         file.write(classList)
     return
 
-UNIVERSAL_CLASSLIST = load_available_classes()
 
 def current_classlist():
     return {i:0 for i in UNIVERSAL_CLASSLIST}
@@ -152,4 +151,9 @@ def time_difference(time1, time2):
     return diff.total_seconds() / 3600
 
 def convert_date(date):
-    pass
+    if type(date) == str:
+        date = datetime.strptime(date, "%Y-%m-%d")
+    formatted_date = date.strftime("%b %-d")
+    return formatted_date
+
+PERIOD_TIMES = [("10:30","11:15"),("11:15","11:56"),("12:00","12:41"),("12:45","13:26")]

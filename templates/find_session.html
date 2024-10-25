@@ -1,3 +1,4 @@
+<!-- pressing enter breaks it -->
 {% extends 'blank.html' %}
 {%set active_page='find_session'%}
 {% block content %}
@@ -64,7 +65,7 @@
             </div>
             <input type="hidden" id="other_id" name="subject">
             <div class="form-group">
-                <button type="submit" class="btn btn-primary btn-lg py-1 px-2" name="submit" value="1">Search</button>
+                <button id="submit_button" type="submit" class="btn btn-primary btn-lg py-1 px-2" name="submit" value="1">Search</button>
             </div>
         </form>
     </div>
@@ -96,7 +97,7 @@
                     </script>
                     <tbody>
                         <tr>
-                            <td>{{result[2]}}</td>
+                            <td>{{convert(result[2])}}</td>
                             <td>{{period_converter[result[1]]}}</td>
                             <td>{{result[0]}}</td>
                             <td>
@@ -140,6 +141,7 @@
                     <div class="text-center h2 mb-3" id="modalText">Session Information</div>
                     <div class="form-group d-none">
                         <input type="hidden" class="form-control" id="modalPass" name="modalPass">
+                        <input type="hidden" class="form-control" id="subject_form" name="subject_form">
                     </div>
                     <div class="d-flex justify-content-around">
                         <div class="form-group">
@@ -162,11 +164,18 @@
 </div>
 
 <script>
+
+    // document.getElementById("other_id").addEventListener("keydown",)
     // Function to open the modal and populate its content
     function openModal(tutor, period, date, fourth) {
+        
+        weekday = [" before school", " during Period 4"," during Period 5"," during Period 6"," during Period 7"," after school"]
         document.getElementById('modalLabel').textContent = "Session Request for " + tutor;
-        document.getElementById('modalText').textContent = "Starting on " + date + " during Period " + period;
+        document.getElementById('modalText').textContent = "Starting on " + date + weekday[period-1];
         document.getElementById('modalPass').value = tutor + ',' + period + ',' + date + ',' + fourth;
+        document.getElementById('subject_form').value = {{subject | tojson}}
+
+
         $('#addModal').modal('show');
     }
 

@@ -368,7 +368,8 @@ def add_new_session(tutor_id,student_id,date,period,start_time, end_time,request
             date = datetime.strptime(date, '%Y-%m-%d').date(),
             message_history_id = conversation.id,
             recurring = repeating,
-            days = '0'*dayNumber + '1' + '0'*(8-dayNumber)
+            days = '0'*dayNumber + '1' + '0'*(8-dayNumber),
+            subject=subject
         )
 
         db.session.add(new_session)
@@ -548,7 +549,7 @@ def user_overview():
     open_session = Session.query.get(ID)
     other_user = User.query.get(open_session.tutor) if current_user.role == 0 else User.query.get(open_session.student)
     other_user_image = base64.b64encode(other_user.image_data).decode('utf-8') if other_user.image_data else None
-    return render_template("user_overview.html",session=open_session,other=other_user,other_image = other_user_image,role=current_user.role)
+    return render_template("user_overview.html",session=open_session,other=other_user,other_image = other_user_image,role=current_user.role,convert=convert_date)
 
 @app.route("/appointment_preview",methods=["POST","GET"])
 @login_required
@@ -588,7 +589,7 @@ def user_preview():
         db.session.commit()
 
 
-    return render_template("user_preview.html",session=open_session,other=other_user,other_image = other_user_image,type=current_user.role,period=period, confirm = open_session.time_confirmation_pending == current_user.id,confirmed = open_session.time_confirmation_pending == -1)
+    return render_template("user_preview.html",session=open_session,other=other_user,other_image = other_user_image,type=current_user.role,period=period, confirm = open_session.time_confirmation_pending == current_user.id,confirmed = open_session.time_confirmation_pending == -1,convert=convert_date)
 
 @app.route('/appointment_uploads')
 @login_required
@@ -1015,11 +1016,13 @@ def find_session():
     tutor_name = ''
     options = load_available_classes()
     if request.method == 'POST':
-        if not int(request.form.get("submit")):
+        form_type = request.form.get("submit")
+        if not int(form_type if form_type else 1):
             _,period,start_date,tutor_id = request.form.get("modalPass").split(',')
             start_time = request.form.get("start_time")
             end_time = request.form.get("end_time")
-            return redirect(f"/book_session/{tutor_id}/{start_date}/{period}/{start_time}/{end_time}")
+            subject = request.form.get("subject_form")
+            return redirect(f"/book_session/{tutor_id}/{start_date}/{period}/{start_time}/{end_time}/{subject}")
         date = request.form.get('modal_date')
         period = int(request.form.get('period'))
         tutor_name = request.form.get('specific_tutor')
@@ -1056,12 +1059,13 @@ def find_session():
             else:
                 flash('Please enter a period or date!','warning')
                 # Send message saying that you need to specify either date or time
-        return render_template('find_session.html', results = results,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options,period_converter=period_converter)
+            
+        return render_template('find_session.html', results = results,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options,period_converter=period_converter,convert=convert_date)
     
 
     
 
-    return render_template('find_session.html', tutor_name=tutor_name.lower(),type=request.method,options=options)
+    return render_template('find_session.html', tutor_name=tutor_name.lower(),type=request.method,options=options,subject="")
 
 
 @app.route('/scheduler',methods=['POST','GET'])
@@ -1094,13 +1098,13 @@ def scheduler():
         row = [int(bit) for bit in binary_str[i:i+8]]
         periods.append(row)
 
-    return render_template('scheduler.html',booked_periods=periods,period_converter=period_converter)
+    return render_template('scheduler.html',booked_periods=periods,period_converter=period_converter,weekend_booked_periods=periods)
 
-@app.route('/book_session/<id>/<date>/<period>/<start>/<end>')
+@app.route('/book_session/<id>/<date>/<period>/<start>/<end>/<subject>')
 @login_required
 @email_verified_required
-def book_session(id, date, period,start,end):
-    add_new_session(id,current_user.id,date,period,string_to_time(start),string_to_time(end),True,False)
+def book_session(id, date, period,start,end,subject):
+    add_new_session(id,current_user.id,date,period,string_to_time(start),string_to_time(end),True,False,subject)
     flash('Session requested!', 'success')
     return redirect(url_for('view_requests'))
     
@@ -1187,7 +1191,8 @@ def profile():
                            image_data=base64.b64encode(current_user.image_data).decode('utf-8') if current_user.image_data else None,
                            is_verified=current_user.email_verification_token != None,
                            badges=badges,
-                           verified = current_user.email_verification_token == None
+                           verified = current_user.email_verification_token == None,
+                           user = current_user
                            )
 
 @socketio.on("change_badge")
@@ -1205,7 +1210,7 @@ def handle_user_join(badge_id,user):
 def choose_classes(id):
     user = User.query.get(int(id))
     if request.method == "POST":
-        for a_class in UNIVERSAL_CLASSLIST['class_list']:
+        for a_class in load_available_classes():
             user.qualification_data[a_class] = int(request.form.get(a_class) != None)
         flag_modified(user,'qualification_data')
         db.session.commit()
@@ -1213,7 +1218,7 @@ def choose_classes(id):
     
     checked = ['''checked="yes"''' if user.qualification_data[i] else "" for i in user.qualification_data]
     return render_template('choose_classes.html',
-                           available_classes=UNIVERSAL_CLASSLIST['class_list'],
+                           available_classes=load_available_classes(),
                            checked=checked,
                            id = id)
 
@@ -1234,7 +1239,8 @@ def view_appointments():
                            session_requests_where_student=session_requests_where_student,
                            session_requests_where_tutor=session_requests_where_tutor,
                            confirmed_sessions_where_student=confirmed_sessions_where_student,
-                           confirmed_sessions_where_tutor=confirmed_sessions_where_tutor)
+                           confirmed_sessions_where_tutor=confirmed_sessions_where_tutor,
+                           convert=convert_date)
 
 @app.route('/view_requests',methods=["GET","POST"])
 @login_required
@@ -1261,7 +1267,7 @@ def view_requests():
                            len=len,
                            session_requests_where_student=session_requests_where_student,
                            session_requests_where_tutor=session_requests_where_tutor,
-                           student_requests = student_requests)
+                           student_requests = student_requests,convert=convert_date)
 
 @app.route('/confirm_appointment')
 @login_required
@@ -1271,7 +1277,7 @@ def confirm_appointment():
     session_request = SessionRequest.query.get(id)
     tutor = User.query.get(session_request.tutor)
     student = User.query.get(session_request.student)
-    add_new_session(tutor_id=session_request.tutor,student_id=student.id,date = session_request.date.strftime('%Y-%m-%d'),period = session_request.period,request=False,repeating=False,start_time=session_request.start_time,end_time=session_request.end_time)
+    add_new_session(tutor_id=session_request.tutor,student_id=student.id,date = session_request.date.strftime('%Y-%m-%d'),period = session_request.period,request=False,repeating=False,start_time=session_request.start_time,end_time=session_request.end_time,subject = session_request.subject)
     sessions = SessionRequest.query.filter_by(tutor = session_request.tutor,period = session_request.period,date = session_request.date).all()
     for session in sessions:
         db.session.delete(session)

@@ -5,14 +5,11 @@
     <div class="d-flex justify-content-between align-items-center">
         <h2 class="text-center">Weekdays</h2>
         <div class="dropdown">
-            <button class="btn btn-primary dropdown-toggle" type="button" id="ToggleView" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              View
-            </button>
-            <div class="dropdown-menu position-absolute" aria-labelledby="dropdownMenuButton">
-              <a class="dropdown-item" href="#" onclick="handleSelection('View')">View</a>
-              <a class="dropdown-item" href="#" onclick="handleSelection('Add')">Add</a>
-              <a class="dropdown-item" href="#" onclick="handleSelection('Edit')">Edit</a>
-            </div>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary active" onclick="handleSelection('View')" id="view-btn">View</button>
+                <button type="button" class="btn btn-outline-primary" onclick="handleSelection('Add')" id="add-btn">Add</button>
+                <button type="button" class="btn btn-outline-primary" onclick="handleSelection('Edit')" id="edit-btn">Edit</button>
+              </div>
         </div>
     </div>
     <table class="table calendar-table">
@@ -100,15 +97,14 @@
         if (currentMode !== option) {  // Only reset if the mode has changed
             clearEventListeners();
             currentMode = option;
-            const viewModeButton = document.getElementById('ToggleView');
             
             if (option === 'View') {
-                viewModeButton.textContent = 'View';
+                $("#view-btn").toggleClass("active")
             } else if (option === 'Add') {
-                viewModeButton.textContent = 'Add';
+                $("#add-btn").toggleClass("active")
                 addEvents();
             } else {
-                viewModeButton.textContent = 'Edit';
+                $("#edit-btn").toggleClass("active")
                 editEvents();
             }
         }
@@ -126,7 +122,9 @@
         // Clear the lists
         addEventListeners = [];
         editEventListeners = [];
-
+        $("#add-btn").removeClass("active")
+        $("#view-btn").removeClass("active")
+        $("#edit-btn").removeClass("active")
 
         $('#addModal').modal('hide');
     }
