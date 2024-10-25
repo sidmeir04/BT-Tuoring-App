@@ -150,3 +150,6 @@ def time_difference(time1, time2):
     
     # Return the timedelta object and total seconds
     return diff.total_seconds() / 3600
+
+def convert_date(date):
+    pass

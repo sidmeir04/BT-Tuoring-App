@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center">
-        <h2 class="text-center">My Availability</h2>
+        <h2 class="text-center">Weekdays</h2>
         <div class="dropdown">
             <button class="btn btn-primary dropdown-toggle" type="button" id="ToggleView" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               View
@@ -44,7 +44,7 @@
                             <td class="p-1 overflow-auto col-2 d-flex justify-content-center">
                                 <div class="position-relative existant-element card bg-success d-flex align-items-center justify-content-center w-100" id="{{period}},{{day}},{{booked_periods[day][period][0]}},{{booked_periods[day][period][1]}}">
                                     <div class="text-white text-center">
-                                        Available from <br> {{booked_periods[day][period][0]}} to {{booked_periods[day][period][1]}}
+                                        Available
                                     </div>
                                 </div>
                             </td>
@@ -81,7 +81,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Confirm</button>
+                        <button type="submit" class="btn btn-primary" id="confirm">Confirm</button>
                         <button type="submit" class="btn d-none btn-danger" id="delete" name="delete">Delete</button>
                         <button type="button" class="btn" data-dismiss="modal">Cancel</button>
                     </div>                  
@@ -158,6 +158,8 @@
                 const day = days[choose[1]];
                 document.getElementById('delete').classList.remove('d-flex');
                 document.getElementById('delete').classList.add('d-none');
+                document.getElementById('confirm').classList.add('d-flex');
+                document.getElementById('confirm').classList.remove('d-none');
                 document.getElementById('modalText').textContent = "Available on " + day + " during Period " + choose[0];
             };
             
@@ -199,6 +201,8 @@
 
                 document.getElementById('delete').classList.add('d-flex');
                 document.getElementById('delete').classList.remove('d-none');
+                document.getElementById('confirm').classList.remove('d-flex');
+                document.getElementById('confirm').classList.add('d-none');
                 document.getElementById('modalText').textContent = "Available on " + day + " during Period " + choose[0];
             };
             
