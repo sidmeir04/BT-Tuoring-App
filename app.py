@@ -422,8 +422,8 @@ with app.app_context():
     db.create_all(bind_key=None)
     db.create_all(bind_key="records_db")
     initialize_period_data()
-    temp_admin_loading_delete_later()
-    # temp_function_for_default_user_loading()
+    # temp_admin_loading_delete_later()
+    temp_function_for_default_user_loading()
 
 
 def generate_verification_token():
@@ -739,7 +739,7 @@ def student_requests():
         flash("Tutoring session scheduled successfully!", "success")
         return redirect(url_for('index'))
 
-    return render_template('student_requests.html')
+    return render_template('student_requests.html', options = load_available_classes())
 
 @app.route('/delete_notification', methods=['POST'])
 @login_required
