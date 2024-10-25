@@ -13,7 +13,7 @@
                 Dates
             </th>
             <th>
-                Total Hours
+                Total Sessions
             </th>
             <th>
                 
@@ -30,7 +30,7 @@
                 {{check.start_date.strftime('%D')}} to {{check.date.strftime('%D')}}
             </td>
             <td>
-                {{hours_worth[loop.index0]}}
+                {{check.session_history["sessions"]}}
             </td>
             <td>
                 <yes class="p-2 bg-primary" style="border-radius:4px">

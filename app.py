@@ -412,8 +412,8 @@ def recurSession(session_id : int,description : str,session_days):
         session_history = old_session.session_history
     )
     new_session.session_history['descriptions'] = old_session.session_history['descriptions'] + [description]
-    new_session.session_history['dates'] = old_session.session_history['dates'] + [old_session.date]
-    new_session.session_history['hours'] = old_session.session_history['hours'] + [time_difference(old_session.start_time,old_session.end_time)]
+    new_session.session_history['dates'] = old_session.session_history['dates'] + [old_session.date.strftime('%Y-%m-%d')]
+    new_session.session_history['times'] = old_session.session_history['times'] + [time_difference(old_session.start_time,old_session.end_time)]
     new_session.session_history['sessions'] = old_session.session_history['sessions'] + 1
     flag_modified(new_session,"session_history")
     db.session.delete(old_session)
@@ -1010,7 +1010,6 @@ lower_days = ['monday','tuesday','wednesday','thursday','friday']
 @login_required
 @email_verified_required
 # options=options,    options = load_available_classes()
-
 def find_session():
     day, date = None, None
     tutor_name = ''
@@ -1026,8 +1025,7 @@ def find_session():
         tutor_name = request.form.get('specific_tutor')
         subject = request.form.get('subject')
         results = []
-        if period != '-1':
-            print(period)
+        if period != -1:
             data = Periods.query.get(period)
             if date:
                 day = date_to_day(date)
@@ -1040,27 +1038,24 @@ def find_session():
             else:
                 for day in lower_days:
                     day_data = getattr(data, day, 'defualt').strip()
-                    print(day_data)
                     if day_data:
                         for user_id in day_data.split(' '):
                             user = User.query.get(user_id)
-                            print(user.id,user.username)
                             if user and user.qualification_data[subject]:
-                                print('Add to result')
                                 results.append([user.username,int(period),find_next_day_of_week(day),user_id])
         # if period is not specified
         else:
             if date:
                 day = date_to_day(date)
+                print(day)
                 for period in range(1,7):
                     for user_id in getattr(Periods.query.get(period), day, 'defualt').strip().split(' '):
                         user = User.query.get(user_id)
                         if user and user.qualification_data[subject]:
                             results.append([user.username,int(period),find_next_day_of_week(day),user_id])
             else:
-                flash('Please enter a period of date!','warning')
+                flash('Please enter a period or date!','warning')
                 # Send message saying that you need to specify either date or time
-        print(results)
         return render_template('find_session.html', results = results,tutor_name=tutor_name.lower(),type=request.method,subject=subject,options=options,period_converter=period_converter)
     
 
@@ -1300,9 +1295,9 @@ def view():
     if request.method == 'POST':
         if request.form.get('action') == 'button1':
             tutor = User.query.get(session.tutor)
-            tutor.volunteer_hours += ((datetime.combine(datetime.today(), session.end_time) - datetime.combine(datetime.today(), session.start_time)).total_seconds() / 60) * session.session_history['sessions']
+            tutor.volunteer_hours += sum(time for time in [session.session_history['times']])
             db.session.commit()
-        remove_session(session.id)
+        remove_session(session.id,False)
         next_session = Session.query.filter_by(closed=True).all()
         if len(next_session) < 1:
             flash('All Hours Reviewed', 'success')
@@ -1503,10 +1498,8 @@ def admin_temp_route():
 def approve_hours():
     to_approve = Session.query.filter_by(closed = True).all()
     tutors = [User.query.get(i.tutor).name + ' ' + User.query.get(i.tutor).last_name for i in to_approve]
-    hours_worth = [round(((datetime.combine(datetime.today(), i.end_time) - datetime.combine(datetime.today(), i.start_time)).total_seconds() / 3600) * i.session_history["sessions"],2) for i in to_approve]
-        
 
-    return render_template("approve_hours.html",hours_to_approve=to_approve,hours_worth = hours_worth, tutors=tutors)
+    return render_template("approve_hours.html",hours_to_approve=to_approve, tutors=tutors)
 
 @app.route('/calendar')
 @login_required

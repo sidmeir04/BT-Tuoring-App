@@ -68,7 +68,7 @@
                     {% for i in range(session.session_history['sessions'])%}
                     <div class="card mb-3 mx-3 mt-3">
                         <div class="card-body">
-                            <div class="h2 mb-2">Lesson {{i+1}}</div>
+                            <div class="h2 mb-2">Lesson {{i+1}} - {{session.session_history['dates'][i]}} - {{session.session_history['times'][i] * 60}} minutes</div>
                             {{session.session_history['descriptions'][i]}}
                         </div>
                     </div>
