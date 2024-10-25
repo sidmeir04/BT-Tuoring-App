@@ -153,3 +153,27 @@ def time_difference(time1, time2):
 
 def convert_date(date):
     pass
+
+def next_weekday_date(day_name):
+    # Mapping of day names to weekday numbers (0=Monday, 6=Sunday)
+    days_of_week = {
+        "monday": 0, "tuesday": 1, "wednesday": 2,
+        "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6
+    }
+    
+    # Get today's date and weekday
+    today = datetime.now()
+    today_weekday = today.weekday()
+    
+    # Get target weekday number for the given day name
+    target_weekday = days_of_week.get(day_name.lower())
+    if target_weekday is None:
+        raise ValueError("Invalid day name. Use a valid day of the week in lowercase.")
+    
+    # Calculate days until the next occurrence of the target weekday
+    days_until = (target_weekday - today_weekday + 7) % 7
+    days_until = days_until if days_until != 0 else 7  # Skip to the next week if today is the target day
+
+    # Get the next date of the target weekday
+    next_date = today + timedelta(days=days_until)
+    return next_date.date()

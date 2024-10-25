@@ -271,8 +271,6 @@ def temp_function_for_default_user_loading():
         )
 
         user4.set_password("s")
-        period1 = Periods.query.first()
-        period1.monday = " 4"
 
 
         db.session.add(user2)
@@ -288,7 +286,7 @@ def temp_admin_loading_delete_later():
             last_name = "Genicoff",
             email = "shagen@bergen.org",
             email_verification_token=None,
-            role = 1
+            role = 3
         )
         user1.set_password("Demo1")
         db.session.add(user1)
@@ -310,7 +308,7 @@ def temp_admin_loading_delete_later():
             last_name = "Kendall",
             email = "monken@bergen.org",
             email_verification_token=None,
-            role = 0
+            role = 3
         )
         user3.set_password("Demo1")
 
@@ -425,7 +423,7 @@ with app.app_context():
     db.create_all(bind_key=None)
     db.create_all(bind_key="records_db")
     initialize_period_data()
-    # temp_admin_loading_delete_later()
+    temp_admin_loading_delete_later()
     temp_function_for_default_user_loading()
 
 
@@ -554,7 +552,6 @@ def user_overview():
 @login_required
 @email_verified_required
 def user_preview():
-    
     ID = request.args.get("identification")
     open_session = SessionRequest.query.get(ID)
     other_user = User.query.get(open_session.tutor) if current_user.role == 0 else User.query.get(open_session.student)
@@ -710,10 +707,10 @@ def student_requests():
         end_time = datetime.strptime(end_time, "%H:%M").time()
 
         # Call add_new_session with required parameters
-        tutor_id = -1  # As per your requirement
-        student_id = current_user.id  # Assuming the current logged-in user is the student
-        request_flag = True  # This is set to True as per your instructions
-        repeating = False  # Non-recurring session
+        tutor_id = -1
+        student_id = current_user.id
+        request_flag = True
+        repeating = False
 
         # Call the function to add the new session
         add_new_session(
@@ -1271,7 +1268,11 @@ def confirm_appointment():
     session_request = SessionRequest.query.get(id)
     tutor = User.query.get(session_request.tutor)
     student = User.query.get(session_request.student)
-    add_new_session(tutor_id=session_request.tutor,student_id=student.id,date = session_request.date.strftime('%Y-%m-%d'),period = session_request.period,request=False,repeating=False,start_time=session_request.start_time,end_time=session_request.end_time)
+    if session_request.tutor == -1:
+        tutor = current_user.id
+    else:
+        tutor = session_request.tutor
+    add_new_session(tutor_id=tutor,student_id=student.id,date = session_request.date.strftime('%Y-%m-%d'),period = session_request.period,request=False,repeating=False,start_time=session_request.start_time,end_time=session_request.end_time)
     sessions = SessionRequest.query.filter_by(tutor = session_request.tutor,period = session_request.period,date = session_request.date).all()
     for session in sessions:
         db.session.delete(session)
@@ -1307,7 +1308,7 @@ def view():
             return redirect(url_for('view', id = Session.query.filter_by(closed=True).all()[0].id))
     return render_template("view.html", student_name = student_name, tutor_name = tutor_name, session = session, hours = round(((datetime.combine(datetime.today(), session.end_time) - datetime.combine(datetime.today(), session.start_time)).total_seconds() / 3600) * session.session_history["sessions"],2))
 
-@app.route("/create_request")
+@app.route("/create_request", methods = ['GET','POST'])
 def create_request():
     return render_template("create_request.html")
 
@@ -1403,10 +1404,13 @@ def admin_temp_route():
                 db.session.commit()
 
                 num_sessions = randint(1,3)
-                fake_history = {"descriptions": [session_reports[randint(0,4)] for _ in range(num_sessions)], "sessions": num_sessions}
-
+                random_days = random.sample(lower_days, num_sessions)
+    
+                # Sort selected days based on the order in `lower_days`
+                sorted_days = sorted(random_days, key=lambda day: lower_days.index(day))
                 start_time,end_time,period = time_sets[randint(0,4)]
 
+                fake_history = {"descriptions": [session_reports[randint(0,4)] for _ in range(num_sessions)], "sessions": num_sessions, "dates":[next_weekday_date(day).strftime("%Y-%m-%d") for day in sorted_days],"times" : [time_difference(datetime.strptime(start_time, "%H:%M").time(),datetime.strptime(end_time, "%H:%M").time()) for _ in range(num_sessions)]}
                 new_session = Session(
                     tutor = tutor,
                     subject = subjects[randint(0,9)],
